@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AURA Rewards | Hilton Glasgow</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <div class="dashboard-shell">
+      <aside class="sidebar" aria-label="Dashboard navigation">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">A</div>
+          <div>
+            <strong>Hilton Glasgow</strong>
+            <span>Guest Review Intelligence</span>
+          </div>
+        </div>
+
+        <nav class="nav-stack" aria-label="Primary">
+          <a class="nav-item" href="./dashboard.html#overview">Overview</a>
+          <a class="nav-item" href="./dashboard.html#reviews">Reviews</a>
+          <a class="nav-item" href="./dashboard.html#recognition">Recognition</a>
+          <a class="nav-item active" href="./rewards.html">Rewards</a>
+          <a class="nav-item" href="#settings">Settings</a>
+        </nav>
+
+        <a class="logout-button rewards-back-link" href="./dashboard.html">Back to dashboard</a>
+
+        <div class="sidebar-card">
+          <span>Mode</span>
+          <strong>Mock Mode Active</strong>
+          <small>Local rewards demo</small>
+        </div>
+      </aside>
+
+      <main class="main-content rewards-page">
+        <header class="page-header">
+          <div>
+            <p class="eyebrow">Hilton Glasgow Rewards</p>
+            <h1>Rewards</h1>
+            <p>Create internal rewards that staff can unlock through positive guest feedback.</p>
+          </div>
+          <button id="downloadReport" class="primary-button" type="button">Download PDF Report</button>
+        </header>
+
+        <section class="panel rewards-filter-panel" aria-label="Reward filters">
+          <div class="reward-filter-grid">
+            <label>
+              <span>Period</span>
+              <select id="monthFilter">
+                <option value="this">This month</option>
+                <option value="last">Last month</option>
+                <option value="all">All time</option>
+              </select>
+            </label>
+            <label>
+              <span>Milestone</span>
+              <select id="milestoneFilter">
+                <option value="all">All staff</option>
+                <option value="first">First Recognition</option>
+                <option value="five">5 Mentions</option>
+                <option value="ten">Guest Favourite (10)</option>
+                <option value="twenty">Service Champion (20)</option>
+              </select>
+            </label>
+          </div>
+        </section>
+
+        <section class="rewards-layout">
+          <section class="panel reward-builder-panel" aria-labelledby="reward-builder-title">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Manager Controls</p>
+                <h2 id="reward-builder-title">Reward Builder</h2>
+              </div>
+            </div>
+
+            <form id="rewardForm" class="reward-form">
+              <input id="rewardId" type="hidden">
+              <label>
+                <span>Reward name</span>
+                <input id="rewardName" type="text" placeholder="e.g. Free coffee" required>
+              </label>
+              <label>
+                <span>Points required</span>
+                <input id="rewardPoints" type="number" min="1" step="1" placeholder="5" required>
+              </label>
+              <label>
+                <span>Reward description</span>
+                <textarea id="rewardDescription" rows="4" placeholder="Describe what the staff member unlocks." required></textarea>
+              </label>
+              <label>
+                <span>Category</span>
+                <select id="rewardCategory" required>
+                  <option>Food & Drink</option>
+                  <option>Time Off</option>
+                  <option>Bonus</option>
+                  <option>Experience</option>
+                  <option>Custom</option>
+                </select>
+              </label>
+              <button id="rewardSubmit" class="primary-button" type="submit">Create Reward</button>
+            </form>
+          </section>
+
+          <section class="panel rewards-list-panel" aria-labelledby="reward-list-title">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Active Rewards</p>
+                <h2 id="reward-list-title">Reward Catalogue</h2>
+              </div>
+            </div>
+            <div id="rewardCards" class="reward-card-grid"></div>
+          </section>
+        </section>
+
+        <section class="panel monthly-view-panel" aria-labelledby="monthly-view-title">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Monthly View</p>
+              <h2 id="monthly-view-title">Recognition by Period</h2>
+            </div>
+            <strong id="currentPeriodLabel" class="period-label">April 2026</strong>
+          </div>
+          <div id="monthlyView" class="monthly-view-grid"></div>
+        </section>
+
+        <section class="panel rewards-leaderboard-panel" aria-labelledby="rewards-leaderboard-title">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Leaderboard</p>
+              <h2 id="rewards-leaderboard-title">Staff Reward Ranking</h2>
+            </div>
+          </div>
+          <div id="rewardsLeaderboard" class="rewards-leaderboard"></div>
+        </section>
+
+        <section class="rewards-layout">
+          <section class="panel manager-tool-panel" aria-labelledby="manual-adjustment-title">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Manager Tool</p>
+                <h2 id="manual-adjustment-title">Manual Recognition Adjustment</h2>
+              </div>
+            </div>
+            <form id="manualForm" class="reward-form">
+              <label>
+                <span>Select review</span>
+                <select id="manualReview" required></select>
+              </label>
+              <label>
+                <span>Select staff member</span>
+                <select id="manualStaff" required></select>
+              </label>
+              <label>
+                <span>Reason / note</span>
+                <textarea id="manualNote" rows="4" placeholder="Why should this recognition be assigned?" required></textarea>
+              </label>
+              <button class="primary-button" type="submit">Assign Recognition</button>
+              <p id="manualMessage" class="form-message" aria-live="polite"></p>
+            </form>
+          </section>
+
+          <section class="panel manager-tool-panel" aria-labelledby="team-management-title">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Team Management</p>
+                <h2 id="team-management-title">Add Staff Member</h2>
+              </div>
+            </div>
+            <form id="staffForm" class="reward-form">
+              <label>
+                <span>Staff name</span>
+                <input id="staffName" type="text" placeholder="e.g. Olivia" required>
+              </label>
+              <label>
+                <span>Role / department</span>
+                <input id="staffRole" type="text" placeholder="e.g. Front Desk" required>
+              </label>
+              <button class="primary-button" type="submit">Add Staff Member</button>
+              <p id="staffMessage" class="form-message" aria-live="polite"></p>
+            </form>
+          </section>
+        </section>
+
+        <section class="panel staff-progress-panel" aria-labelledby="staff-progress-title">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Staff Progress</p>
+              <h2 id="staff-progress-title">Positive Review Points</h2>
+            </div>
+          </div>
+          <div id="staffProgress" class="staff-progress-list"></div>
+        </section>
+
+        <section class="panel reward-timeline-panel" aria-labelledby="reward-timeline-title">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Staff Reward Timeline</p>
+              <h2 id="reward-timeline-title">Recognition Events</h2>
+            </div>
+          </div>
+          <div id="rewardTimeline" class="reward-timeline"></div>
+        </section>
+      </main>
+    </div>
+
+    <section id="printReport" class="print-report" aria-hidden="true"></section>
+
+    <script src="./rewards.js" type="module"></script>
+  </body>
+</html>
