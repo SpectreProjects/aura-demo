@@ -12,7 +12,7 @@ const initialForm = {
   password: '',
   businessType: 'Cafe',
   locationsCount: '1',
-  plan: 'Growth',
+  plan: 'aura_spotlight',
 }
 
 export default function Signup({ onAuthSession, onSignupComplete, session }) {
@@ -149,9 +149,8 @@ export default function Signup({ onAuthSession, onSignupComplete, session }) {
             </select>
             <input className="aura-input border-white/10 bg-white/10 text-white placeholder:text-slate-500" min="1" placeholder="Number of locations" type="number" value={form.locationsCount} onChange={(event) => updateField('locationsCount', event.target.value)} />
             <select className="aura-input border-white/10 bg-white/10 text-white sm:col-span-2" value={form.plan} onChange={(event) => updateField('plan', event.target.value)}>
-              <option>Starter</option>
-              <option>Growth</option>
-              <option>Multi-location</option>
+              <option value="aura">AURA</option>
+              <option value="aura_spotlight">AURA Spotlight</option>
             </select>
           </div>
           {errorMessage && <p className="mt-4 rounded-2xl bg-rose-500/10 px-4 py-3 text-sm font-semibold text-rose-200">{errorMessage}</p>}

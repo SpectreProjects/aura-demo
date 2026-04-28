@@ -12,7 +12,7 @@ export default function PublicNav() {
   return (
     <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-6 sm:px-8">
       <Link to="/" className="flex items-center gap-3">
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/10 text-cyan-200 shadow-[0_0_40px_rgba(103,232,249,0.18)]">
+        <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/10 text-violet-200 shadow-[0_0_40px_rgba(124,58,237,0.22)]">
           <Sparkles size={20} />
         </span>
         <span className="text-xl font-bold tracking-tight text-white">AURA</span>
@@ -43,7 +43,7 @@ export default function PublicNav() {
         </Link>
         <Link
           to="/signup"
-          className="rounded-2xl bg-white px-4 py-3 text-sm font-bold text-slate-950 shadow-[0_18px_60px_rgba(255,255,255,0.14)] transition hover:-translate-y-0.5"
+          className="rounded-2xl bg-white px-4 py-3 text-sm font-bold text-slate-950 shadow-[0_18px_60px_rgba(124,58,237,0.24)] transition hover:-translate-y-0.5 hover:bg-slate-200"
         >
           Start free trial
         </Link>

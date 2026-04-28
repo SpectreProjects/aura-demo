@@ -30,6 +30,35 @@ const storage = {
   },
 }
 
+function getPlanFromSession(session) {
+  const plan = session?.user?.user_metadata?.plan
+
+  if (plan === 'aura_spotlight' || plan === 'Growth' || plan === 'Multi-location') {
+    return 'aura_spotlight'
+  }
+
+  return 'aura'
+}
+
+function UpgradePrompt() {
+  return (
+    <section className="aura-card mx-auto max-w-3xl p-8 text-center">
+      <p className="mx-auto mb-5 inline-flex rounded-full bg-violet-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-violet-700">
+        AURA Spotlight
+      </p>
+      <h2 className="text-3xl font-bold tracking-tight text-slate-950">
+        Upgrade to unlock staff recognition.
+      </h2>
+      <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-500">
+        Recognition leaderboards and staff mention insights are included with AURA Spotlight.
+      </p>
+      <a className="aura-button mt-6" href="/pricing">
+        View plans
+      </a>
+    </section>
+  )
+}
+
 function AppRoutes() {
   const location = useLocation()
   const [settings, setSettings] = useState(() => storage.get('aura-settings', defaultSettings))
@@ -107,6 +136,8 @@ function AppRoutes() {
     [settings.staffNames],
   )
 
+  const currentPlan = getPlanFromSession(session)
+  const canUseRecognition = currentPlan === 'aura_spotlight'
   const businessName = accountBusiness?.name || settings.businessName
 
   async function handleLogout() {
@@ -119,6 +150,8 @@ function AppRoutes() {
     accountBusiness,
     authUser: session?.user || null,
     businessName,
+    canUseRecognition,
+    currentPlan,
     onLogout: handleLogout,
     profile,
     rewards,
@@ -155,7 +188,10 @@ function AppRoutes() {
         <Route index element={<Navigate to="/app/dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard {...appContext} />} />
         <Route path="reviews" element={<Reviews {...appContext} />} />
-        <Route path="recognition" element={<Recognition {...appContext} />} />
+        <Route
+          path="recognition"
+          element={canUseRecognition ? <Recognition {...appContext} /> : <UpgradePrompt />}
+        />
         <Route path="rewards" element={<Rewards {...appContext} />} />
         <Route path="settings" element={<Settings {...appContext} />} />
       </Route>

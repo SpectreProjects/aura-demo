@@ -1,4 +1,4 @@
-import { Save, X } from 'lucide-react'
+import { RefreshCw, Save, Search, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 export default function Settings({ settings, setSettings }) {
@@ -6,6 +6,9 @@ export default function Settings({ settings, setSettings }) {
     ...settings,
     staffNamesText: settings.staffNames.join(', '),
   })
+  const [googleResponse, setGoogleResponse] = useState('')
+  const [googleError, setGoogleError] = useState('')
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
 
   const staffNames = useMemo(
     () =>
@@ -38,9 +41,32 @@ export default function Settings({ settings, setSettings }) {
     })
   }
 
+  async function callGoogleFunction(endpoint) {
+    setIsGoogleLoading(true)
+    setGoogleError('')
+    setGoogleResponse('')
+
+    try {
+      const response = await fetch(endpoint)
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || `Request failed with ${response.status}`)
+      }
+
+      setGoogleResponse(data.message || JSON.stringify(data))
+    } catch (error) {
+      console.error('[Google Business Profile] Function call failed:', error)
+      setGoogleError(error.message)
+    } finally {
+      setIsGoogleLoading(false)
+    }
+  }
+
   return (
     <div className="grid gap-6 xl:grid-cols-[1fr_380px]">
-      <form className="aura-card p-5 sm:p-6" onSubmit={saveSettings}>
+      <div className="space-y-6">
+        <form className="aura-card p-5 sm:p-6" onSubmit={saveSettings}>
         <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
           <div>
             <h2 className="text-xl font-bold text-slate-950">Workspace settings</h2>
@@ -118,7 +144,52 @@ export default function Settings({ settings, setSettings }) {
             onChange={(event) => updateField('staffNamesText', event.target.value)}
           />
         </label>
-      </form>
+        </form>
+
+        <section className="aura-card p-5 sm:p-6">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+            <div>
+              <h2 className="text-xl font-bold text-slate-950">Google Business Profile</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Connect directly to Google Business Profile for future review syncing.
+              </p>
+              <p className="mt-3 inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
+                Status: Not connected
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                className="aura-button-secondary"
+                disabled={isGoogleLoading}
+                type="button"
+                onClick={() => callGoogleFunction('/.netlify/functions/google-auth-start')}
+              >
+                <Search size={17} />
+                Connect Google Business Profile
+              </button>
+              <button
+                className="aura-button"
+                disabled={isGoogleLoading}
+                type="button"
+                onClick={() => callGoogleFunction('/.netlify/functions/sync-google-reviews')}
+              >
+                <RefreshCw size={17} />
+                Sync Reviews
+              </button>
+            </div>
+          </div>
+          {googleResponse && (
+            <p className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+              {googleResponse}
+            </p>
+          )}
+          {googleError && (
+            <p className="mt-4 rounded-2xl bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+              {googleError}
+            </p>
+          )}
+        </section>
+      </div>
 
       <aside className="aura-card h-fit p-5">
         <h2 className="text-lg font-bold text-slate-950">Recognition roster</h2>

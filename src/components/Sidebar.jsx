@@ -12,12 +12,14 @@ import { NavLink } from 'react-router-dom'
 const navItems = [
   { label: 'Dashboard', href: '/app/dashboard', icon: BarChart3 },
   { label: 'Reviews', href: '/app/reviews', icon: MessageSquareText },
-  { label: 'Recognition', href: '/app/recognition', icon: Award },
+  { label: 'Recognition', href: '/app/recognition', icon: Award, spotlightOnly: true },
   { label: 'Rewards', href: '/app/rewards', icon: Gift },
   { label: 'Settings', href: '/app/settings', icon: Settings },
 ]
 
-export default function Sidebar({ businessName }) {
+export default function Sidebar({ businessName, canUseRecognition }) {
+  const visibleItems = navItems.filter((item) => !item.spotlightOnly || canUseRecognition)
+
   return (
     <aside className="hidden min-h-screen w-72 shrink-0 border-r border-slate-200/80 bg-white/80 px-5 py-6 backdrop-blur-xl lg:block">
       <NavLink to="/" className="mb-8 flex items-center gap-3 rounded-2xl px-2">
@@ -31,7 +33,7 @@ export default function Sidebar({ businessName }) {
       </NavLink>
 
       <nav className="space-y-2">
-        {navItems.map((item) => (
+        {visibleItems.map((item) => (
           <NavLink
             key={item.href}
             to={item.href}
