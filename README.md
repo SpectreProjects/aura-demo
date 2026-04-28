@@ -1,44 +1,16 @@
-# Hilton Glasgow Mock Review Dashboard
+# React + Vite
 
-A simple local Node.js + HTML dashboard for manually testing a Hilton Glasgow-style review pipeline.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## What it does
+Currently, two official plugins are available:
 
-- Serves a static dashboard from the `public` folder.
-- Shows a local welcome screen before the dashboard.
-- Stores the demo entry state in `sessionStorage` for the current browser tab.
-- Generates one mock review only when you click `Generate now`.
-- Processes that review instantly in the browser.
-- Creates a mock reply based on the star rating.
-- Extracts staff names from a known local list.
-- Updates review stats, manual activity, and the staff recognition leaderboard.
-- Includes a local Rewards page where managers can create staff rewards and track point progress.
-- Does not call OpenAI or any external API.
-- Does not run an automatic review loop.
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-## Run locally
+## React Compiler
 
-```bash
-npm install
-npm start
-```
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-Open:
+## Expanding the ESLint configuration
 
-```text
-http://localhost:3000
-```
-
-Click `Enter Dashboard` to open the mock dashboard. Use `Log out` in the sidebar to return to the welcome screen.
-
-Open the rewards manager at:
-
-```text
-http://localhost:3000/rewards.html
-```
-
-To change the local port, edit `.env`:
-
-```env
-PORT=3000
-```
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
