@@ -5,11 +5,11 @@ import {
   Gift,
   MessageSquareReply,
   ShieldCheck,
-  Sparkles,
   Star,
   TrendingUp,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import PublicNav from '../components/PublicNav'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 28 },
@@ -195,22 +195,8 @@ export default function Landing({ businessName }) {
       <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:64px_64px]" />
       <div className="pointer-events-none fixed left-1/2 top-0 h-[520px] w-[720px] -translate-x-1/2 rounded-full bg-cyan-400/14 blur-[120px]" />
       <div className="relative">
-        <section className="mx-auto flex min-h-screen max-w-7xl flex-col px-5 py-6 sm:px-8">
-          <nav className="flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/10 text-cyan-200 shadow-[0_0_40px_rgba(103,232,249,0.18)]">
-                <Sparkles size={20} />
-              </span>
-              <span className="text-xl font-bold tracking-tight">AURA</span>
-            </Link>
-            <Link
-              to="/app/dashboard"
-              className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/15"
-            >
-              Open demo
-            </Link>
-          </nav>
-
+        <PublicNav />
+        <section className="mx-auto flex min-h-screen max-w-7xl flex-col px-5 sm:px-8">
           <div className="flex flex-1 flex-col justify-center py-16 text-center">
             <motion.div
               variants={fadeUp}
@@ -231,7 +217,7 @@ export default function Landing({ businessName }) {
               </p>
               <div className="mt-9 flex flex-wrap justify-center gap-3">
                 <Link
-                  to="/app/dashboard"
+                  to="/signup"
                   className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-bold text-slate-950 shadow-[0_18px_60px_rgba(255,255,255,0.14)] transition hover:-translate-y-0.5"
                 >
                   Open demo
@@ -372,7 +358,7 @@ export default function Landing({ businessName }) {
                 Turn every review into momentum.
               </h2>
               <Link
-                to="/app/dashboard"
+                to="/signup"
                 className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-bold text-slate-950 transition hover:-translate-y-0.5"
               >
                 View demo

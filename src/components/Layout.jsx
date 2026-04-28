@@ -11,13 +11,13 @@ const mobileNav = [
   { label: 'Settings', href: '/app/settings', icon: Settings },
 ]
 
-export default function Layout({ businessName }) {
+export default function Layout({ authUser, businessName, onLogout }) {
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,#e0f2fe_0,#f7f8fb_28%,#f7f8fb_100%)] text-slate-900">
       <div className="flex">
         <Sidebar businessName={businessName} />
         <div className="min-w-0 flex-1 pb-24 lg:pb-0">
-          <Topbar businessName={businessName} />
+          <Topbar authUser={authUser} businessName={businessName} onLogout={onLogout} />
           <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
             <Outlet />
           </main>
