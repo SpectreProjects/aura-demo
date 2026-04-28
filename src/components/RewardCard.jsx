@@ -1,6 +1,6 @@
-import { Gift, Users } from 'lucide-react'
+import { Edit3, Gift, Trash2, Users } from 'lucide-react'
 
-export default function RewardCard({ reward }) {
+export default function RewardCard({ reward, onDelete, onEdit }) {
   return (
     <article className="aura-card p-5">
       <div className="flex items-start justify-between gap-4">
@@ -17,6 +17,22 @@ export default function RewardCard({ reward }) {
         <Users size={16} />
         {reward.staffRole || 'All staff'}
       </div>
+      {(onEdit || onDelete) && (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {onEdit && (
+            <button className="aura-button-secondary flex-1" type="button" onClick={onEdit}>
+              <Edit3 size={16} />
+              Edit
+            </button>
+          )}
+          {onDelete && (
+            <button className="aura-button-secondary flex-1" type="button" onClick={onDelete}>
+              <Trash2 size={16} />
+              Delete
+            </button>
+          )}
+        </div>
+      )}
     </article>
   )
 }

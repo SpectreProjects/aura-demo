@@ -1,9 +1,30 @@
-import { CheckCircle2, Clock, Star } from 'lucide-react'
+import { CheckCircle2, Clock, Edit3, Save, Send, Star, X } from 'lucide-react'
 import { generateReply } from '../utils/generateReply'
 
-export default function ReviewCard({ review, businessName, tone, compact = false }) {
+export default function ReviewCard({
+  review,
+  businessName,
+  tone,
+  compact = false,
+  editing = false,
+  editValue = '',
+  onApprove,
+  onEdit,
+  onEditChange,
+  onMarkPosted,
+  onSaveEdit,
+  onCancelEdit,
+}) {
   const isNegative = review.rating <= 2
-  const reply = generateReply(review, businessName, tone)
+  const reply = review.suggestedReply || generateReply(review, businessName, tone)
+  const statusLabel =
+    review.status === 'posted'
+      ? 'Posted'
+      : review.status === 'approved'
+        ? 'Approved'
+        : isNegative
+          ? 'Needs approval'
+          : 'Ready reply'
 
   return (
     <article className="aura-card p-5">
@@ -29,7 +50,7 @@ export default function ReviewCard({ review, businessName, tone, compact = false
           }`}
         >
           {isNegative ? <Clock size={14} /> : <CheckCircle2 size={14} />}
-          {isNegative ? 'Needs approval' : 'Ready reply'}
+          {statusLabel}
         </span>
       </div>
 
@@ -40,7 +61,47 @@ export default function ReviewCard({ review, businessName, tone, compact = false
           <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
             Suggested reply
           </p>
-          <p className="text-sm leading-6 text-slate-700">{reply}</p>
+          {editing ? (
+            <textarea
+              className="aura-input min-h-32 resize-none bg-white"
+              value={editValue}
+              onChange={(event) => onEditChange?.(event.target.value)}
+            />
+          ) : (
+            <p className="text-sm leading-6 text-slate-700">{reply}</p>
+          )}
+        </div>
+      )}
+
+      {!compact && (onApprove || onMarkPosted || onEdit) && (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {editing ? (
+            <>
+              <button className="aura-button-secondary" type="button" onClick={onCancelEdit}>
+                <X size={16} />
+                Cancel
+              </button>
+              <button className="aura-button" type="button" onClick={onSaveEdit}>
+                <Save size={16} />
+                Save reply
+              </button>
+            </>
+          ) : (
+            <>
+              <button className="aura-button-secondary" type="button" onClick={onEdit}>
+                <Edit3 size={16} />
+                Edit reply
+              </button>
+              <button className="aura-button-secondary" type="button" onClick={onApprove}>
+                <CheckCircle2 size={16} />
+                Approve reply
+              </button>
+              <button className="aura-button" type="button" onClick={onMarkPosted}>
+                <Send size={16} />
+                Mark posted
+              </button>
+            </>
+          )}
         </div>
       )}
     </article>
