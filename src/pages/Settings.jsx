@@ -1,13 +1,27 @@
 import { RefreshCw, Save, Search, X } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useLocation } from 'react-router-dom'
+import { supabase } from '../lib/supabaseClient'
+
+const businessId = '11111111-1111-1111-1111-111111111111'
 
 export default function Settings({ settings, setSettings }) {
+  const location = useLocation()
+  const googleResult = useMemo(
+    () => new URLSearchParams(location.search).get('google'),
+    [location.search],
+  )
   const [draft, setDraft] = useState({
     ...settings,
     staffNamesText: settings.staffNames.join(', '),
   })
-  const [googleResponse, setGoogleResponse] = useState('')
-  const [googleError, setGoogleError] = useState('')
+  const initialGoogleResponse =
+    googleResult === 'connected' ? 'Google Business Profile connected successfully.' : ''
+  const initialGoogleError =
+    googleResult === 'error' ? 'Google connection failed. Please try again.' : ''
+  const [googleResponse, setGoogleResponse] = useState(initialGoogleResponse)
+  const [googleError, setGoogleError] = useState(initialGoogleError)
+  const [googleStatus, setGoogleStatus] = useState('Not connected')
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
 
   const staffNames = useMemo(
@@ -18,6 +32,28 @@ export default function Settings({ settings, setSettings }) {
         .filter(Boolean),
     [draft.staffNamesText],
   )
+
+  useEffect(() => {
+    async function checkGoogleConnection() {
+      if (!supabase) return
+
+      const { data, error } = await supabase
+        .from('google_connections')
+        .select('id, active')
+        .eq('business_id', businessId)
+        .eq('active', true)
+        .limit(1)
+
+      if (error) {
+        console.error('[Google Business Profile] Connection status check failed:', error)
+        return
+      }
+
+      setGoogleStatus(data.length > 0 ? 'Connected' : 'Not connected')
+    }
+
+    checkGoogleConnection()
+  }, [])
 
   function updateField(field, value) {
     setDraft((current) => ({ ...current, [field]: value }))
@@ -61,6 +97,10 @@ export default function Settings({ settings, setSettings }) {
     } finally {
       setIsGoogleLoading(false)
     }
+  }
+
+  function connectGoogleBusinessProfile() {
+    window.location.href = '/.netlify/functions/google-auth-start'
   }
 
   return (
@@ -154,7 +194,7 @@ export default function Settings({ settings, setSettings }) {
                 Connect directly to Google Business Profile for future review syncing.
               </p>
               <p className="mt-3 inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
-                Status: Not connected
+                Status: {googleStatus}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -162,7 +202,7 @@ export default function Settings({ settings, setSettings }) {
                 className="aura-button-secondary"
                 disabled={isGoogleLoading}
                 type="button"
-                onClick={() => callGoogleFunction('/.netlify/functions/google-auth-start')}
+                onClick={connectGoogleBusinessProfile}
               >
                 <Search size={17} />
                 Connect Google Business Profile
