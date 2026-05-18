@@ -34,6 +34,12 @@ button {
   cursor: pointer;
 }
 
+input,
+textarea,
+select {
+  color-scheme: dark;
+}
+
 ::selection {
   background: #dbeafe;
   color: #0f172a;
@@ -45,7 +51,19 @@ button {
   }
 
   .aura-input {
-    @apply w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:ring-4 focus:ring-slate-200/70;
+    @apply w-full rounded-2xl border border-cyan-200/15 bg-[#07101f] px-4 py-3 text-sm text-slate-50 outline-none transition placeholder:text-slate-500 focus:border-cyan-300/60 focus:ring-4 focus:ring-cyan-300/10 disabled:cursor-not-allowed disabled:border-white/5 disabled:bg-slate-900/60 disabled:text-slate-500;
+  }
+
+  .aura-field {
+    @apply w-full rounded-2xl border border-cyan-200/15 bg-[#07101f] px-4 py-3 text-sm text-slate-50 outline-none transition placeholder:text-slate-500 focus:border-cyan-300/60 focus:ring-4 focus:ring-cyan-300/10 disabled:cursor-not-allowed disabled:border-white/5 disabled:bg-slate-900/60 disabled:text-slate-500;
+  }
+
+  .aura-textarea {
+    @apply w-full resize-none rounded-2xl border border-cyan-200/15 bg-[#07101f] px-4 py-3 text-sm leading-6 text-slate-50 outline-none transition placeholder:text-slate-500 focus:border-cyan-300/60 focus:ring-4 focus:ring-cyan-300/10 disabled:cursor-not-allowed disabled:border-white/5 disabled:bg-slate-900/60 disabled:text-slate-500;
+  }
+
+  .aura-select {
+    @apply w-full rounded-2xl border border-cyan-200/15 bg-[#07101f] px-4 py-3 text-sm text-slate-50 outline-none transition focus:border-cyan-300/60 focus:ring-4 focus:ring-cyan-300/10 disabled:cursor-not-allowed disabled:border-white/5 disabled:bg-slate-900/60 disabled:text-slate-500;
   }
 
   .aura-button {
@@ -55,4 +73,40 @@ button {
   .aura-button-secondary {
     @apply inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50;
   }
+}
+
+.aura-field::placeholder,
+.aura-input::placeholder,
+.aura-textarea::placeholder {
+  color: #64748b;
+  opacity: 1;
+}
+
+.aura-select option,
+.aura-input option {
+  background: #07101f;
+  color: #f8fafc;
+}
+
+.aura-field:-webkit-autofill,
+.aura-input:-webkit-autofill,
+.aura-textarea:-webkit-autofill,
+.aura-select:-webkit-autofill {
+  -webkit-text-fill-color: #f8fafc;
+  box-shadow: 0 0 0 1000px #07101f inset;
+  caret-color: #f8fafc;
+}
+
+.aura-input.bg-white,
+.aura-field.bg-white,
+.aura-textarea.bg-white {
+  color: #0f172a;
+  caret-color: #0f172a;
+  color-scheme: light;
+}
+
+.aura-input.bg-white::placeholder,
+.aura-field.bg-white::placeholder,
+.aura-textarea.bg-white::placeholder {
+  color: #64748b;
 }
