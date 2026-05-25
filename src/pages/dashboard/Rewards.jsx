@@ -63,21 +63,33 @@ export default function Rewards() {
         <div className="mb-5">
           <p className="text-sm font-black uppercase tracking-[0.16em] text-cyan-100">Points rules</p>
           <h3 className="mt-1 text-2xl font-black tracking-tight text-white">How reviews become points</h3>
+          <p className="mt-2 text-sm leading-6 text-slate-400">
+            4 and 5 star staff mentions earn points. 1 to 3 star reviews are tracked in staff stats but do not earn points.
+          </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-5">
-          {[5, 4, 3, 2, 1].map((rating) => (
-            <label className="rounded-3xl border border-white/10 bg-[#050816]/72 p-4" key={rating}>
-              <span className="block text-sm font-black text-white">{rating} star{rating === 1 ? '' : 's'}</span>
-              <input
-                className="aura-field mt-3 px-3 py-2 font-black"
-                min="0"
-                onChange={(event) => actions.updatePointsRule(rating, event.target.value)}
-                type="number"
-                value={pointsRules[rating]}
-              />
-              <span className="mt-2 block text-xs font-semibold text-slate-400">points</span>
-            </label>
-          ))}
+          {[5, 4, 3, 2, 1].map((rating) => {
+            const earnsPoints = rating >= 4
+
+            return (
+              <label className="rounded-3xl border border-white/10 bg-[#050816]/72 p-4" key={rating}>
+                <span className="block text-sm font-black text-white">
+                  {rating} star{rating === 1 ? '' : 's'}
+                </span>
+                <input
+                  className="aura-field mt-3 px-3 py-2 font-black disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={!earnsPoints}
+                  min="0"
+                  onChange={(event) => actions.updatePointsRule(rating, event.target.value)}
+                  type="number"
+                  value={pointsRules[rating]}
+                />
+                <span className="mt-2 block text-xs font-semibold text-slate-400">
+                  {earnsPoints ? 'points per mention' : 'tracked only'}
+                </span>
+              </label>
+            )
+          })}
         </div>
       </section>
 

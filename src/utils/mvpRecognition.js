@@ -1,15 +1,23 @@
 import { defaultPointsRules } from '../data/mvpData'
 
 export function getPointsForRating(rating, pointsRules = defaultPointsRules) {
-  return Number(pointsRules?.[rating] ?? defaultPointsRules[rating] ?? 0)
+  const normalisedRating = Number(rating)
+  if (normalisedRating < 4) return 0
+  return Number(pointsRules?.[normalisedRating] ?? defaultPointsRules[normalisedRating] ?? 0)
 }
 
 export function detectMentionedStaff(reviewText, staff) {
-  const text = reviewText.toLowerCase()
+  const text = String(reviewText || '')
+  const matches = new Map()
 
-  return staff
-    .filter((person) => text.includes(person.name.toLowerCase()))
-    .map((person) => person.name)
+  staff.forEach((person) => {
+    if (!person?.name) return
+    const escapedName = person.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const pattern = new RegExp(`(^|[^a-z0-9])${escapedName}([^a-z0-9]|$)`, 'i')
+    if (pattern.test(text)) matches.set(person.name.toLowerCase(), person.name)
+  })
+
+  return Array.from(matches.values())
 }
 
 const nameStopWords = new Set([
@@ -32,6 +40,7 @@ const nameStopWords = new Set([
   'manager',
   'our',
   'poor',
+  'review',
   'really',
   'reception',
   'restaurant',
@@ -66,13 +75,14 @@ function isPossibleName(name, knownNames) {
 export function detectUnresolvedStaffNames(reviewText, staff) {
   const knownNames = new Set(staff.map((person) => person.name.toLowerCase()))
   const candidates = new Map()
+  const text = String(reviewText || '')
   const patterns = [
     /\b(?:thanks to|thank you|shoutout to|shout out to|served by|helped by|looked after by|checked in by|welcomed by|from|with|by)\s+([a-z][a-z'-]{1,24})\b/gi,
-    /\b([a-z][a-z'-]{1,24})\s+(?:was|is|were|helped|served|welcomed|greeted|made|handled|resolved|recommended|checked)\b/gi,
+    /\b([a-z][a-z'-]{1,24})\s+(?:was|is|were|helped|served|welcomed|greeted|made|handled|resolved|recommended|checked|took)\b/gi,
   ]
 
   patterns.forEach((pattern) => {
-    for (const match of reviewText.matchAll(pattern)) {
+    for (const match of text.matchAll(pattern)) {
       const name = titleCaseName(match[1])
       if (isPossibleName(name, knownNames)) candidates.set(name.toLowerCase(), name)
     }
@@ -97,9 +107,10 @@ export function applyReviewToStaff(staff, review, pointsRules = defaultPointsRul
   const awardedPoints = getPointsForRating(review.rating, pointsRules)
   const sentiment = getReviewSentiment(review.rating)
   const excerpt = createExcerpt(review.text)
+  const mentionedNames = new Set((review.mentioned_staff || []).map((name) => name.toLowerCase()))
 
   return staff.map((person) => {
-    if (!review.mentioned_staff.includes(person.name)) return person
+    if (!mentionedNames.has(person.name.toLowerCase())) return person
 
     return {
       ...person,

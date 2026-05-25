@@ -1,7 +1,6 @@
 export function pointsForRating(rating) {
-  if (rating === 5) return 10
-  if (rating === 4) return 6
-  if (rating === 3) return 2
+  if (rating === 5) return 5
+  if (rating === 4) return 3
   return 0
 }
 

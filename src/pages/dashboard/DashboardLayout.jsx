@@ -8,7 +8,7 @@ import {
   Users,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import {
   defaultCategories,
   defaultPointsRules,
@@ -55,10 +55,25 @@ function normalizeCategories(categories) {
 }
 
 function normalizePointsRules(pointsRules) {
+  const source = Array.isArray(pointsRules)
+    ? Object.fromEntries(pointsRules.map((rule) => [Number(rule.rating), Number(rule.points)]))
+    : pointsRules || {}
+
   return {
-    ...defaultPointsRules,
-    ...(pointsRules || {}),
+    1: 0,
+    2: 0,
+    3: 0,
+    4: Number(source[4] ?? defaultPointsRules[4] ?? 0),
+    5: Number(source[5] ?? defaultPointsRules[5] ?? 0),
   }
+}
+
+function pointRuleRows(pointsRules) {
+  return [4, 5].map((rating) => ({
+    rating,
+    points: getPointsForRating(rating, pointsRules),
+    updated_at: new Date().toISOString(),
+  }))
 }
 
 function normalizeStaff(staff) {
@@ -127,6 +142,47 @@ function normalizeNameApprovals(approvals) {
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
 }
 
+function normalizePointEvents(pointEvents) {
+  return (pointEvents || [])
+    .map((event) => ({
+      ...event,
+      id: event.id || createId('point'),
+      staff_id: event.staff_id || toSlug(event.staff_name || 'staff'),
+      staff_name: event.staff_name || 'Team member',
+      review_id: event.review_id || '',
+      points_awarded: Number(event.points_awarded || 0),
+      rating: Number(event.rating || 0),
+      reason: event.reason || `${event.rating || ''} star review mention`.trim(),
+      created_at: event.created_at || new Date().toISOString(),
+    }))
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+}
+
+function findStaffByName(staff, name) {
+  return staff.find((person) => person.name.toLowerCase() === String(name || '').toLowerCase())
+}
+
+function createPointEventsForReview(review, staff, pointsRules) {
+  const pointsAwarded = getPointsForRating(review.rating, pointsRules)
+  if (pointsAwarded <= 0) return []
+
+  return uniqueNames(review.mentioned_staff || []).map((name) => {
+    const person = findStaffByName(staff, name)
+    const staffName = person?.name || name
+
+    return {
+      id: createId('point'),
+      staff_id: person?.id || toSlug(staffName),
+      staff_name: staffName,
+      review_id: review.id,
+      points_awarded: pointsAwarded,
+      rating: Number(review.rating),
+      reason: `${review.rating} star review mention`,
+      created_at: new Date().toISOString(),
+    }
+  })
+}
+
 function readLocalState() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY))
@@ -135,6 +191,7 @@ function readLocalState() {
     return {
       categories: normalizeCategories(saved.categories),
       nameApprovals: normalizeNameApprovals(saved.nameApprovals),
+      pointEvents: normalizePointEvents(saved.pointEvents),
       pointsRules: normalizePointsRules(saved.pointsRules),
       rewards: normalizeRewards(saved.rewards),
       reviews: normalizeReviews(saved.reviews),
@@ -144,6 +201,7 @@ function readLocalState() {
     return {
       categories: defaultCategories,
       nameApprovals: [],
+      pointEvents: [],
       pointsRules: defaultPointsRules,
       rewards: defaultRewards,
       reviews: defaultReviews,
@@ -164,7 +222,7 @@ function buildStaffRecord(form) {
   return {
     ...base,
     id: form.id || base.id || createId('staff'),
-    name: form.name.trim(),
+    name: base.name,
     job_title: form.job_title?.trim() || '',
     job_category: form.job_category || 'Front of House',
     employment_type: form.employment_type || '',
@@ -213,7 +271,7 @@ function Sidebar({ nameApprovalsCount }) {
       <div className="mt-8 rounded-[1.7rem] border border-cyan-300/15 bg-cyan-400/10 p-4">
         <p className="text-sm font-black text-cyan-100">Recognition workspace</p>
         <p className="mt-2 text-sm leading-6 text-slate-400">
-          Review mentions become points, rewards and team momentum.
+          4 and 5 star mentions become points, rewards and team momentum.
         </p>
       </div>
     </aside>
@@ -246,9 +304,12 @@ function MobileNav({ nameApprovalsCount }) {
 }
 
 export default function DashboardLayout() {
+  const location = useLocation()
+  const isOverviewRoute = location.pathname === '/dashboard'
   const initialState = useMemo(() => readLocalState(), [])
   const [categories, setCategories] = useState(initialState.categories)
   const [nameApprovals, setNameApprovals] = useState(initialState.nameApprovals)
+  const [pointEvents, setPointEvents] = useState(initialState.pointEvents)
   const [pointsRules, setPointsRules] = useState(initialState.pointsRules)
   const [rewards, setRewards] = useState(initialState.rewards)
   const [reviews, setReviews] = useState(initialState.reviews)
@@ -267,13 +328,23 @@ export default function DashboardLayout() {
 
     async function loadSupabaseData() {
       try {
-        const [staffResult, rewardsResult, reviewsResult, approvalsResult, categoriesResult] =
+        const [
+          staffResult,
+          rewardsResult,
+          reviewsResult,
+          approvalsResult,
+          categoriesResult,
+          pointEventsResult,
+          pointRulesResult,
+        ] =
           await Promise.all([
             supabase.from('staff').select('*').order('name', { ascending: true }),
             supabase.from('rewards').select('*').order('points_required', { ascending: true }),
             supabase.from('reviews').select('*').order('created_at', { ascending: false }),
             supabase.from('unresolved_mentions').select('*').order('created_at', { ascending: false }),
             supabase.from('job_categories').select('*').order('name', { ascending: true }),
+            supabase.from('point_events').select('*').order('created_at', { ascending: false }),
+            supabase.from('point_rules').select('*').order('rating', { ascending: true }),
           ])
 
         const loadError =
@@ -281,13 +352,16 @@ export default function DashboardLayout() {
           rewardsResult.error ||
           reviewsResult.error ||
           approvalsResult.error ||
-          categoriesResult.error
+          categoriesResult.error ||
+          pointEventsResult.error ||
+          pointRulesResult.error
 
         if (loadError) throw loadError
 
         let nextStaff = normalizeStaff(staffResult.data)
         let nextRewards = normalizeRewards(rewardsResult.data)
         let nextCategories = normalizeCategories(categoriesResult.data)
+        let nextPointsRules = normalizePointsRules(pointRulesResult.data)
 
         if (!staffResult.data?.length) {
           const { error } = await supabase.from('staff').insert(defaultStaff)
@@ -308,9 +382,22 @@ export default function DashboardLayout() {
           nextCategories = defaultCategories
         }
 
+        const existingRuleRatings = new Set((pointRulesResult.data || []).map((rule) => Number(rule.rating)))
+        const missingPointRuleRows = pointRuleRows(defaultPointsRules).filter(
+          (rule) => !existingRuleRatings.has(rule.rating),
+        )
+
+        if (missingPointRuleRows.length) {
+          const { error } = await supabase.from('point_rules').insert(missingPointRuleRows)
+          if (error) throw error
+          nextPointsRules = normalizePointsRules([...(pointRulesResult.data || []), ...missingPointRuleRows])
+        }
+
         if (!isMounted) return
         setCategories(nextCategories)
         setNameApprovals(normalizeNameApprovals(approvalsResult.data))
+        setPointEvents(normalizePointEvents(pointEventsResult.data))
+        setPointsRules(nextPointsRules)
         setRewards(nextRewards)
         setReviews(normalizeReviews(reviewsResult.data))
         setStaff(nextStaff)
@@ -336,9 +423,9 @@ export default function DashboardLayout() {
   useEffect(() => {
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ categories, nameApprovals, pointsRules, rewards, reviews, staff }),
+      JSON.stringify({ categories, nameApprovals, pointEvents, pointsRules, rewards, reviews, staff }),
     )
-  }, [categories, nameApprovals, pointsRules, rewards, reviews, staff])
+  }, [categories, nameApprovals, pointEvents, pointsRules, rewards, reviews, staff])
 
   async function saveToSupabase(action) {
     if (!supabase || connectionStatus !== 'connected') return
@@ -357,12 +444,13 @@ export default function DashboardLayout() {
 
   const overview = useMemo(() => {
     const reviewsThisMonth = reviews.filter((review) => isThisMonth(review.created_at))
-    const pointsThisMonth = reviewsThisMonth.reduce(
-      (total, review) =>
-        total + getPointsForRating(review.rating, pointsRules) * review.mentioned_staff.length,
+    const pointsThisMonth = pointEvents
+      .filter((event) => isThisMonth(event.created_at))
+      .reduce((total, event) => total + Number(event.points_awarded || 0), 0)
+    const totalMentions = staff.reduce(
+      (total, person) => total + Number(person.total_mentions || 0),
       0,
     )
-    const totalMentions = staff.reduce((total, person) => total + Number(person.total_mentions || 0), 0)
 
     return {
       activeRewards: rewards.filter((reward) => reward.is_active).length,
@@ -371,7 +459,7 @@ export default function DashboardLayout() {
       reviewsThisMonth: reviewsThisMonth.length,
       totalMentions,
     }
-  }, [nameApprovals.length, pointsRules, rewards, reviews, staff])
+  }, [nameApprovals.length, pointEvents, rewards, reviews, staff])
 
   const leaderboard = useMemo(
     () =>
@@ -408,12 +496,15 @@ export default function DashboardLayout() {
       created_at: new Date().toISOString(),
     }))
     const nextStaff = applyReviewToStaff(staff, review, pointsRules)
+    const nextPointEvents = createPointEventsForReview(review, nextStaff, pointsRules)
     const nextReviews = normalizeReviews([review, ...reviews])
     const allApprovals = normalizeNameApprovals([...nextApprovals, ...nameApprovals])
+    const allPointEvents = normalizePointEvents([...nextPointEvents, ...pointEvents])
 
     setReviews(nextReviews)
     setStaff(nextStaff)
     setNameApprovals(allApprovals)
+    setPointEvents(allPointEvents)
 
     await saveToSupabase(async () => {
       const reviewResult = await supabase.from('reviews').insert(review)
@@ -422,6 +513,11 @@ export default function DashboardLayout() {
       const staffResult = await supabase.from('staff').upsert(nextStaff)
       if (staffResult.error) return staffResult
 
+      if (nextPointEvents.length) {
+        const pointEventsResult = await supabase.from('point_events').insert(nextPointEvents)
+        if (pointEventsResult.error) return pointEventsResult
+      }
+
       if (nextApprovals.length) return supabase.from('unresolved_mentions').insert(nextApprovals)
       return { error: null }
     })
@@ -429,7 +525,10 @@ export default function DashboardLayout() {
     return {
       matchedNames: mentionedStaff,
       newNames,
-      pointsAwarded: getPointsForRating(rating, pointsRules) * mentionedStaff.length,
+      pointsAwarded: nextPointEvents.reduce(
+        (total, event) => total + Number(event.points_awarded || 0),
+        0,
+      ),
     }
   }
 
@@ -448,28 +547,53 @@ export default function DashboardLayout() {
     const review = reviews.find((item) => item.id === approval.review_id)
     const record = buildStaffRecord({ ...form, name: form.name || approval.name })
     const existing = staff.find((person) => person.name.toLowerCase() === record.name.toLowerCase())
+    const staffRecord = existing
+      ? {
+          ...existing,
+          name: record.name,
+          job_title: record.job_title,
+          job_category: record.job_category,
+          employment_type: record.employment_type,
+          contractual_hours: record.contractual_hours,
+        }
+      : record
     const baseStaff = existing
-      ? staff.map((person) => (person.name.toLowerCase() === record.name.toLowerCase() ? { ...person, ...record } : person))
-      : [...staff, record]
+      ? staff.map((person) =>
+          person.name.toLowerCase() === record.name.toLowerCase() ? staffRecord : person,
+        )
+      : [...staff, staffRecord]
     let nextStaff = normalizeStaff(baseStaff)
     let nextReviews = reviews
+    let nextPointEvents = []
 
     if (review) {
-      const reviewForAward = { ...review, mentioned_staff: [record.name] }
-      nextStaff = normalizeStaff(applyReviewToStaff(nextStaff, reviewForAward, pointsRules))
+      const alreadyMentioned = review.mentioned_staff.some(
+        (name) => name.toLowerCase() === staffRecord.name.toLowerCase(),
+      )
+      const reviewForAward = { ...review, mentioned_staff: [staffRecord.name] }
+
+      if (!alreadyMentioned) {
+        nextStaff = normalizeStaff(applyReviewToStaff(nextStaff, reviewForAward, pointsRules))
+        nextPointEvents = createPointEventsForReview(reviewForAward, nextStaff, pointsRules)
+      }
+
       const nextReview = {
         ...review,
-        mentioned_staff: uniqueNames([...review.mentioned_staff, record.name]),
+        mentioned_staff: uniqueNames([...review.mentioned_staff, staffRecord.name]),
       }
       nextReviews = normalizeReviews(reviews.map((item) => (item.id === review.id ? nextReview : item)))
     }
 
     const nextApprovals = nameApprovals.filter((item) => item.id !== approval.id)
+    const allPointEvents = normalizePointEvents([...nextPointEvents, ...pointEvents])
 
     setStaff(nextStaff)
     setReviews(nextReviews)
     setNameApprovals(nextApprovals)
-    if (!categories.includes(record.job_category)) setCategories((current) => [...current, record.job_category])
+    setPointEvents(allPointEvents)
+    if (!categories.includes(staffRecord.job_category)) {
+      setCategories((current) => [...current, staffRecord.job_category])
+    }
 
     await saveToSupabase(async () => {
       const staffResult = await supabase.from('staff').upsert(nextStaff)
@@ -482,6 +606,11 @@ export default function DashboardLayout() {
           .update({ mentioned_staff: updatedReview.mentioned_staff })
           .eq('id', updatedReview.id)
         if (reviewResult.error) return reviewResult
+      }
+
+      if (nextPointEvents.length) {
+        const pointEventsResult = await supabase.from('point_events').insert(nextPointEvents)
+        if (pointEventsResult.error) return pointEventsResult
       }
 
       return supabase.from('unresolved_mentions').delete().eq('id', approval.id)
@@ -523,11 +652,25 @@ export default function DashboardLayout() {
     await saveToSupabase(() => supabase.from('rewards').delete().eq('id', rewardId))
   }
 
-  function updatePointsRule(rating, points) {
-    setPointsRules((current) => ({
-      ...current,
-      [rating]: Number(points) || 0,
-    }))
+  async function updatePointsRule(rating, points) {
+    const normalisedRating = Number(rating)
+    const normalisedPoints = normalisedRating >= 4 ? Math.max(0, Number(points) || 0) : 0
+    const nextRules = normalizePointsRules({
+      ...pointsRules,
+      [normalisedRating]: normalisedPoints,
+    })
+
+    setPointsRules(nextRules)
+
+    if (normalisedRating >= 4) {
+      await saveToSupabase(() =>
+        supabase.from('point_rules').upsert({
+          rating: normalisedRating,
+          points: normalisedPoints,
+          updated_at: new Date().toISOString(),
+        }),
+      )
+    }
   }
 
   const dashboard = {
@@ -546,6 +689,7 @@ export default function DashboardLayout() {
     leaderboard,
     nameApprovals,
     overview,
+    pointEvents,
     pointsRules,
     rewards,
     reviews,
@@ -560,24 +704,32 @@ export default function DashboardLayout() {
         <Sidebar nameApprovalsCount={nameApprovals.length} />
 
         <div className="min-w-0 flex-1 pb-28 lg:pb-0">
-          <header className="sticky top-0 z-20 border-b border-white/10 bg-[#030711]/72 px-5 py-4 backdrop-blur-2xl sm:px-8 lg:px-10">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-sm font-bold text-cyan-100">Recognition workspace</p>
-                <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl">
-                  AURA Command Centre
-                </h1>
+          {!isOverviewRoute && (
+            <header className="sticky top-0 z-20 border-b border-white/10 bg-[#030711]/72 px-5 py-4 backdrop-blur-2xl sm:px-8 lg:px-10">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-bold text-cyan-100">Recognition workspace</p>
+                  <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl">
+                    AURA Command Centre
+                  </h1>
+                </div>
+                <Link
+                  className="hidden h-11 items-center justify-center rounded-2xl border border-white/10 bg-white/8 px-4 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-white/12 sm:inline-flex"
+                  to="/"
+                >
+                  <Home size={17} />
+                </Link>
               </div>
-              <Link
-                className="hidden h-11 items-center justify-center rounded-2xl border border-white/10 bg-white/8 px-4 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-white/12 sm:inline-flex"
-                to="/"
-              >
-                <Home size={17} />
-              </Link>
-            </div>
-          </header>
+            </header>
+          )}
 
-          <section className="mx-auto max-w-7xl px-5 py-6 sm:px-8 lg:px-10 lg:py-8">
+          <section
+            className={
+              isOverviewRoute
+                ? 'mx-auto max-w-[1680px] px-5 py-6 sm:px-8 lg:px-10 lg:py-8'
+                : 'mx-auto max-w-7xl px-5 py-6 sm:px-8 lg:px-10 lg:py-8'
+            }
+          >
             <Outlet context={dashboard} />
           </section>
         </div>

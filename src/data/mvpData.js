@@ -11,7 +11,7 @@ export const defaultCategories = [
 export const defaultPointsRules = {
   1: 0,
   2: 0,
-  3: 1,
+  3: 0,
   4: 3,
   5: 5,
 }

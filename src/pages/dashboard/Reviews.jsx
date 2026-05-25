@@ -44,7 +44,7 @@ export default function Reviews() {
             Create test reviews and recognise great service.
           </h2>
           <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
-            Publish a manual review, find staff names and award points immediately.
+            Publish a manual review, find staff names and award points for 4 and 5 star mentions.
           </p>
         </div>
         <div className="rounded-3xl border border-white/10 bg-[#050816]/70 p-4">
@@ -138,7 +138,7 @@ export default function Reviews() {
                 Couldn&apos;t find these members of staff
               </h3>
               <p className="mt-2 text-sm leading-6 text-slate-400">
-                These names appeared in reviews, but they&apos;re not in your team yet.
+                These names appeared in reviews, but they&apos;re not in your team yet. Add them to track the mention; 4 and 5 star mentions also earn points.
               </p>
             </div>
 

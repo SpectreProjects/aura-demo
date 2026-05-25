@@ -64,6 +64,23 @@ create table if not exists public.unresolved_mentions (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.point_rules (
+  rating integer primary key check (rating in (4, 5)),
+  points integer not null default 0 check (points >= 0),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.point_events (
+  id text primary key,
+  staff_id text not null,
+  staff_name text not null,
+  review_id text not null,
+  points_awarded integer not null check (points_awarded > 0),
+  rating integer not null check (rating in (4, 5)),
+  reason text not null,
+  created_at timestamptz not null default now()
+);
+
 create table if not exists public.job_categories (
   id text primary key,
   name text not null unique,
@@ -101,6 +118,12 @@ values
   ('dinner-voucher', 'Dinner voucher', 'A dinner voucher for the team member and a guest.', 80, true)
 on conflict (id) do nothing;
 
+insert into public.point_rules (rating, points)
+values
+  (4, 3),
+  (5, 5)
+on conflict (rating) do nothing;
+
 insert into public.job_categories (id, name)
 values
   ('front-of-house', 'Front of House'),
@@ -122,6 +145,8 @@ alter table public.staff enable row level security;
 alter table public.reviews enable row level security;
 alter table public.rewards enable row level security;
 alter table public.unresolved_mentions enable row level security;
+alter table public.point_rules enable row level security;
+alter table public.point_events enable row level security;
 alter table public.job_categories enable row level security;
 
 create policy "MVP public read staff"
@@ -191,6 +216,32 @@ create policy "MVP public delete unresolved mentions"
 on public.unresolved_mentions for delete
 to anon
 using (true);
+
+create policy "MVP public read point rules"
+on public.point_rules for select
+to anon
+using (true);
+
+create policy "MVP public write point rules"
+on public.point_rules for insert
+to anon
+with check (true);
+
+create policy "MVP public update point rules"
+on public.point_rules for update
+to anon
+using (true)
+with check (true);
+
+create policy "MVP public read point events"
+on public.point_events for select
+to anon
+using (true);
+
+create policy "MVP public write point events"
+on public.point_events for insert
+to anon
+with check (true);
 
 create policy "MVP public read job categories"
 on public.job_categories for select
