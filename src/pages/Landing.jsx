@@ -23,22 +23,22 @@ const featureHighlights = [
   {
     icon: MessageSquareText,
     title: 'Never miss a review',
-    detail: 'Every guest gets a response, automatically.',
+    detail: 'Every customer receives a thoughtful response automatically, keeping your business active online 24/7.',
   },
   {
     icon: UsersRound,
-    title: 'Guests feel acknowledged',
-    detail: 'Replies stay consistent with your brand voice.',
+    title: 'Customers feel heard',
+    detail: 'Replies stay consistent with your brand voice and make every interaction feel acknowledged.',
   },
   {
     icon: Trophy,
-    title: 'Reward great staff',
-    detail: 'Recognise employees when guests mention exceptional service.',
+    title: 'Recognise great staff',
+    detail: 'Reward employees when customers mention exceptional service.',
   },
   {
     icon: TrendingUp,
-    title: 'Strengthen your reputation',
-    detail: 'Stay active online and build trust with future guests.',
+    title: 'Strengthen reputation',
+    detail: 'Build trust, visibility and customer confidence through a more active online presence.',
   },
 ]
 
@@ -169,11 +169,6 @@ export default function Landing() {
             transition={{ duration: 0.7, ease: 'easeOut' }}
             variants={fadeUp}
           >
-            <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-300/35 bg-[#070d24]/70 px-5 py-2 text-xs font-black uppercase text-white shadow-[0_0_40px_rgba(37,99,235,0.22)] backdrop-blur">
-              <UsersRound size={15} className="text-blue-200" />
-              Built for hospitality teams
-            </p>
-
             <h1 className="w-full max-w-6xl text-[2.45rem] font-black leading-[1.07] text-white drop-shadow-[0_14px_36px_rgba(0,0,0,0.32)] sm:text-[3.45rem] lg:text-[4.15rem] xl:text-[4.75rem]">
               <span className="block lg:whitespace-nowrap">
                 Every review,{' '}
@@ -231,7 +226,7 @@ export default function Landing() {
                       disabled={isSubmittingWaitlist}
                       name="business_name"
                       onChange={handleWaitlistChange}
-                      placeholder="Your business name"
+                      placeholder="Your company name"
                       type="text"
                       value={waitlistForm.business_name}
                     />
