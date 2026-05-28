@@ -1,190 +1,301 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import {
   ArrowRight,
-  Award,
-  CheckCircle2,
-  Gift,
-  Hotel,
+  Building2,
+  LoaderCircle,
+  Mail,
   MessageSquareText,
   Sparkles,
   Trophy,
+  TrendingUp,
+  UsersRound,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import heroAsset from '../assets/hero.png'
+import { supabase } from '../lib/supabaseClient'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 22 },
   visible: { opacity: 1, y: 0 },
 }
 
-const signals = [
-  'Manual review testing',
-  'Staff mention approval',
-  'Reward progress tracking',
+const featureHighlights = [
+  {
+    icon: MessageSquareText,
+    title: 'Never miss a review',
+    detail: 'Every guest gets a response, automatically.',
+  },
+  {
+    icon: UsersRound,
+    title: 'Guests feel acknowledged',
+    detail: 'Replies stay consistent with your brand voice.',
+  },
+  {
+    icon: Trophy,
+    title: 'Reward great staff',
+    detail: 'Recognise employees when guests mention exceptional service.',
+  },
+  {
+    icon: TrendingUp,
+    title: 'Strengthen your reputation',
+    detail: 'Stay active online and build trust with future guests.',
+  },
 ]
 
-const previewStaff = [
-  ['Caitlin', '32 pts', 'Free coffee unlocked'],
-  ['Daniel', '24 pts', '6 pts to next reward'],
-  ['Emma', '18 pts', '2 mentions this week'],
-]
+const initialWaitlistForm = {
+  email: '',
+  business_name: '',
+}
+
+function isMissingSourceColumnError(error) {
+  const errorText = [error?.code, error?.message, error?.details, error?.hint].filter(Boolean).join(' ').toLowerCase()
+
+  return (
+    errorText.includes('source') &&
+    (error?.code === 'PGRST204' ||
+      error?.code === '42703' ||
+      errorText.includes('schema cache') ||
+      errorText.includes('column'))
+  )
+}
+
+async function insertWaitlistSignup(payload) {
+  const withSource = {
+    ...payload,
+    source: 'landing_page',
+  }
+
+  const result = await supabase.from('waitlist_signups').insert(withSource)
+
+  if (result.error && isMissingSourceColumnError(result.error)) {
+    return supabase.from('waitlist_signups').insert(payload)
+  }
+
+  return result
+}
 
 export default function Landing() {
+  const [waitlistForm, setWaitlistForm] = useState(initialWaitlistForm)
+  const [waitlistStatus, setWaitlistStatus] = useState('idle')
+  const [waitlistMessage, setWaitlistMessage] = useState('')
+
+  const isSubmittingWaitlist = waitlistStatus === 'loading'
+
+  function handleWaitlistChange(event) {
+    const { name, value } = event.target
+
+    setWaitlistForm((currentForm) => ({
+      ...currentForm,
+      [name]: value,
+    }))
+
+    if (waitlistMessage) {
+      setWaitlistMessage('')
+      setWaitlistStatus('idle')
+    }
+  }
+
+  async function handleWaitlistSubmit(event) {
+    event.preventDefault()
+
+    if (isSubmittingWaitlist) return
+
+    const email = waitlistForm.email.trim()
+    const businessName = waitlistForm.business_name.trim()
+
+    if (!email) {
+      setWaitlistStatus('error')
+      setWaitlistMessage('Please enter your email to join the waitlist.')
+      return
+    }
+
+    if (!supabase) {
+      setWaitlistStatus('error')
+      setWaitlistMessage('Waitlist signups are not available right now. Please try again soon.')
+      return
+    }
+
+    setWaitlistStatus('loading')
+    setWaitlistMessage('')
+
+    const payload = {
+      email,
+      business_name: businessName || null,
+    }
+
+    try {
+      const { error } = await insertWaitlistSignup(payload)
+
+      if (error) throw error
+
+      setWaitlistForm(initialWaitlistForm)
+      setWaitlistStatus('success')
+      setWaitlistMessage("You're on the AURA waitlist. We'll be in touch soon.")
+    } catch (error) {
+      console.error('[Waitlist] Signup failed:', error)
+      setWaitlistStatus('error')
+      setWaitlistMessage("We couldn't add you to the waitlist just now. Please try again in a moment.")
+    }
+  }
+
   return (
-    <main className="min-h-screen overflow-hidden bg-[#030711] text-white">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(34,211,238,0.16),transparent_34%),radial-gradient(circle_at_82%_18%,rgba(124,58,237,0.14),transparent_32%),linear-gradient(rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:auto,auto,72px_72px,72px_72px]" />
+    <main className="relative flex min-h-screen overflow-hidden bg-[#020617] text-white">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_91%_72%,rgba(14,165,233,0.72),transparent_32%),radial-gradient(circle_at_52%_-12%,rgba(88,80,236,0.2),transparent_28%),radial-gradient(circle_at_11%_78%,rgba(67,56,202,0.26),transparent_28%),linear-gradient(135deg,#030414_0%,#050927_46%,#06185c_100%)]" />
+      <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.08),transparent_28%,rgba(255,255,255,0.04)_54%,transparent_76%)] opacity-50" />
+      <div className="pointer-events-none fixed inset-x-0 top-16 mx-auto h-72 max-w-5xl rounded-full bg-blue-500/20 blur-3xl" />
 
-      <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-5 py-6 sm:px-8">
-        <Link to="/" className="flex items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/10 text-cyan-100 shadow-[0_0_44px_rgba(34,211,238,0.18)] backdrop-blur">
-            <Sparkles size={20} />
-          </span>
-          <span>
-            <span className="block text-xl font-black tracking-tight">AURA</span>
-            <span className="block text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Recognition OS</span>
-          </span>
-        </Link>
+      <div className="relative z-10 flex min-h-screen w-full flex-col">
+        <header className="mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-5 sm:px-8 lg:py-6">
+          <Link aria-label="AURA home" to="/" className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-violet-500/20 text-white shadow-[0_0_42px_rgba(124,58,237,0.32)] backdrop-blur">
+              <Sparkles size={18} />
+            </span>
+            <span className="text-lg font-black">AURA</span>
+          </Link>
 
-        <Link
-          className="hidden rounded-2xl border border-white/10 bg-white/8 px-4 py-3 text-sm font-bold text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/12 sm:inline-flex"
-          to="/dashboard"
-        >
-          Super Admin Log In
-        </Link>
-      </header>
+          <button
+            className="rounded-full border border-violet-400/60 bg-white/[0.045] px-7 py-3 text-sm font-black text-slate-100 shadow-[0_12px_40px_rgba(15,23,42,0.22)] backdrop-blur transition hover:-translate-y-0.5 hover:border-violet-300 hover:bg-white/[0.09] hover:text-white"
+            type="button"
+          >
+            Log in
+          </button>
+        </header>
 
-      <section className="relative z-10 mx-auto flex min-h-[calc(100vh-92px)] max-w-7xl flex-col px-5 pb-14 pt-10 sm:px-8">
-        <motion.div
-          animate="visible"
-          className="mx-auto max-w-5xl text-center"
-          initial="hidden"
-          transition={{ duration: 0.7, ease: 'easeOut' }}
-          variants={fadeUp}
-        >
-          <div className="mx-auto mb-7 flex h-24 w-24 items-center justify-center">
-            <img className="h-24 w-24 object-contain drop-shadow-[0_26px_70px_rgba(124,58,237,0.34)]" src={heroAsset} alt="" />
-          </div>
+        <section className="mx-auto flex w-full max-w-7xl flex-1 flex-col items-center px-5 pb-5 pt-0 text-center sm:px-8 lg:pb-4">
+          <motion.div
+            animate="visible"
+            className="flex w-full flex-col items-center"
+            initial="hidden"
+            transition={{ duration: 0.7, ease: 'easeOut' }}
+            variants={fadeUp}
+          >
+            <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-300/35 bg-[#070d24]/70 px-5 py-2 text-xs font-black uppercase text-white shadow-[0_0_40px_rgba(37,99,235,0.22)] backdrop-blur">
+              <UsersRound size={15} className="text-blue-200" />
+              Built for hospitality teams
+            </p>
 
-          <p className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/8 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-cyan-100 backdrop-blur">
-            <Hotel size={15} />
-            Built for hospitality teams
-          </p>
+            <h1 className="w-full max-w-6xl text-[2.45rem] font-black leading-[1.07] text-white drop-shadow-[0_14px_36px_rgba(0,0,0,0.32)] sm:text-[3.45rem] lg:text-[4.15rem] xl:text-[4.75rem]">
+              <span className="block lg:whitespace-nowrap">
+                Every review,{' '}
+                <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-violet-500 bg-clip-text text-transparent">
+                  replied.
+                </span>
+              </span>
+              <span className="block lg:whitespace-nowrap">
+                Every customer,{' '}
+                <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-violet-500 bg-clip-text text-transparent">
+                  heard.
+                </span>
+              </span>
+              <span className="block lg:whitespace-nowrap">
+                Great employees,{' '}
+                <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-violet-500 bg-clip-text text-transparent">
+                  recognised.
+                </span>
+              </span>
+            </h1>
 
-          <h1 className="text-5xl font-black tracking-tight sm:text-7xl lg:text-8xl">
-            AURA turns customer reviews into staff recognition.
-          </h1>
+            <p className="mt-5 max-w-5xl text-base leading-7 text-slate-300/85 sm:text-lg sm:leading-8">
+              AURA replies to every review in your brand&apos;s tone of voice, keeps your reputation active 24/7, and
+              rewards staff when guests recognise exceptional service.
+            </p>
 
-          <p className="mx-auto mt-7 max-w-3xl text-base leading-8 text-slate-300 sm:text-lg">
-            Track staff mentions, reward great service and turn guest feedback into motivation.
-          </p>
-
-          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-6 py-4 text-sm font-black text-slate-950 shadow-[0_24px_80px_rgba(34,211,238,0.18)] transition hover:-translate-y-0.5 hover:bg-slate-200 sm:w-auto"
-              to="/dashboard"
+            <form
+              className="mt-7 w-full max-w-6xl rounded-[1.35rem] border border-white/75 bg-white/95 p-2 shadow-[0_28px_90px_rgba(7,11,43,0.42),0_0_70px_rgba(59,130,246,0.18)] backdrop-blur-2xl"
+              onSubmit={handleWaitlistSubmit}
             >
-              Super Admin Log In
-              <ArrowRight size={18} />
-            </Link>
-            <a
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/8 px-6 py-4 text-sm font-bold text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/12 sm:w-auto"
-              href="#product-preview"
-            >
-              Preview dashboard
-            </a>
-          </div>
-
-          <div className="mx-auto mt-8 grid max-w-3xl gap-3 sm:grid-cols-3">
-            {signals.map((signal) => (
-              <div key={signal} className="flex items-center justify-center gap-2 text-sm font-semibold text-slate-300">
-                <CheckCircle2 size={17} className="text-cyan-200" />
-                {signal}
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        <motion.div
-          animate="visible"
-          className="mt-12"
-          id="product-preview"
-          initial="hidden"
-          transition={{ delay: 0.12, duration: 0.7, ease: 'easeOut' }}
-          variants={fadeUp}
-        >
-          <div className="mx-auto max-w-6xl rounded-[2rem] border border-white/10 bg-white/[0.065] p-3 shadow-[0_38px_140px_rgba(0,0,0,0.36)] backdrop-blur-2xl">
-            <div className="rounded-[1.5rem] border border-white/10 bg-[#050816]/95 p-5 sm:p-6">
-              <div className="flex flex-col justify-between gap-4 border-b border-white/10 pb-5 md:flex-row md:items-center">
-                <div>
-                  <p className="text-sm font-bold text-cyan-100">AURA super admin</p>
-                  <h2 className="mt-1 text-2xl font-black tracking-tight">Recognition command centre</h2>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <span className="rounded-full border border-cyan-300/20 bg-cyan-400/10 px-3 py-2 text-xs font-black text-cyan-100">
-                    Supabase ready
+              <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(390px,auto)]">
+                <label className="group flex min-w-0 items-center gap-3 rounded-2xl bg-slate-50 px-5 py-4 transition focus-within:ring-4 focus-within:ring-blue-500/[0.15]">
+                  <Mail className="shrink-0 text-slate-700" size={20} />
+                  <span className="min-w-0 flex-1">
+                    <span className="sr-only">Email</span>
+                    <input
+                      className="w-full bg-transparent text-base font-semibold text-slate-950 outline-none placeholder:text-slate-500"
+                      disabled={isSubmittingWaitlist}
+                      name="email"
+                      onChange={handleWaitlistChange}
+                      placeholder="Your work email"
+                      required
+                      type="email"
+                      value={waitlistForm.email}
+                    />
                   </span>
-                  <span className="rounded-full border border-white/10 bg-white/8 px-3 py-2 text-xs font-black text-slate-200">
-                    No auth blocker
+                </label>
+
+                <label className="group flex min-w-0 items-center gap-3 rounded-2xl bg-slate-50 px-5 py-4 transition focus-within:ring-4 focus-within:ring-blue-500/[0.15]">
+                  <Building2 className="shrink-0 text-slate-700" size={20} />
+                  <span className="min-w-0 flex-1">
+                    <span className="sr-only">Business name</span>
+                    <input
+                      className="w-full bg-transparent text-base font-semibold text-slate-950 outline-none placeholder:text-slate-500"
+                      disabled={isSubmittingWaitlist}
+                      name="business_name"
+                      onChange={handleWaitlistChange}
+                      placeholder="Your business name"
+                      type="text"
+                      value={waitlistForm.business_name}
+                    />
+                  </span>
+                </label>
+
+                <button
+                  className="inline-flex min-h-[60px] items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-sky-500 px-6 py-4 text-sm font-black text-white shadow-[0_18px_48px_rgba(37,99,235,0.45)] transition hover:-translate-y-0.5 hover:from-blue-500 hover:to-sky-400 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0 sm:text-base lg:whitespace-nowrap"
+                  disabled={isSubmittingWaitlist}
+                  type="submit"
+                >
+                  {isSubmittingWaitlist ? (
+                    <>
+                      <LoaderCircle className="animate-spin" size={18} />
+                      Joining
+                    </>
+                  ) : (
+                    <>
+                      Join the waitlist for a free month
+                      <ArrowRight size={18} />
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {waitlistMessage && (
+                <p
+                  className={`mt-2 rounded-2xl border px-4 py-3 text-center text-sm font-bold ${
+                    waitlistStatus === 'success'
+                      ? 'border-emerald-300/40 bg-emerald-50 text-emerald-800'
+                      : 'border-rose-300/60 bg-rose-50 text-rose-800'
+                  }`}
+                  role={waitlistStatus === 'error' ? 'alert' : 'status'}
+                >
+                  {waitlistMessage}
+                </p>
+              )}
+            </form>
+
+            <div className="mt-7 grid w-full max-w-6xl gap-3 text-left sm:grid-cols-2 lg:grid-cols-4 lg:divide-x lg:divide-white/10">
+              {featureHighlights.map(({ icon: Icon, title, detail }) => (
+                <div key={title} className="flex gap-4 rounded-3xl border border-white/[0.08] bg-white/[0.035] p-4 backdrop-blur lg:border-0 lg:bg-transparent lg:px-6 lg:first:pl-0 lg:last:pr-0">
+                  <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-violet-300/20 bg-violet-500/[0.15] text-violet-200 shadow-[0_0_34px_rgba(124,58,237,0.18)]">
+                    <Icon size={27} />
+                  </span>
+                  <span>
+                    <span className="block text-base font-black text-white">{title}</span>
+                    <span className="mt-1 block text-sm leading-6 text-slate-300">{detail}</span>
                   </span>
                 </div>
-              </div>
-
-              <div className="mt-5 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-                <div className="rounded-3xl border border-white/10 bg-white/[0.05] p-5">
-                  <div className="mb-5 flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-bold text-slate-400">Manual review</p>
-                      <p className="mt-1 font-black">"Maya and Caitlin made dinner feel special."</p>
-                    </div>
-                    <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-slate-950">5 stars</span>
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-2xl border border-cyan-300/20 bg-cyan-400/10 p-4">
-                      <MessageSquareText className="mb-4 text-cyan-100" size={21} />
-                      <p className="text-sm font-semibold text-slate-300">Known staff detected</p>
-                      <p className="mt-2 text-2xl font-black">Caitlin +5</p>
-                    </div>
-                    <div className="rounded-2xl border border-amber-300/20 bg-amber-300/10 p-4">
-                      <Award className="mb-4 text-amber-100" size={21} />
-                      <p className="text-sm font-semibold text-slate-300">Needs approval</p>
-                      <p className="mt-2 text-2xl font-black">Maya</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid gap-4">
-                  {previewStaff.map(([name, points, detail]) => (
-                    <div key={name} className="rounded-3xl border border-white/10 bg-white/[0.05] p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-sm font-black text-slate-950">
-                            {name.slice(0, 1)}
-                          </span>
-                          <div>
-                            <p className="font-black">{name}</p>
-                            <p className="text-sm text-slate-400">{detail}</p>
-                          </div>
-                        </div>
-                        <span className="text-sm font-black text-cyan-100">{points}</span>
-                      </div>
-                    </div>
-                  ))}
-                  <div className="rounded-3xl border border-emerald-300/20 bg-emerald-400/10 p-4">
-                    <div className="flex items-center gap-3">
-                      <Gift className="text-emerald-100" size={21} />
-                      <div>
-                        <p className="font-black">Reward progress</p>
-                        <p className="text-sm text-slate-400">Great service becomes visible momentum.</p>
-                      </div>
-                      <Trophy className="ml-auto text-emerald-100" size={20} />
-                    </div>
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
-          </div>
-        </motion.div>
-      </section>
+          </motion.div>
+        </section>
+
+        <footer className="mx-auto flex w-full max-w-7xl justify-center px-5 pb-5 sm:px-8">
+          <Link
+            className="rounded-lg px-2 py-1 text-xs font-semibold text-slate-500 transition hover:text-slate-300 focus:outline-none focus:ring-2 focus:ring-violet-300/50"
+            to="/dashboard"
+          >
+            Privacy Policy
+          </Link>
+        </footer>
+      </div>
     </main>
   )
 }
