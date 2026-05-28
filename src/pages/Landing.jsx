@@ -153,12 +153,12 @@ export default function Landing() {
             <span className="text-lg font-black">AURA</span>
           </Link>
 
-          <button
+          <Link
             className="rounded-full border border-violet-400/60 bg-white/[0.045] px-7 py-3 text-sm font-black text-slate-100 shadow-[0_12px_40px_rgba(15,23,42,0.22)] backdrop-blur transition hover:-translate-y-0.5 hover:border-violet-300 hover:bg-white/[0.09] hover:text-white"
-            type="button"
+            to="/login"
           >
             Log in
-          </button>
+          </Link>
         </header>
 
         <section className="mx-auto flex w-full max-w-7xl flex-1 flex-col items-center px-5 pb-5 pt-0 text-center sm:px-8 lg:pb-4">

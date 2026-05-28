@@ -2,20 +2,21 @@ import {
   BarChart3,
   Gift,
   Home,
+  LogOut,
   MessageSquareText,
   Settings,
   Sparkles,
   Users,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   defaultCategories,
   defaultPointsRules,
   defaultRewards,
-  defaultReviews,
   defaultStaff,
 } from '../../data/mvpData'
+import { useAuth } from '../../lib/AuthContext'
 import { supabase } from '../../lib/supabaseClient'
 import {
   applyReviewToStaff,
@@ -66,14 +67,6 @@ function normalizePointsRules(pointsRules) {
     4: Number(source[4] ?? defaultPointsRules[4] ?? 0),
     5: Number(source[5] ?? defaultPointsRules[5] ?? 0),
   }
-}
-
-function pointRuleRows(pointsRules) {
-  return [4, 5].map((rating) => ({
-    rating,
-    points: getPointsForRating(rating, pointsRules),
-    updated_at: new Date().toISOString(),
-  }))
 }
 
 function normalizeStaff(staff) {
@@ -129,6 +122,42 @@ function normalizeReviews(reviews) {
       created_at: review.created_at || new Date().toISOString(),
     }))
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+}
+
+function manualReviewToDashboardReview(review) {
+  const staffMember = String(review.staff_member || '').trim()
+
+  return {
+    id: review.id,
+    business_profile_id: review.business_profile_id,
+    created_at: review.created_at || new Date().toISOString(),
+    customer_name: review.customer_name || 'Customer',
+    mentioned_staff: staffMember ? [staffMember] : [],
+    rating: Number(review.rating || 0),
+    source: review.source || 'manual',
+    staff_member: staffMember,
+    text: review.review_text || '',
+    user_id: review.user_id,
+  }
+}
+
+function createManualReviewError(type, message, cause) {
+  const error = new Error(message)
+  error.type = type
+  error.cause = cause
+  return error
+}
+
+function isPolicyError(error) {
+  const errorText = [error?.code, error?.message, error?.details, error?.hint].filter(Boolean).join(' ').toLowerCase()
+
+  return (
+    error?.code === '42501' ||
+    errorText.includes('row-level security') ||
+    errorText.includes('rls') ||
+    errorText.includes('policy') ||
+    errorText.includes('permission denied')
+  )
 }
 
 function normalizeNameApprovals(approvals) {
@@ -194,7 +223,7 @@ function readLocalState() {
       pointEvents: normalizePointEvents(saved.pointEvents),
       pointsRules: normalizePointsRules(saved.pointsRules),
       rewards: normalizeRewards(saved.rewards),
-      reviews: normalizeReviews(saved.reviews),
+      reviews: [],
       staff: normalizeStaff(saved.staff),
     }
   } catch {
@@ -204,7 +233,7 @@ function readLocalState() {
       pointEvents: [],
       pointsRules: defaultPointsRules,
       rewards: defaultRewards,
-      reviews: defaultReviews,
+      reviews: [],
       staff: defaultStaff,
     }
   }
@@ -305,8 +334,11 @@ function MobileNav({ nameApprovalsCount }) {
 
 export default function DashboardLayout() {
   const location = useLocation()
+  const navigate = useNavigate()
+  const { user } = useAuth()
   const isOverviewRoute = location.pathname === '/dashboard'
   const initialState = useMemo(() => readLocalState(), [])
+  const [businessProfile, setBusinessProfile] = useState(null)
   const [categories, setCategories] = useState(initialState.categories)
   const [nameApprovals, setNameApprovals] = useState(initialState.nameApprovals)
   const [pointEvents, setPointEvents] = useState(initialState.pointEvents)
@@ -320,105 +352,80 @@ export default function DashboardLayout() {
       ? ''
       : 'The dashboard is running in demo mode because environment variables have not been added yet.',
   )
+  const [isSigningOut, setIsSigningOut] = useState(false)
 
   useEffect(() => {
-    if (!supabase) return undefined
+    if (!supabase || !user) return undefined
 
     let isMounted = true
 
-    async function loadSupabaseData() {
+    async function loadAccountDashboard() {
+      setConnectionStatus('checking')
+
       try {
-        const [
-          staffResult,
-          rewardsResult,
-          reviewsResult,
-          approvalsResult,
-          categoriesResult,
-          pointEventsResult,
-          pointRulesResult,
-        ] =
-          await Promise.all([
-            supabase.from('staff').select('*').order('name', { ascending: true }),
-            supabase.from('rewards').select('*').order('points_required', { ascending: true }),
-            supabase.from('reviews').select('*').order('created_at', { ascending: false }),
-            supabase.from('unresolved_mentions').select('*').order('created_at', { ascending: false }),
-            supabase.from('job_categories').select('*').order('name', { ascending: true }),
-            supabase.from('point_events').select('*').order('created_at', { ascending: false }),
-            supabase.from('point_rules').select('*').order('rating', { ascending: true }),
-          ])
+        const fallbackBusinessName = user.user_metadata?.business_name || 'My Business'
+        const { data: existingProfile, error: profileLoadError } = await supabase
+          .from('business_profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle()
 
-        const loadError =
-          staffResult.error ||
-          rewardsResult.error ||
-          reviewsResult.error ||
-          approvalsResult.error ||
-          categoriesResult.error ||
-          pointEventsResult.error ||
-          pointRulesResult.error
+        if (profileLoadError) throw profileLoadError
 
-        if (loadError) throw loadError
+        let profile = existingProfile
 
-        let nextStaff = normalizeStaff(staffResult.data)
-        let nextRewards = normalizeRewards(rewardsResult.data)
-        let nextCategories = normalizeCategories(categoriesResult.data)
-        let nextPointsRules = normalizePointsRules(pointRulesResult.data)
+        if (!profile) {
+          const { data: createdProfile, error: profileCreateError } = await supabase
+            .from('business_profiles')
+            .insert({
+              business_name: fallbackBusinessName,
+              user_id: user.id,
+            })
+            .select('*')
+            .single()
 
-        if (!staffResult.data?.length) {
-          const { error } = await supabase.from('staff').insert(defaultStaff)
-          if (error) throw error
-          nextStaff = defaultStaff
+          if (profileCreateError) throw profileCreateError
+          profile = createdProfile
         }
 
-        if (!rewardsResult.data?.length) {
-          const { error } = await supabase.from('rewards').insert(defaultRewards)
-          if (error) throw error
-          nextRewards = defaultRewards
-        }
+        const { data: manualReviews, error: manualReviewsError } = await supabase
+          .from('manual_reviews')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('business_profile_id', profile.id)
+          .order('created_at', { ascending: false })
 
-        if (!categoriesResult.data?.length) {
-          const rows = defaultCategories.map((name) => ({ id: toSlug(name), name }))
-          const { error } = await supabase.from('job_categories').insert(rows)
-          if (error) throw error
-          nextCategories = defaultCategories
-        }
-
-        const existingRuleRatings = new Set((pointRulesResult.data || []).map((rule) => Number(rule.rating)))
-        const missingPointRuleRows = pointRuleRows(defaultPointsRules).filter(
-          (rule) => !existingRuleRatings.has(rule.rating),
-        )
-
-        if (missingPointRuleRows.length) {
-          const { error } = await supabase.from('point_rules').insert(missingPointRuleRows)
-          if (error) throw error
-          nextPointsRules = normalizePointsRules([...(pointRulesResult.data || []), ...missingPointRuleRows])
-        }
+        if (manualReviewsError) throw manualReviewsError
 
         if (!isMounted) return
-        setCategories(nextCategories)
-        setNameApprovals(normalizeNameApprovals(approvalsResult.data))
-        setPointEvents(normalizePointEvents(pointEventsResult.data))
-        setPointsRules(nextPointsRules)
-        setRewards(nextRewards)
-        setReviews(normalizeReviews(reviewsResult.data))
-        setStaff(nextStaff)
+        setBusinessProfile(profile)
+        setReviews(normalizeReviews((manualReviews || []).map(manualReviewToDashboardReview)))
         setConnectionStatus('connected')
         setTechnicalNotice('')
+        setCategories(defaultCategories)
+        setNameApprovals([])
+        setPointEvents([])
+        setPointsRules(defaultPointsRules)
+        setRewards(defaultRewards)
+        setStaff(defaultStaff)
       } catch (error) {
         if (!isMounted) return
-        console.error('[AURA dashboard] Data connection failed:', error)
+        console.error('[AURA dashboard] Account data connection failed:', error)
+        setBusinessProfile(null)
         setConnectionStatus('demo')
+        setReviews([])
         setTechnicalNotice(
-          'The app could not load the dashboard tables. It is using demo data in this browser. Run the SQL in SUPABASE_SETUP.md when you want shared data.',
+          'AURA could not load your account workspace. Run the business_profiles and manual_reviews SQL, then refresh.',
         )
       }
     }
 
-    loadSupabaseData()
+    loadAccountDashboard()
 
     return () => {
       isMounted = false
     }
-  }, [])
+  }, [user])
 
   useEffect(() => {
     localStorage.setItem(
@@ -426,21 +433,6 @@ export default function DashboardLayout() {
       JSON.stringify({ categories, nameApprovals, pointEvents, pointsRules, rewards, reviews, staff }),
     )
   }, [categories, nameApprovals, pointEvents, pointsRules, rewards, reviews, staff])
-
-  async function saveToSupabase(action) {
-    if (!supabase || connectionStatus !== 'connected') return
-
-    try {
-      const { error } = await action()
-      if (error) throw error
-    } catch (error) {
-      console.error('[AURA dashboard] Save failed:', error)
-      setConnectionStatus('demo')
-      setTechnicalNotice(
-        'A save failed against the shared tables. The dashboard has switched to demo data in this browser.',
-      )
-    }
-  }
 
   const overview = useMemo(() => {
     const reviewsThisMonth = reviews.filter((review) => isThisMonth(review.created_at))
@@ -474,18 +466,118 @@ export default function DashboardLayout() {
     [staff],
   )
 
+  async function getCurrentManualReviewUser() {
+    if (!supabase) {
+      throw createManualReviewError('no_logged_in_user', 'Supabase is not configured.')
+    }
+
+    const { data, error } = await supabase.auth.getUser()
+
+    if (error) {
+      console.error('[Manual review] Current user lookup failed:', error)
+      throw createManualReviewError(
+        isPolicyError(error) ? 'rls_policy_error' : 'no_logged_in_user',
+        'AURA could not confirm your logged-in user.',
+        error,
+      )
+    }
+
+    if (!data.user) {
+      throw createManualReviewError('no_logged_in_user', 'No logged-in user was found.')
+    }
+
+    return data.user
+  }
+
+  async function getBusinessProfileForManualReview(currentUser) {
+    const { data: existingProfile, error: profileLoadError } = await supabase
+      .from('business_profiles')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .maybeSingle()
+
+    if (profileLoadError) {
+      console.error('[Manual review] Business profile lookup failed:', profileLoadError)
+      throw createManualReviewError(
+        isPolicyError(profileLoadError) ? 'rls_policy_error' : 'missing_business_profile',
+        'AURA could not load your business profile.',
+        profileLoadError,
+      )
+    }
+
+    if (existingProfile) return existingProfile
+
+    const { data: createdProfile, error: profileCreateError } = await supabase
+      .from('business_profiles')
+      .insert({
+        business_name: 'My Business',
+        user_id: currentUser.id,
+      })
+      .select('*')
+      .single()
+
+    if (profileCreateError) {
+      console.error('[Manual review] Business profile creation failed:', profileCreateError)
+      throw createManualReviewError(
+        isPolicyError(profileCreateError) ? 'rls_policy_error' : 'missing_business_profile',
+        'AURA could not create your business profile.',
+        profileCreateError,
+      )
+    }
+
+    if (!createdProfile?.id) {
+      console.error('[Manual review] Business profile creation returned no profile row:', createdProfile)
+      throw createManualReviewError(
+        'missing_business_profile',
+        'AURA could not create your business profile.',
+      )
+    }
+
+    return createdProfile
+  }
+
   async function publishReview(form) {
+    const currentUser = await getCurrentManualReviewUser()
+    const profile = await getBusinessProfileForManualReview(currentUser)
     const rating = Number(form.rating)
-    const mentionedStaff = detectMentionedStaff(form.text, staff)
-    const newNames = detectUnresolvedStaffNames(form.text, staff)
-    const createdAt = new Date(`${form.date || new Date().toISOString().slice(0, 10)}T12:00:00`).toISOString()
+    const reviewText = form.text.trim()
+    const staffMember = form.staff_member?.trim() || ''
+    const detectedStaff = detectMentionedStaff(reviewText, staff)
+    const matchedStaffMember = staffMember ? findStaffByName(staff, staffMember)?.name : ''
+    const mentionedStaff = uniqueNames([...detectedStaff, matchedStaffMember].filter(Boolean))
+    const newNames = uniqueNames([
+      ...detectUnresolvedStaffNames(reviewText, staff),
+      staffMember && !matchedStaffMember ? staffMember : '',
+    ])
+
+    const { data: manualReview, error: manualReviewError } = await supabase
+      .from('manual_reviews')
+      .insert({
+        business_profile_id: profile.id,
+        customer_name: form.customer_name.trim(),
+        rating,
+        review_text: reviewText,
+        source: 'manual',
+        staff_member: staffMember || null,
+        user_id: currentUser.id,
+      })
+      .select('*')
+      .single()
+
+    if (manualReviewError) {
+      console.error('[Manual review] manual_reviews insert failed:', manualReviewError)
+      throw createManualReviewError(
+        isPolicyError(manualReviewError) ? 'rls_policy_error' : 'manual_reviews_insert_error',
+        'AURA could not save the manual review.',
+        manualReviewError,
+      )
+    }
+
+    console.log('[Manual review] manual_reviews insert succeeded:', manualReview)
+
     const review = {
-      id: createId('review'),
-      customer_name: form.customer_name.trim(),
-      rating,
-      text: form.text.trim(),
-      mentioned_staff: mentionedStaff,
-      created_at: createdAt,
+      ...manualReviewToDashboardReview(manualReview),
+      mentioned_staff: uniqueNames([...manualReviewToDashboardReview(manualReview).mentioned_staff, ...mentionedStaff]),
     }
     const nextApprovals = newNames.map((name) => ({
       id: createId('name'),
@@ -501,26 +593,11 @@ export default function DashboardLayout() {
     const allApprovals = normalizeNameApprovals([...nextApprovals, ...nameApprovals])
     const allPointEvents = normalizePointEvents([...nextPointEvents, ...pointEvents])
 
+    setBusinessProfile(profile)
     setReviews(nextReviews)
     setStaff(nextStaff)
     setNameApprovals(allApprovals)
     setPointEvents(allPointEvents)
-
-    await saveToSupabase(async () => {
-      const reviewResult = await supabase.from('reviews').insert(review)
-      if (reviewResult.error) return reviewResult
-
-      const staffResult = await supabase.from('staff').upsert(nextStaff)
-      if (staffResult.error) return staffResult
-
-      if (nextPointEvents.length) {
-        const pointEventsResult = await supabase.from('point_events').insert(nextPointEvents)
-        if (pointEventsResult.error) return pointEventsResult
-      }
-
-      if (nextApprovals.length) return supabase.from('unresolved_mentions').insert(nextApprovals)
-      return { error: null }
-    })
 
     return {
       matchedNames: mentionedStaff,
@@ -539,7 +616,6 @@ export default function DashboardLayout() {
     setStaff(nextStaff)
     if (!categories.includes(record.job_category)) setCategories((current) => [...current, record.job_category])
 
-    await saveToSupabase(() => supabase.from('staff').upsert(record))
     return record
   }
 
@@ -595,31 +671,10 @@ export default function DashboardLayout() {
       setCategories((current) => [...current, staffRecord.job_category])
     }
 
-    await saveToSupabase(async () => {
-      const staffResult = await supabase.from('staff').upsert(nextStaff)
-      if (staffResult.error) return staffResult
-
-      if (review) {
-        const updatedReview = nextReviews.find((item) => item.id === review.id)
-        const reviewResult = await supabase
-          .from('reviews')
-          .update({ mentioned_staff: updatedReview.mentioned_staff })
-          .eq('id', updatedReview.id)
-        if (reviewResult.error) return reviewResult
-      }
-
-      if (nextPointEvents.length) {
-        const pointEventsResult = await supabase.from('point_events').insert(nextPointEvents)
-        if (pointEventsResult.error) return pointEventsResult
-      }
-
-      return supabase.from('unresolved_mentions').delete().eq('id', approval.id)
-    })
   }
 
   async function ignoreName(approvalId) {
     setNameApprovals((current) => current.filter((approval) => approval.id !== approvalId))
-    await saveToSupabase(() => supabase.from('unresolved_mentions').delete().eq('id', approvalId))
   }
 
   async function addCategory(name) {
@@ -627,7 +682,6 @@ export default function DashboardLayout() {
     if (!cleanName || categories.includes(cleanName)) return
 
     setCategories((current) => [...current, cleanName])
-    await saveToSupabase(() => supabase.from('job_categories').upsert({ id: toSlug(cleanName), name: cleanName }))
   }
 
   async function saveReward(reward) {
@@ -644,12 +698,10 @@ export default function DashboardLayout() {
         nextReward,
       ]),
     )
-    await saveToSupabase(() => supabase.from('rewards').upsert(nextReward))
   }
 
   async function deleteReward(rewardId) {
     setRewards((current) => current.filter((reward) => reward.id !== rewardId))
-    await saveToSupabase(() => supabase.from('rewards').delete().eq('id', rewardId))
   }
 
   async function updatePointsRule(rating, points) {
@@ -661,16 +713,22 @@ export default function DashboardLayout() {
     })
 
     setPointsRules(nextRules)
+  }
 
-    if (normalisedRating >= 4) {
-      await saveToSupabase(() =>
-        supabase.from('point_rules').upsert({
-          rating: normalisedRating,
-          points: normalisedPoints,
-          updated_at: new Date().toISOString(),
-        }),
-      )
+  async function handleSignOut() {
+    if (!supabase) return
+
+    setIsSigningOut(true)
+    const { error } = await supabase.auth.signOut()
+    setIsSigningOut(false)
+
+    if (error) {
+      console.error('[Supabase Auth] Sign out failed:', error)
+      setTechnicalNotice('We could not log you out just now. Please try again.')
+      return
     }
+
+    navigate('/login', { replace: true })
   }
 
   const dashboard = {
@@ -683,6 +741,11 @@ export default function DashboardLayout() {
       publishReview,
       saveReward,
       updatePointsRule,
+    },
+    account: {
+      businessProfile,
+      email: user?.email || '',
+      user,
     },
     categories,
     connectionStatus,
@@ -730,6 +793,23 @@ export default function DashboardLayout() {
                 : 'mx-auto max-w-7xl px-5 py-6 sm:px-8 lg:px-10 lg:py-8'
             }
           >
+            <div className="mb-6 flex flex-col justify-between gap-3 rounded-[1.35rem] border border-white/10 bg-white/[0.055] p-4 shadow-[0_20px_80px_rgba(0,0,0,0.18)] backdrop-blur-xl sm:flex-row sm:items-center">
+              <div>
+                <p className="text-sm font-black text-cyan-100">
+                  {businessProfile?.business_name || 'AURA workspace'}
+                </p>
+                <p className="mt-1 text-xs font-semibold text-slate-400">{user?.email}</p>
+              </div>
+              <button
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/8 px-4 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-white/12 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isSigningOut}
+                onClick={handleSignOut}
+                type="button"
+              >
+                <LogOut size={17} />
+                {isSigningOut ? 'Logging out...' : 'Log out'}
+              </button>
+            </div>
             <Outlet context={dashboard} />
           </section>
         </div>

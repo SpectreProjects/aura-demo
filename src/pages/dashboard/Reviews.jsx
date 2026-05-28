@@ -7,24 +7,51 @@ import { useDashboard } from './useDashboard'
 const initialForm = {
   customer_name: '',
   rating: 5,
+  staff_member: '',
   text: '',
 }
 
+const manualReviewErrorMessages = {
+  manual_reviews_insert_error:
+    'AURA could not save the review to manual_reviews. Please check the table columns and try again.',
+  missing_business_profile:
+    'AURA could not find or create your business profile. Please check the business_profiles table and try again.',
+  no_logged_in_user: 'AURA could not find a logged-in user. Please log out, log back in and try again.',
+  rls_policy_error:
+    'Supabase blocked the save because of an RLS or policy issue. Please check policies for business_profiles and manual_reviews.',
+}
+
 export default function Reviews() {
-  const { actions, categories, nameApprovals, reviews } = useDashboard()
+  const { account, actions, categories, nameApprovals, reviews } = useDashboard()
   const [form, setForm] = useState(initialForm)
+  const [isPublishing, setIsPublishing] = useState(false)
+  const [publishError, setPublishError] = useState('')
   const [publishResult, setPublishResult] = useState(null)
   const [selectedApproval, setSelectedApproval] = useState(null)
 
   function updateField(field, value) {
     setForm((current) => ({ ...current, [field]: value }))
+    setPublishError('')
   }
 
   async function handlePublish(event) {
     event.preventDefault()
-    const result = await actions.publishReview(form)
-    setPublishResult(result)
-    setForm(initialForm)
+    setIsPublishing(true)
+    setPublishError('')
+    setPublishResult(null)
+
+    try {
+      const result = await actions.publishReview(form)
+      setPublishResult(result)
+      setForm(initialForm)
+    } catch (error) {
+      console.error('[Manual review] Publish failed:', error)
+      setPublishError(
+        manualReviewErrorMessages[error.type] || 'We could not save that review just now. Please try again.',
+      )
+    } finally {
+      setIsPublishing(false)
+    }
   }
 
   async function handleApproveStaff(staffForm) {
@@ -44,7 +71,7 @@ export default function Reviews() {
             Create test reviews and recognise great service.
           </h2>
           <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
-            Publish a manual review, find staff names and award points for 4 and 5 star mentions.
+            Publish a manual review for {account?.businessProfile?.business_name || 'your business'}, find staff names and award points for 4 and 5 star mentions.
           </p>
         </div>
         <div className="rounded-3xl border border-white/10 bg-[#050816]/70 p-4">
@@ -101,8 +128,25 @@ export default function Reviews() {
             value={form.text}
           />
 
-          <button className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-4 text-sm font-black text-slate-950 transition hover:-translate-y-0.5 hover:bg-slate-200" type="submit">
-            Publish review
+          <input
+            className="aura-field mt-4"
+            onChange={(event) => updateField('staff_member', event.target.value)}
+            placeholder="Staff member mentioned (optional)"
+            value={form.staff_member}
+          />
+
+          {publishError && (
+            <p className="mt-4 rounded-2xl border border-rose-300/20 bg-rose-400/10 px-4 py-3 text-sm font-semibold text-rose-100">
+              {publishError}
+            </p>
+          )}
+
+          <button
+            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-4 text-sm font-black text-slate-950 transition hover:-translate-y-0.5 hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isPublishing}
+            type="submit"
+          >
+            {isPublishing ? 'Saving review...' : 'Publish review'}
             <SearchCheck size={18} />
           </button>
         </form>
