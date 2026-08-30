@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import {
   ArrowRight,
@@ -16,6 +16,8 @@ import { useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabaseClient'
 
 const DEV_ACCOUNT_EMAIL = 'info@spectreprojects.co.uk'
+const DEV_REDIRECT_URL = 'https://aurareviewplatform.com/dashboard'
+const DEV_SIGN_IN_COOLDOWN_SECONDS = 60
 
 const fadeUp = {
   hidden: { opacity: 0, y: 22 },
@@ -85,8 +87,19 @@ export default function Landing() {
   const [waitlistMessage, setWaitlistMessage] = useState('')
   const [devSignInStatus, setDevSignInStatus] = useState('idle')
   const [devSignInMessage, setDevSignInMessage] = useState('')
+  const [devSignInCooldown, setDevSignInCooldown] = useState(0)
 
   const isSubmittingWaitlist = waitlistStatus === 'loading'
+
+  useEffect(() => {
+    if (devSignInCooldown <= 0) return undefined
+
+    const timer = window.setInterval(() => {
+      setDevSignInCooldown((seconds) => Math.max(0, seconds - 1))
+    }, 1000)
+
+    return () => window.clearInterval(timer)
+  }, [devSignInCooldown])
 
   function handleWaitlistChange(event) {
     const { name, value } = event.target
@@ -146,7 +159,7 @@ export default function Landing() {
   }
 
   async function handleDevSignIn() {
-    if (devSignInStatus === 'loading') return
+    if (devSignInStatus === 'loading' || devSignInCooldown > 0) return
 
     if (session?.user?.email?.toLowerCase() === DEV_ACCOUNT_EMAIL) {
       navigate('/dashboard')
@@ -165,20 +178,35 @@ export default function Landing() {
     const { error } = await supabase.auth.signInWithOtp({
       email: DEV_ACCOUNT_EMAIL,
       options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`,
+        emailRedirectTo: DEV_REDIRECT_URL,
         shouldCreateUser: false,
       },
     })
 
     if (error) {
       console.error('[Supabase Auth] Dev sign in failed:', error)
+
+      const retryMatch = error.message?.match(/after\s+(\d+)\s+seconds?/i)
+      if (error.status === 429 || error.code === 'over_email_send_rate_limit' || retryMatch) {
+        const retrySeconds = Number(retryMatch?.[1]) || DEV_SIGN_IN_COOLDOWN_SECONDS
+        setDevSignInCooldown(retrySeconds)
+        setDevSignInStatus('success')
+        setDevSignInMessage(
+          `A secure sign-in link was already sent to ${DEV_ACCOUNT_EMAIL}. Check the inbox, or resend when the timer ends.`,
+        )
+        return
+      }
+
       setDevSignInStatus('error')
       setDevSignInMessage('Could not send the secure sign-in link. Please try again.')
       return
     }
 
+    setDevSignInCooldown(DEV_SIGN_IN_COOLDOWN_SECONDS)
     setDevSignInStatus('success')
-    setDevSignInMessage(`Secure sign-in link sent to ${DEV_ACCOUNT_EMAIL}.`)
+    setDevSignInMessage(
+      `Secure sign-in link sent to ${DEV_ACCOUNT_EMAIL}. Open that email and click the link to enter the dashboard.`,
+    )
   }
 
   return (
@@ -336,11 +364,17 @@ export default function Landing() {
             <span aria-hidden="true" className="text-slate-700">·</span>
             <button
               className="rounded-lg px-2 py-1 transition hover:text-slate-300 focus:outline-none focus:ring-2 focus:ring-violet-300/50 disabled:cursor-wait disabled:opacity-60"
-              disabled={devSignInStatus === 'loading'}
+              disabled={devSignInStatus === 'loading' || devSignInCooldown > 0}
               onClick={handleDevSignIn}
               type="button"
             >
-              {devSignInStatus === 'loading' ? 'Sending secure link…' : 'Dev sign in'}
+              {devSignInStatus === 'loading'
+                ? 'Sending secure link…'
+                : devSignInCooldown > 0
+                  ? `Check inbox (${devSignInCooldown}s)`
+                  : devSignInStatus === 'success'
+                    ? 'Resend dev link'
+                    : 'Dev sign in'}
             </button>
           </div>
           {devSignInMessage && (
