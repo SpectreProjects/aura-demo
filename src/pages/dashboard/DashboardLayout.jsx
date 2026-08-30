@@ -13,6 +13,7 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-do
 import {
   defaultCategories,
   defaultPointsRules,
+  defaultReviews,
   defaultRewards,
   defaultStaff,
 } from '../../data/mvpData'
@@ -28,6 +29,7 @@ import {
 } from '../../utils/mvpRecognition'
 
 const STORAGE_KEY = 'aura-dashboard-state-v1'
+const DEV_ACCOUNT_EMAIL = 'info@spectreprojects.co.uk'
 
 const navItems = [
   { end: true, href: '/dashboard', icon: BarChart3, label: 'Overview' },
@@ -212,6 +214,25 @@ function createPointEventsForReview(review, staff, pointsRules) {
   })
 }
 
+function buildDemoDashboardState(reviews) {
+  let demoStaff = normalizeStaff(defaultStaff)
+  const demoPointEvents = []
+
+  reviews
+    .slice()
+    .reverse()
+    .forEach((review) => {
+      demoStaff = normalizeStaff(applyReviewToStaff(demoStaff, review, defaultPointsRules))
+      demoPointEvents.push(...createPointEventsForReview(review, demoStaff, defaultPointsRules))
+    })
+
+  return {
+    pointEvents: normalizePointEvents(demoPointEvents),
+    reviews: normalizeReviews(reviews),
+    staff: demoStaff,
+  }
+}
+
 function readLocalState() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY))
@@ -363,7 +384,10 @@ export default function DashboardLayout() {
       setConnectionStatus('checking')
 
       try {
-        const fallbackBusinessName = user.user_metadata?.business_name || 'My Business'
+        const isDevAccount = user.email?.toLowerCase() === DEV_ACCOUNT_EMAIL
+        const fallbackBusinessName = isDevAccount
+          ? 'Hilton Glasgow Demo'
+          : user.user_metadata?.business_name || 'My Business'
         const { data: existingProfile, error: profileLoadError } = await supabase
           .from('business_profiles')
           .select('*')
@@ -397,17 +421,23 @@ export default function DashboardLayout() {
 
         if (manualReviewsError) throw manualReviewsError
 
+        const accountReviews = normalizeReviews((manualReviews || []).map(manualReviewToDashboardReview))
+        const visibleReviews = isDevAccount
+          ? normalizeReviews([...accountReviews, ...defaultReviews])
+          : accountReviews
+        const demoState = isDevAccount ? buildDemoDashboardState(visibleReviews) : null
+
         if (!isMounted) return
         setBusinessProfile(profile)
-        setReviews(normalizeReviews((manualReviews || []).map(manualReviewToDashboardReview)))
+        setReviews(visibleReviews)
         setConnectionStatus('connected')
         setTechnicalNotice('')
         setCategories(defaultCategories)
         setNameApprovals([])
-        setPointEvents([])
+        setPointEvents(demoState?.pointEvents || [])
         setPointsRules(defaultPointsRules)
         setRewards(defaultRewards)
-        setStaff(defaultStaff)
+        setStaff(demoState?.staff || defaultStaff)
       } catch (error) {
         if (!isMounted) return
         console.error('[AURA dashboard] Account data connection failed:', error)

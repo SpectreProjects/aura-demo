@@ -111,4 +111,67 @@ export const defaultRewards = [
   },
 ]
 
-export const defaultReviews = []
+const demoReviewDate = (daysAgo) => new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString()
+
+export const defaultReviews = [
+  {
+    id: 'demo-review-001',
+    customer_name: 'Sarah M',
+    rating: 5,
+    text: 'Amazing stay. Caitlin on reception was brilliant and made everything so easy.',
+    mentioned_staff: ['Caitlin'],
+    staff_member: 'Caitlin',
+    source: 'google-demo',
+    created_at: demoReviewDate(1),
+  },
+  {
+    id: 'demo-review-002',
+    customer_name: 'James R',
+    rating: 4,
+    text: 'Lovely hotel and great service from Daniel at breakfast. The room was clean and comfortable.',
+    mentioned_staff: ['Daniel'],
+    staff_member: 'Daniel',
+    source: 'google-demo',
+    created_at: demoReviewDate(3),
+  },
+  {
+    id: 'demo-review-003',
+    customer_name: 'Priya K',
+    rating: 5,
+    text: 'Emma was so helpful during check-in. Really friendly team and a great location.',
+    mentioned_staff: ['Emma'],
+    staff_member: 'Emma',
+    source: 'google-demo',
+    created_at: demoReviewDate(5),
+  },
+  {
+    id: 'demo-review-004',
+    customer_name: 'Mark T',
+    rating: 2,
+    text: 'The room was not ready on time and nobody explained what was happening. Disappointing.',
+    mentioned_staff: [],
+    staff_member: '',
+    source: 'google-demo',
+    created_at: demoReviewDate(8),
+  },
+  {
+    id: 'demo-review-005',
+    customer_name: 'Fiona L',
+    rating: 1,
+    text: 'Poor experience overall. We had to wait too long and the issue was not resolved.',
+    mentioned_staff: [],
+    staff_member: '',
+    source: 'google-demo',
+    created_at: demoReviewDate(11),
+  },
+  {
+    id: 'demo-review-006',
+    customer_name: 'Andrew B',
+    rating: 5,
+    text: 'Sophie and John were both excellent. Really welcoming and professional throughout our stay.',
+    mentioned_staff: ['Sophie', 'John'],
+    staff_member: 'Sophie',
+    source: 'google-demo',
+    created_at: demoReviewDate(14),
+  },
+]

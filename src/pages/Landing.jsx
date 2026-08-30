@@ -11,8 +11,11 @@ import {
   TrendingUp,
   UsersRound,
 } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabaseClient'
+
+const DEV_ACCOUNT_EMAIL = 'info@spectreprojects.co.uk'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 22 },
@@ -75,9 +78,13 @@ async function insertWaitlistSignup(payload) {
 }
 
 export default function Landing() {
+  const navigate = useNavigate()
+  const { session } = useAuth()
   const [waitlistForm, setWaitlistForm] = useState(initialWaitlistForm)
   const [waitlistStatus, setWaitlistStatus] = useState('idle')
   const [waitlistMessage, setWaitlistMessage] = useState('')
+  const [devSignInStatus, setDevSignInStatus] = useState('idle')
+  const [devSignInMessage, setDevSignInMessage] = useState('')
 
   const isSubmittingWaitlist = waitlistStatus === 'loading'
 
@@ -136,6 +143,42 @@ export default function Landing() {
       setWaitlistStatus('error')
       setWaitlistMessage("We couldn't add you to the waitlist just now. Please try again in a moment.")
     }
+  }
+
+  async function handleDevSignIn() {
+    if (devSignInStatus === 'loading') return
+
+    if (session?.user?.email?.toLowerCase() === DEV_ACCOUNT_EMAIL) {
+      navigate('/dashboard')
+      return
+    }
+
+    if (!supabase) {
+      setDevSignInStatus('error')
+      setDevSignInMessage('Dev sign in is unavailable right now.')
+      return
+    }
+
+    setDevSignInStatus('loading')
+    setDevSignInMessage('')
+
+    const { error } = await supabase.auth.signInWithOtp({
+      email: DEV_ACCOUNT_EMAIL,
+      options: {
+        emailRedirectTo: `${window.location.origin}/dashboard`,
+        shouldCreateUser: false,
+      },
+    })
+
+    if (error) {
+      console.error('[Supabase Auth] Dev sign in failed:', error)
+      setDevSignInStatus('error')
+      setDevSignInMessage('Could not send the secure sign-in link. Please try again.')
+      return
+    }
+
+    setDevSignInStatus('success')
+    setDevSignInMessage(`Secure sign-in link sent to ${DEV_ACCOUNT_EMAIL}.`)
   }
 
   return (
@@ -282,13 +325,34 @@ export default function Landing() {
           </motion.div>
         </section>
 
-        <footer className="mx-auto flex w-full max-w-7xl justify-center px-5 pb-5 sm:px-8">
-          <Link
-            className="rounded-lg px-2 py-1 text-xs font-semibold text-slate-500 transition hover:text-slate-300 focus:outline-none focus:ring-2 focus:ring-violet-300/50"
-            to="/dashboard"
-          >
-            Privacy Policy
-          </Link>
+        <footer className="mx-auto flex w-full max-w-7xl flex-col items-center justify-center gap-1 px-5 pb-5 sm:px-8">
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+            <Link
+              className="rounded-lg px-2 py-1 transition hover:text-slate-300 focus:outline-none focus:ring-2 focus:ring-violet-300/50"
+              to="/"
+            >
+              Privacy Policy
+            </Link>
+            <span aria-hidden="true" className="text-slate-700">·</span>
+            <button
+              className="rounded-lg px-2 py-1 transition hover:text-slate-300 focus:outline-none focus:ring-2 focus:ring-violet-300/50 disabled:cursor-wait disabled:opacity-60"
+              disabled={devSignInStatus === 'loading'}
+              onClick={handleDevSignIn}
+              type="button"
+            >
+              {devSignInStatus === 'loading' ? 'Sending secure link…' : 'Dev sign in'}
+            </button>
+          </div>
+          {devSignInMessage && (
+            <p
+              className={`text-center text-[11px] font-semibold ${
+                devSignInStatus === 'error' ? 'text-rose-300' : 'text-slate-400'
+              }`}
+              role={devSignInStatus === 'error' ? 'alert' : 'status'}
+            >
+              {devSignInMessage}
+            </p>
+          )}
         </footer>
       </div>
     </main>
