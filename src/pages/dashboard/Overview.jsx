@@ -8,6 +8,7 @@ import {
   MessageSquareText,
   Plus,
   SearchCheck,
+  Sparkles,
   Star,
   Trophy,
   UserPlus,
@@ -49,6 +50,7 @@ const accentStyles = {
 
 const sparklineSets = {
   reviews: [15, 18, 22, 21, 27, 34, 31, 40, 37, 42, 39, 47],
+  replies: [10, 14, 17, 21, 25, 24, 30, 34, 37, 39, 43, 48],
   mentions: [10, 12, 11, 18, 24, 28, 29, 23, 27, 31, 38, 45],
   approvals: [4, 5, 8, 6, 7, 6, 9, 8, 11, 10, 12, 16],
   points: [12, 18, 18, 24, 22, 20, 27, 32, 30, 36, 41, 44],
@@ -202,6 +204,46 @@ function MetricCard({ accent, comparison, icon: Icon, label, sparkline, value })
         <p className="text-xs font-bold text-slate-300">{label}</p>
         <p className="mt-2 text-3xl font-black leading-none tracking-tight text-white">{value}</p>
         <p className={`mt-3 text-xs font-black ${style.text}`}>{comparison}</p>
+      </div>
+    </article>
+  )
+}
+
+function TopPerformersMetricCard({ people }) {
+  const style = accentStyles.violet
+
+  return (
+    <article className={`relative h-full overflow-hidden rounded-xl border border-white/[0.07] bg-[#0b0a0e] p-4 ${style.glow}`}>
+      <div
+        className="pointer-events-none absolute -right-10 top-4 h-28 w-28 rounded-full bg-violet-500 opacity-20 blur-3xl"
+      />
+      <div className="relative flex items-center justify-between gap-4">
+        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border ${style.icon}`}>
+          <Trophy size={18} />
+        </span>
+        <span className="text-[10px] font-black uppercase tracking-[0.14em] text-violet-200/70">
+          This month
+        </span>
+      </div>
+      <div className="relative mt-4">
+        <p className="text-xs font-bold text-slate-300">Top performers</p>
+        {people.length ? (
+          <ol className="mt-2 space-y-1.5">
+            {people.map((person, index) => (
+              <li className="flex items-center justify-between gap-3 text-sm" key={person.id}>
+                <span className="min-w-0 truncate font-black text-white">
+                  <span className="mr-2 text-violet-300">{index + 1}</span>
+                  {person.name}
+                </span>
+                <span className="shrink-0 text-xs font-black text-violet-200">
+                  {Number(person.points || 0)} pts
+                </span>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p className="mt-3 text-xs font-semibold text-slate-500">No team activity yet</p>
+        )}
       </div>
     </article>
   )
@@ -650,21 +692,14 @@ export default function Overview() {
           sparkline={sparklineSets.mentions}
           value={periodOverview.totalMentions}
         />
+        <TopPerformersMetricCard people={topStaff} />
         <MetricCard
           accent="violet"
-          comparison="New names found"
-          icon={UserPlus}
-          label="Pending approvals"
-          sparkline={sparklineSets.approvals}
-          value={periodOverview.nameApprovals}
-        />
-        <MetricCard
-          accent="amber"
-          comparison={comparisonLabel('+22%', activePeriod)}
-          icon={Star}
-          label={`Points ${periodLabel(activePeriod)}`}
-          sparkline={sparklineSets.points}
-          value={periodOverview.points}
+          comparison="Generated automatically"
+          icon={Sparkles}
+          label={`AURA replies ${periodLabel(activePeriod)}`}
+          sparkline={sparklineSets.replies}
+          value={periodOverview.reviews}
         />
       </section>
 
