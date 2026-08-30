@@ -11,7 +11,7 @@ import { AuthProvider, useAuth } from './lib/AuthContext'
 
 function AuthLoadingScreen() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#030504] px-5 text-white">
+    <main className="flex min-h-screen items-center justify-center bg-[#000000] px-5 text-white">
       <div className="rounded-3xl border border-white/10 bg-white/[0.06] px-5 py-4 text-sm font-bold text-slate-200 shadow-[0_24px_90px_rgba(0,0,0,0.26)] backdrop-blur-xl">
         Loading AURA...
       </div>

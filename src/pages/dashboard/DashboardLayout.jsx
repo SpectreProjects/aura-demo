@@ -243,7 +243,7 @@ function Sidebar({ nameApprovalsCount }) {
   return (
     <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-white/[0.07] bg-[#070908]/95 px-4 py-5 text-white backdrop-blur-2xl lg:flex lg:flex-col">
       <Link to="/" className="mb-9 flex items-center gap-3 rounded-xl px-2">
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-200/20 bg-emerald-300 text-[#06110c] shadow-[0_0_36px_rgba(110,231,183,0.24)]">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-violet-200/20 bg-violet-300 text-[#100722] shadow-[0_0_36px_rgba(167,139,250,0.24)]">
           <Sparkles size={20} />
         </span>
         <span>
@@ -256,9 +256,9 @@ function Sidebar({ nameApprovalsCount }) {
         {navItems.map((item) => (
           <NavLink
             className={({ isActive }) =>
-              `group flex items-center gap-3 rounded-xl border px-3 py-2.5 text-sm font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-emerald-300/45 ${
+              `group flex items-center gap-3 rounded-xl border px-3 py-2.5 text-sm font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-violet-300/45 ${
                 isActive
-                  ? 'border-emerald-300/20 bg-emerald-300/10 text-emerald-200 shadow-[0_0_32px_rgba(110,231,183,0.08)]'
+                  ? 'border-violet-300/20 bg-violet-300/10 text-violet-200 shadow-[0_0_32px_rgba(167,139,250,0.08)]'
                   : 'border-transparent text-slate-400 hover:border-white/[0.06] hover:bg-white/[0.035] hover:text-white'
               }`
             }
@@ -271,7 +271,7 @@ function Sidebar({ nameApprovalsCount }) {
             </span>
             {item.label}
             {item.href === '/dashboard/reviews' && nameApprovalsCount > 0 && (
-              <span className="ml-auto rounded-full bg-emerald-300 px-2 py-0.5 text-xs font-black text-[#06110c]">
+              <span className="ml-auto rounded-full bg-violet-300 px-2 py-0.5 text-xs font-black text-[#100722]">
                 {nameApprovalsCount}
               </span>
             )}
@@ -280,8 +280,8 @@ function Sidebar({ nameApprovalsCount }) {
       </nav>
 
       <div className="mt-auto rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4">
-        <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-emerald-200">
-          <span className="h-2 w-2 rounded-full bg-emerald-300 shadow-[0_0_14px_rgba(110,231,183,0.85)]" />
+        <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-violet-200">
+          <span className="h-2 w-2 rounded-full bg-violet-300 shadow-[0_0_14px_rgba(167,139,250,0.85)]" />
           Workspace active
         </div>
         <p className="mt-2 text-xs leading-5 text-slate-500">Review monitoring will appear here once Google is connected.</p>
@@ -296,8 +296,8 @@ function MobileNav({ nameApprovalsCount }) {
       {navItems.map((item) => (
         <NavLink
           className={({ isActive }) =>
-            `relative flex flex-col items-center justify-center gap-1 rounded-2xl py-2 text-[10px] font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-emerald-300/45 ${
-              isActive ? 'bg-emerald-300 text-[#06110c]' : 'text-slate-400'
+            `relative flex flex-col items-center justify-center gap-1 rounded-2xl py-2 text-[10px] font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-violet-300/45 ${
+              isActive ? 'bg-violet-300 text-[#100722]' : 'text-slate-400'
             }`
           }
           end={item.end}
@@ -307,7 +307,7 @@ function MobileNav({ nameApprovalsCount }) {
           <item.icon size={17} />
           {item.label}
           {item.href === '/dashboard/reviews' && nameApprovalsCount > 0 && (
-            <span className="absolute right-2 top-1 h-2 w-2 rounded-full bg-emerald-300" />
+            <span className="absolute right-2 top-1 h-2 w-2 rounded-full bg-violet-300" />
           )}
         </NavLink>
       ))}
@@ -613,17 +613,16 @@ export default function DashboardLayout() {
   }
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#030504] text-white">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_38%_-12%,rgba(110,231,183,0.10),transparent_34%),radial-gradient(circle_at_92%_18%,rgba(75,192,151,0.055),transparent_24%),linear-gradient(rgba(255,255,255,0.014)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.014)_1px,transparent_1px)] bg-[size:auto,auto,84px_84px,84px_84px]" />
+    <main className="min-h-screen overflow-hidden bg-[#000000] text-white">
       <div className="relative flex">
         <Sidebar nameApprovalsCount={nameApprovals.length} />
 
         <div className="min-w-0 flex-1 pb-28 lg:pb-0">
           {!isOverviewRoute && (
-            <header className="sticky top-0 z-20 border-b border-white/[0.07] bg-[#030504]/82 px-5 py-4 backdrop-blur-2xl sm:px-8 lg:px-10">
+            <header className="sticky top-0 z-20 border-b border-white/[0.07] bg-[#000000]/82 px-5 py-4 backdrop-blur-2xl sm:px-8 lg:px-10">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-200">Recognition workspace</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-violet-200">Recognition workspace</p>
                   <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl">
                     AURA Command Centre
                   </h1>
@@ -645,15 +644,15 @@ export default function DashboardLayout() {
                 : 'mx-auto max-w-7xl px-5 py-6 sm:px-8 lg:px-10 lg:py-8'
             }
           >
-            <div className="mb-6 flex flex-col justify-between gap-3 rounded-2xl border border-white/[0.07] bg-[#0a0d0b]/90 p-4 shadow-[0_24px_90px_rgba(0,0,0,0.24)] backdrop-blur-xl sm:flex-row sm:items-center">
+            <div className="mb-6 flex flex-col justify-between gap-3 rounded-2xl border border-white/[0.07] bg-[#0b0a0e]/90 p-4 shadow-[0_24px_90px_rgba(0,0,0,0.24)] backdrop-blur-xl sm:flex-row sm:items-center">
               <div>
-                <p className="text-sm font-black text-emerald-200">
+                <p className="text-sm font-black text-violet-200">
                   {businessProfile?.business_name || 'AURA workspace'}
                 </p>
                 <p className="mt-1 text-xs font-semibold text-slate-400">{user?.email}</p>
               </div>
               <button
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.035] px-4 py-2.5 text-sm font-bold text-slate-300 transition hover:border-emerald-300/20 hover:bg-emerald-300/[0.06] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.035] px-4 py-2.5 text-sm font-bold text-slate-300 transition hover:border-violet-300/20 hover:bg-violet-300/[0.06] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={isSigningOut}
                 onClick={handleSignOut}
                 type="button"

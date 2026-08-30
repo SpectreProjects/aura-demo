@@ -21,28 +21,28 @@ const periodOptions = ['Day', 'Week', 'Month', 'Quarter', 'Year']
 
 const accentStyles = {
   cyan: {
-    glow: 'shadow-[0_0_52px_rgba(110,231,183,0.10)]',
-    icon: 'border-emerald-300/15 bg-emerald-300/[0.07] text-emerald-200',
-    text: 'text-emerald-200',
-    stroke: '#6ee7b7',
+    glow: 'shadow-[0_0_52px_rgba(167,139,250,0.10)]',
+    icon: 'border-violet-300/15 bg-violet-300/[0.07] text-violet-200',
+    text: 'text-violet-200',
+    stroke: '#c4b5fd',
   },
   emerald: {
-    glow: 'shadow-[0_0_52px_rgba(110,231,183,0.10)]',
-    icon: 'border-emerald-300/15 bg-emerald-300/[0.07] text-emerald-200',
-    text: 'text-emerald-200',
-    stroke: '#7be7c1',
+    glow: 'shadow-[0_0_52px_rgba(167,139,250,0.10)]',
+    icon: 'border-violet-300/15 bg-violet-300/[0.07] text-violet-200',
+    text: 'text-violet-200',
+    stroke: '#a78bfa',
   },
   violet: {
-    glow: 'shadow-[0_0_52px_rgba(110,231,183,0.08)]',
-    icon: 'border-emerald-300/15 bg-emerald-300/[0.07] text-emerald-200',
-    text: 'text-emerald-200',
-    stroke: '#57cfa5',
+    glow: 'shadow-[0_0_52px_rgba(167,139,250,0.08)]',
+    icon: 'border-violet-300/15 bg-violet-300/[0.07] text-violet-200',
+    text: 'text-violet-200',
+    stroke: '#8b5cf6',
   },
   amber: {
-    glow: 'shadow-[0_0_52px_rgba(110,231,183,0.08)]',
-    icon: 'border-emerald-300/15 bg-emerald-300/[0.07] text-emerald-200',
-    text: 'text-emerald-200',
-    stroke: '#43b990',
+    glow: 'shadow-[0_0_52px_rgba(167,139,250,0.08)]',
+    icon: 'border-violet-300/15 bg-violet-300/[0.07] text-violet-200',
+    text: 'text-violet-200',
+    stroke: '#7c3aed',
   },
 }
 
@@ -186,7 +186,7 @@ function MetricCard({ accent, comparison, icon: Icon, label, sparkline, value })
   const style = accentStyles[accent]
 
   return (
-    <article className={`relative h-full overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0a0d0b]/90 p-5 ${style.glow}`}>
+    <article className={`relative h-full overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0b0a0e]/90 p-5 ${style.glow}`}>
       <div
         className="pointer-events-none absolute -right-10 top-4 h-28 w-28 rounded-full opacity-30 blur-3xl"
         style={{ backgroundColor: style.stroke }}
@@ -210,7 +210,7 @@ function Panel({ action, children, icon: Icon, iconAccent = 'cyan', subtitle, ti
   const style = accentStyles[iconAccent]
 
   return (
-    <section className="rounded-2xl border border-white/[0.07] bg-[#0a0d0b]/90 p-5 shadow-[0_24px_90px_rgba(0,0,0,0.24)] backdrop-blur-xl">
+    <section className="rounded-2xl border border-white/[0.07] bg-[#0b0a0e]/90 p-5 shadow-[0_24px_90px_rgba(0,0,0,0.24)] backdrop-blur-xl">
       <div className="mb-5 flex items-start justify-between gap-4">
         <div className="flex min-w-0 items-start gap-3">
           {Icon && (
@@ -235,7 +235,7 @@ function DonutChart({ counts }) {
   const safeTotal = total || 1
   const positivePercent = Math.round((counts.positive / safeTotal) * 100)
   const segments = [
-    { color: '#10b981', value: counts.positive },
+    { color: '#8b5cf6', value: counts.positive },
     { color: '#f59e0b', value: counts.neutral },
     { color: '#ef4444', value: counts.negative },
   ]
@@ -277,7 +277,7 @@ function DonutChart({ counts }) {
 
       <div className="space-y-5">
         {[
-          ['Positive', counts.positive, positivePercent, 'bg-emerald-400'],
+          ['Positive', counts.positive, positivePercent, 'bg-violet-400'],
           ['Neutral', counts.neutral, Math.round((counts.neutral / safeTotal) * 100), 'bg-amber-400'],
           ['Negative', counts.negative, Math.round((counts.negative / safeTotal) * 100), 'bg-rose-400'],
         ].map(([label, count, percent, dotClass]) => (
@@ -299,7 +299,7 @@ function DonutChart({ counts }) {
 function ActionButton({ children, to }) {
   return (
     <Link
-      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-white/[0.07] bg-white/[0.035] px-4 text-sm font-black text-slate-200 transition hover:-translate-y-0.5 hover:border-emerald-300/25 hover:bg-emerald-300/[0.06] hover:text-white"
+      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-white/[0.07] bg-white/[0.035] px-4 text-sm font-black text-slate-200 transition hover:-translate-y-0.5 hover:border-violet-300/25 hover:bg-violet-300/[0.06] hover:text-white"
       to={to}
     >
       {children}
@@ -318,11 +318,11 @@ function TopPerformerCard({ person, rank }) {
   return (
     <article
       className={`rounded-2xl border bg-[#070a08]/88 p-5 text-center ${
-        rank === 0 ? 'border-emerald-300/30 shadow-[0_0_42px_rgba(110,231,183,0.10)]' : 'border-white/[0.07]'
+        rank === 0 ? 'border-violet-300/30 shadow-[0_0_42px_rgba(167,139,250,0.10)]' : 'border-white/[0.07]'
       }`}
     >
       <div className="mb-4 flex items-center justify-between">
-        <span className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-black text-[#06110c] ${rank === 0 ? 'bg-emerald-300' : 'bg-emerald-100/70'}`}>
+        <span className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-black text-[#100722] ${rank === 0 ? 'bg-violet-300' : 'bg-violet-100/70'}`}>
           {rank + 1}
         </span>
         <span className={`rounded-full border px-3 py-1 text-xs font-black ${style.icon}`}>
@@ -377,11 +377,11 @@ function PendingApprovalRow({ approval }) {
     <div className="grid gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-4 sm:grid-cols-[12rem_1fr_auto] sm:items-center">
       <div>
         <p className="text-base font-black text-white">{approval.name}</p>
-        <p className="mt-1 text-sm font-bold text-emerald-200">{approval.count} mention{approval.count === 1 ? '' : 's'}</p>
+        <p className="mt-1 text-sm font-bold text-violet-200">{approval.count} mention{approval.count === 1 ? '' : 's'}</p>
       </div>
       <p className="line-clamp-2 text-sm font-semibold leading-6 text-slate-400">"{approval.excerpt}"</p>
       <Link
-        className="inline-flex h-11 items-center justify-center rounded-xl border border-emerald-300/15 bg-emerald-300/[0.07] px-5 text-sm font-black text-emerald-100 transition hover:bg-emerald-300/[0.12]"
+        className="inline-flex h-11 items-center justify-center rounded-xl border border-violet-300/15 bg-violet-300/[0.07] px-5 text-sm font-black text-violet-100 transition hover:bg-violet-300/[0.12]"
         to="/dashboard/reviews"
       >
         Review
@@ -478,7 +478,7 @@ export default function Overview() {
   ).slice(0, 3)
   const activityRows = [
     ...periodPointEvents.slice(0, 2).map((event) => ({
-      accent: event.rating === 5 ? 'emerald' : 'cyan',
+      accent: event.rating === 5 ? 'violet' : 'cyan',
       created_at: event.created_at,
       detail: `Mentioned in a ${event.rating} star review`,
       icon: Star,
@@ -548,14 +548,14 @@ export default function Overview() {
     <div className="space-y-8 pb-12">
       <section className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-300">Overview</p>
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-violet-300">Overview</p>
           <h2 className="mt-2 text-4xl font-black tracking-tight text-white lg:text-5xl">
             AURA Command Centre
           </h2>
           <p className="mt-3 text-lg font-semibold text-slate-400">Your review recognition hub.</p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <div className="flex flex-wrap rounded-xl border border-white/[0.07] bg-[#0a0d0b]/90 p-1 shadow-[0_18px_70px_rgba(0,0,0,0.22)]">
+          <div className="flex flex-wrap rounded-xl border border-white/[0.07] bg-[#0b0a0e]/90 p-1 shadow-[0_18px_70px_rgba(0,0,0,0.22)]">
             {periodOptions.map((period) => {
               const isActive = activePeriod === period
 
@@ -563,7 +563,7 @@ export default function Overview() {
                 <button
                   className={`h-10 rounded-xl px-4 text-sm font-black transition ${
                     isActive
-                      ? 'bg-emerald-300 text-slate-950 shadow-[0_0_26px_rgba(16,185,129,0.22)]'
+                      ? 'bg-violet-300 text-slate-950 shadow-[0_0_26px_rgba(167,139,250,0.22)]'
                       : 'text-slate-300 hover:bg-white/[0.07] hover:text-white'
                   }`}
                   key={period}
@@ -576,7 +576,7 @@ export default function Overview() {
             })}
           </div>
           <button
-            className="inline-flex h-12 items-center justify-center gap-3 rounded-xl border border-white/[0.07] bg-[#0a0d0b]/90 px-5 text-sm font-black text-slate-200 shadow-[0_18px_70px_rgba(0,0,0,0.22)] transition hover:border-emerald-300/20 hover:bg-emerald-300/[0.05]"
+            className="inline-flex h-12 items-center justify-center gap-3 rounded-xl border border-white/[0.07] bg-[#0b0a0e]/90 px-5 text-sm font-black text-slate-200 shadow-[0_18px_70px_rgba(0,0,0,0.22)] transition hover:border-violet-300/20 hover:bg-violet-300/[0.05]"
             type="button"
           >
             <CalendarDays size={18} />
@@ -584,7 +584,7 @@ export default function Overview() {
             <ChevronDown size={17} />
           </button>
           <button
-            className="inline-flex h-12 items-center justify-center gap-3 rounded-xl border border-white/[0.07] bg-[#0a0d0b]/90 px-5 text-sm font-black text-slate-200 shadow-[0_18px_70px_rgba(0,0,0,0.22)] transition hover:border-emerald-300/20 hover:bg-emerald-300/[0.05]"
+            className="inline-flex h-12 items-center justify-center gap-3 rounded-xl border border-white/[0.07] bg-[#0b0a0e]/90 px-5 text-sm font-black text-slate-200 shadow-[0_18px_70px_rgba(0,0,0,0.22)] transition hover:border-violet-300/20 hover:bg-violet-300/[0.05]"
             type="button"
           >
             <Download size={18} />
@@ -603,7 +603,7 @@ export default function Overview() {
           value={periodOverview.reviews}
         />
         <MetricCard
-          accent="emerald"
+          accent="violet"
           comparison={comparisonLabel('+15%', activePeriod)}
           icon={Users}
           label="Total mentions"
@@ -702,7 +702,7 @@ export default function Overview() {
             {rewardProgress.length ? (
               rewardProgress.map((item, index) => (
                 <RewardProgressRow
-                  accent={['emerald', 'amber', 'violet'][index] || 'cyan'}
+                  accent={['violet', 'amber', 'violet'][index] || 'cyan'}
                   item={item}
                   key={`${item.person.id}-${item.reward.id}`}
                 />

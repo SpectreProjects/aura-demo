@@ -75,8 +75,8 @@ export default function Reviews() {
     <div className="space-y-6 pb-12">
       <section className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <div className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-emerald-200">
-            <span className="h-2 w-2 rounded-full bg-emerald-300 shadow-[0_0_16px_rgba(110,231,183,0.9)]" />
+          <div className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-violet-200">
+            <span className="h-2 w-2 rounded-full bg-violet-300 shadow-[0_0_16px_rgba(167,139,250,0.9)]" />
             Review inbox
           </div>
           <h2 className="text-4xl font-black tracking-tight text-white lg:text-5xl">Customer feedback</h2>
@@ -84,7 +84,7 @@ export default function Reviews() {
             Read every review, check AURA&apos;s response and keep track of feedback that needs attention.
           </p>
         </div>
-        <div className="inline-flex w-fit items-center gap-2 rounded-xl border border-emerald-300/15 bg-emerald-300/[0.07] px-3 py-2 text-xs font-black text-emerald-200">
+        <div className="inline-flex w-fit items-center gap-2 rounded-xl border border-violet-300/15 bg-violet-300/[0.07] px-3 py-2 text-xs font-black text-violet-200">
           <Sparkles size={15} />
           Preview workspace
         </div>
@@ -97,10 +97,10 @@ export default function Reviews() {
           ['Needs attention', attentionCount, AlertTriangle],
           ['Replies ready', reviews.length, Sparkles],
         ].map(([label, value, Icon]) => (
-          <article className="rounded-2xl border border-white/[0.07] bg-[#0a0d0b]/90 p-4" key={label}>
+          <article className="rounded-2xl border border-white/[0.07] bg-[#0b0a0e]/90 p-4" key={label}>
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-500">{label}</p>
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-emerald-300/15 bg-emerald-300/[0.07] text-emerald-200">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-violet-300/15 bg-violet-300/[0.07] text-violet-200">
                 <Icon size={17} />
               </span>
             </div>
@@ -109,14 +109,14 @@ export default function Reviews() {
         ))}
       </section>
 
-      <section className="rounded-2xl border border-white/[0.07] bg-[#0a0d0b]/90 p-3">
+      <section className="rounded-2xl border border-white/[0.07] bg-[#0b0a0e]/90 p-3">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap gap-2">
             {filters.map((filter) => (
               <button
                 className={`rounded-xl px-4 py-2.5 text-sm font-black transition ${
                   activeFilter === filter
-                    ? 'bg-emerald-300 text-[#06110c] shadow-[0_0_28px_rgba(110,231,183,0.15)]'
+                    ? 'bg-violet-300 text-[#100722] shadow-[0_0_28px_rgba(167,139,250,0.15)]'
                     : 'border border-white/[0.07] bg-white/[0.025] text-slate-400 hover:text-white'
                 }`}
                 key={filter}
@@ -142,8 +142,8 @@ export default function Reviews() {
       <section className="grid gap-5 xl:grid-cols-[1.08fr_0.92fr]">
         <div className="space-y-3">
           {visibleReviews.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-white/10 bg-[#0a0d0b]/80 p-10 text-center">
-              <MessageSquareText className="mx-auto text-emerald-200" size={28} />
+            <div className="rounded-2xl border border-dashed border-white/10 bg-[#0b0a0e]/80 p-10 text-center">
+              <MessageSquareText className="mx-auto text-violet-200" size={28} />
               <p className="mt-4 font-black text-white">No reviews in this view</p>
               <p className="mt-2 text-sm text-slate-500">Try another filter or search term.</p>
             </div>
@@ -156,8 +156,8 @@ export default function Reviews() {
                 <button
                   className={`w-full rounded-2xl border p-5 text-left transition ${
                     isSelected
-                      ? 'border-emerald-300/35 bg-emerald-300/[0.065] shadow-[0_0_44px_rgba(110,231,183,0.07)]'
-                      : 'border-white/[0.07] bg-[#0a0d0b]/90 hover:border-emerald-300/20 hover:bg-[#0d120f]'
+                      ? 'border-violet-300/35 bg-violet-300/[0.065] shadow-[0_0_44px_rgba(167,139,250,0.07)]'
+                      : 'border-white/[0.07] bg-[#0b0a0e]/90 hover:border-violet-300/20 hover:bg-[#111016]'
                   }`}
                   key={review.id}
                   onClick={() => setSelectedReviewId(review.id)}
@@ -171,7 +171,7 @@ export default function Reviews() {
                           className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.12em] ${
                             needsAttention
                               ? 'border border-amber-300/20 bg-amber-300/10 text-amber-200'
-                              : 'border border-emerald-300/15 bg-emerald-300/[0.07] text-emerald-200'
+                              : 'border border-violet-300/15 bg-violet-300/[0.07] text-violet-200'
                           }`}
                         >
                           {needsAttention ? 'Needs attention' : 'Reply ready'}
@@ -180,7 +180,7 @@ export default function Reviews() {
                       <div className="mt-2 flex items-center gap-1">
                         {stars(review.rating).map((filled, index) => (
                           <Star
-                            className={filled ? 'fill-emerald-300 text-emerald-300' : 'text-white/10'}
+                            className={filled ? 'fill-violet-300 text-violet-300' : 'text-white/10'}
                             key={index}
                             size={14}
                           />
@@ -194,7 +194,7 @@ export default function Reviews() {
                   </div>
                   <p className="mt-4 line-clamp-2 text-sm font-medium leading-6 text-slate-300">{review.text}</p>
                   {review.mentioned_staff?.length > 0 && (
-                    <p className="mt-4 text-xs font-black text-emerald-200">
+                    <p className="mt-4 text-xs font-black text-violet-200">
                       Mentions {review.mentioned_staff.join(', ')}
                     </p>
                   )}
@@ -206,27 +206,27 @@ export default function Reviews() {
 
         <aside className="xl:sticky xl:top-24 xl:self-start">
           {selectedReview ? (
-            <div className="overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0a0d0b]/95 shadow-[0_24px_90px_rgba(0,0,0,0.28)]">
+            <div className="overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0b0a0e]/95 shadow-[0_24px_90px_rgba(0,0,0,0.28)]">
               <div className="border-b border-white/[0.07] p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-xs font-black uppercase tracking-[0.16em] text-emerald-200">Selected review</p>
+                    <p className="text-xs font-black uppercase tracking-[0.16em] text-violet-200">Selected review</p>
                     <h3 className="mt-2 text-2xl font-black text-white">{selectedReview.customer_name}</h3>
                   </div>
-                  <div className="flex items-center gap-1 rounded-xl border border-emerald-300/15 bg-emerald-300/[0.07] px-3 py-2">
-                    <Star className="fill-emerald-300 text-emerald-300" size={15} />
-                    <span className="text-sm font-black text-emerald-100">{selectedReview.rating}.0</span>
+                  <div className="flex items-center gap-1 rounded-xl border border-violet-300/15 bg-violet-300/[0.07] px-3 py-2">
+                    <Star className="fill-violet-300 text-violet-300" size={15} />
+                    <span className="text-sm font-black text-violet-100">{selectedReview.rating}.0</span>
                   </div>
                 </div>
                 <p className="mt-5 text-sm font-medium leading-7 text-slate-300">{selectedReview.text}</p>
               </div>
 
               <div className="p-5">
-                <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-emerald-200">
+                <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-violet-200">
                   <Sparkles size={15} />
                   AURA reply
                 </div>
-                <div className="mt-4 rounded-xl border border-emerald-300/15 bg-emerald-300/[0.055] p-4">
+                <div className="mt-4 rounded-xl border border-violet-300/15 bg-violet-300/[0.055] p-4">
                   <p className="text-sm font-medium leading-7 text-slate-200">
                     {getReply(selectedReview, businessName)}
                   </p>
@@ -247,7 +247,7 @@ export default function Reviews() {
               </div>
             </div>
           ) : (
-            <div className="rounded-2xl border border-dashed border-white/10 bg-[#0a0d0b]/80 p-10 text-center text-sm text-slate-500">
+            <div className="rounded-2xl border border-dashed border-white/10 bg-[#0b0a0e]/80 p-10 text-center text-sm text-slate-500">
               Select a review to see the response.
             </div>
           )}
@@ -255,9 +255,9 @@ export default function Reviews() {
       </section>
 
       {nameApprovals.length > 0 && (
-        <section className="rounded-2xl border border-white/[0.07] bg-[#0a0d0b]/90 p-5">
+        <section className="rounded-2xl border border-white/[0.07] bg-[#0b0a0e]/90 p-5">
           <div className="mb-5">
-            <p className="text-xs font-black uppercase tracking-[0.16em] text-emerald-200">Names to confirm</p>
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-violet-200">Names to confirm</p>
             <h3 className="mt-2 text-2xl font-black tracking-tight text-white">Is this someone on your team?</h3>
           </div>
           <div className="grid gap-3 md:grid-cols-2">
@@ -268,11 +268,11 @@ export default function Reviews() {
                     <p className="text-xl font-black text-white">{approval.name}</p>
                     <p className="mt-2 text-sm leading-6 text-slate-400">&ldquo;{approval.review_excerpt}&rdquo;</p>
                   </div>
-                  <span className="rounded-lg bg-emerald-300 px-2.5 py-1 text-xs font-black text-[#06110c]">{approval.rating}★</span>
+                  <span className="rounded-lg bg-violet-300 px-2.5 py-1 text-xs font-black text-[#100722]">{approval.rating}★</span>
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-2">
                   <button
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-300 px-4 py-3 text-sm font-black text-[#06110c] transition hover:bg-emerald-200"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-300 px-4 py-3 text-sm font-black text-[#100722] transition hover:bg-violet-200"
                     onClick={() => setSelectedApproval(approval)}
                     type="button"
                   >
