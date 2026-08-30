@@ -211,6 +211,7 @@ function MetricCard({ accent, comparison, icon: Icon, label, sparkline, value })
 
 function TopPerformersMetricCard({ people }) {
   const style = accentStyles.violet
+  const medalClasses = ['text-amber-300', 'text-slate-300', 'text-orange-400']
 
   return (
     <article className={`relative h-full overflow-hidden rounded-xl border border-white/[0.07] bg-[#0b0a0e] p-4 ${style.glow}`}>
@@ -231,8 +232,8 @@ function TopPerformersMetricCard({ people }) {
           <ol className="mt-2 space-y-1.5">
             {people.map((person, index) => (
               <li className="flex items-center justify-between gap-3 text-sm" key={person.id}>
-                <span className="min-w-0 truncate font-black text-white">
-                  <span className="mr-2 text-violet-300">{index + 1}</span>
+                <span className={`min-w-0 truncate font-black ${medalClasses[index] || 'text-white'}`}>
+                  <span className="mr-2">{index + 1}</span>
                   {person.name}
                 </span>
                 <span className="shrink-0 text-xs font-black text-violet-200">
