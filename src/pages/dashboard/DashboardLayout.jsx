@@ -256,10 +256,10 @@ function Sidebar({ nameApprovalsCount }) {
         {navItems.map((item) => (
           <NavLink
             className={({ isActive }) =>
-              `group flex items-center gap-3 rounded-xl px-2 py-2 text-base font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-violet-300/45 ${
+              `group flex items-center gap-3 rounded-xl border px-3 py-2.5 text-base font-bold outline-none transition-all duration-200 focus-visible:ring-2 focus-visible:ring-violet-300/45 ${
                 isActive
-                  ? 'text-white'
-                  : 'text-slate-300 hover:bg-white/[0.035] hover:text-white'
+                  ? 'border-violet-300/20 bg-violet-300/[0.10] text-white shadow-[0_0_24px_rgba(139,92,246,0.16),inset_0_1px_0_rgba(255,255,255,0.05)]'
+                  : 'border-transparent text-slate-300 hover:border-white/[0.05] hover:bg-white/[0.035] hover:text-white'
               }`
             }
             end={item.end}
