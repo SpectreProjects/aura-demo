@@ -6,15 +6,14 @@ import {
   Download,
   Gift,
   MessageSquareText,
+  Plus,
   SearchCheck,
   Star,
-  Trophy,
   UserPlus,
   Users,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getNextReward } from '../../utils/mvpRecognition'
 import { useDashboard } from './useDashboard'
 
 const periodOptions = ['Day', 'Week', 'Month', 'Quarter', 'Year']
@@ -124,16 +123,6 @@ function comparisonLabel(value, period) {
   return `${value} vs previous ${period.toLowerCase()}`
 }
 
-function initials(name) {
-  return String(name || 'A')
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join('')
-    .toUpperCase()
-}
-
 function formatRelativeTime(dateValue) {
   const date = new Date(dateValue)
   const minutes = Math.max(1, Math.round((Date.now() - date.getTime()) / 60000))
@@ -161,7 +150,7 @@ function Sparkline({ accent = 'cyan', data = sparklineSets.reviews }) {
     .join(' ')
 
   return (
-    <svg aria-hidden="true" className="h-14 w-28 overflow-visible" viewBox="0 0 96 48">
+    <svg aria-hidden="true" className="h-12 w-24 overflow-visible" viewBox="0 0 96 48">
       <defs>
         <linearGradient id={`sparkline-${accent}`} x1="0" x2="0" y1="0" y2="1">
           <stop offset="0%" stopColor={stroke} stopOpacity="0.36" />
@@ -186,21 +175,21 @@ function MetricCard({ accent, comparison, icon: Icon, label, sparkline, value })
   const style = accentStyles[accent]
 
   return (
-    <article className={`relative h-full overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0b0a0e]/90 p-5 ${style.glow}`}>
+    <article className={`relative h-full overflow-hidden rounded-xl border border-white/[0.07] bg-[#0b0a0e] p-4 ${style.glow}`}>
       <div
         className="pointer-events-none absolute -right-10 top-4 h-28 w-28 rounded-full opacity-30 blur-3xl"
         style={{ backgroundColor: style.stroke }}
       />
       <div className="relative flex items-center justify-between gap-4">
-        <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border ${style.icon}`}>
-          <Icon size={23} />
+        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border ${style.icon}`}>
+          <Icon size={18} />
         </span>
         <Sparkline accent={accent} data={sparkline} />
       </div>
       <div className="relative mt-4">
-        <p className="text-sm font-bold text-slate-300">{label}</p>
-        <p className="mt-2 text-4xl font-black leading-none tracking-tight text-white">{value}</p>
-        <p className={`mt-3 text-sm font-black ${style.text}`}>{comparison}</p>
+        <p className="text-xs font-bold text-slate-300">{label}</p>
+        <p className="mt-2 text-3xl font-black leading-none tracking-tight text-white">{value}</p>
+        <p className={`mt-3 text-xs font-black ${style.text}`}>{comparison}</p>
       </div>
     </article>
   )
@@ -210,17 +199,17 @@ function Panel({ action, children, icon: Icon, iconAccent = 'cyan', subtitle, ti
   const style = accentStyles[iconAccent]
 
   return (
-    <section className="rounded-2xl border border-white/[0.07] bg-[#0b0a0e]/90 p-5 shadow-[0_24px_90px_rgba(0,0,0,0.24)] backdrop-blur-xl">
-      <div className="mb-5 flex items-start justify-between gap-4">
+    <section className="rounded-xl border border-white/[0.07] bg-[#09090c] p-4 shadow-[0_24px_90px_rgba(0,0,0,0.24)]">
+      <div className="mb-4 flex items-start justify-between gap-4">
         <div className="flex min-w-0 items-start gap-3">
           {Icon && (
-            <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border ${style.icon}`}>
-              <Icon size={23} />
+            <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border ${style.icon}`}>
+              <Icon size={18} />
             </span>
           )}
           <div className="min-w-0">
-            <h3 className="text-2xl font-black tracking-tight text-white">{title}</h3>
-            {subtitle && <p className="mt-1 text-sm font-semibold text-slate-400">{subtitle}</p>}
+            <h3 className="text-xl font-black tracking-tight text-white">{title}</h3>
+            {subtitle && <p className="mt-1 text-xs font-semibold text-slate-400">{subtitle}</p>}
           </div>
         </div>
         {action}
@@ -244,8 +233,8 @@ function DonutChart({ counts }) {
   let offset = 0
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[18rem_1fr] lg:items-center">
-      <div className="relative mx-auto h-64 w-64">
+    <div className="grid gap-5 lg:grid-cols-[14rem_1fr] lg:items-center">
+      <div className="relative mx-auto h-56 w-56">
         <svg className="h-full w-full -rotate-90" viewBox="0 0 140 140">
           <circle cx="70" cy="70" fill="none" r={radius} stroke="rgba(255,255,255,0.08)" strokeWidth="17" />
           {segments.map((segment) => {
@@ -270,8 +259,8 @@ function DonutChart({ counts }) {
           })}
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-          <p className="text-5xl font-black tracking-tight text-white">{positivePercent}%</p>
-          <p className="mt-1 text-sm font-bold text-slate-400">Guest satisfaction</p>
+          <p className="text-4xl font-black tracking-tight text-white">{positivePercent}%</p>
+          <p className="mt-1 text-xs font-bold text-slate-400">Guest satisfaction</p>
         </div>
       </div>
 
@@ -299,51 +288,12 @@ function DonutChart({ counts }) {
 function ActionButton({ children, to }) {
   return (
     <Link
-      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-white/[0.07] bg-white/[0.035] px-4 text-sm font-black text-slate-200 transition hover:-translate-y-0.5 hover:border-violet-300/25 hover:bg-violet-300/[0.06] hover:text-white"
+      className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-white/[0.07] bg-white/[0.035] px-3 text-xs font-black text-slate-200 transition hover:-translate-y-0.5 hover:border-violet-300/25 hover:bg-violet-300/[0.06] hover:text-white"
       to={to}
     >
       {children}
-      <ChevronRight size={17} />
+      <ChevronRight size={15} />
     </Link>
-  )
-}
-
-function TopPerformerCard({ person, rank }) {
-  const accents = ['amber', 'cyan', 'violet']
-  const accent = accents[rank] || 'cyan'
-  const style = accentStyles[accent]
-  const changes = [35, 18, 12]
-  const sparkline = [sparklineSets.staffA, sparklineSets.staffB, sparklineSets.staffC][rank]
-
-  return (
-    <article
-      className={`rounded-2xl border bg-[#070a08]/88 p-5 text-center ${
-        rank === 0 ? 'border-violet-300/30 shadow-[0_0_42px_rgba(167,139,250,0.10)]' : 'border-white/[0.07]'
-      }`}
-    >
-      <div className="mb-4 flex items-center justify-between">
-        <span className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-black text-[#100722] ${rank === 0 ? 'bg-violet-300' : 'bg-violet-100/70'}`}>
-          {rank + 1}
-        </span>
-        <span className={`rounded-full border px-3 py-1 text-xs font-black ${style.icon}`}>
-          +{changes[rank] || 8} pts
-        </span>
-      </div>
-      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-white/10 bg-white/10 text-2xl font-black text-white">
-        {initials(person.name)}
-      </div>
-      <h4 className="mt-4 truncate text-2xl font-black text-white">{person.name}</h4>
-      <p className="mt-1 truncate text-sm font-semibold text-slate-400">{person.job_title || person.job_category}</p>
-      <p className={`mt-5 text-5xl font-black tracking-tight ${style.text}`}>
-        {Number(person.points || 0)}
-        <span className="ml-1 text-lg">pts</span>
-      </p>
-      <p className="mt-1 text-sm font-bold text-slate-400">{Number(person.total_mentions || 0)} mentions</p>
-      <div className="mt-4 flex justify-center">
-        <Sparkline accent={accent} data={sparkline} />
-      </div>
-      <p className={`mt-1 text-sm font-black ${style.text}`}>+ {changes[rank] || 8} pts vs last month</p>
-    </article>
   )
 }
 
@@ -351,21 +301,21 @@ function ActivityRow({ accent = 'cyan', detail, icon: Icon, label, meta, pill, t
   const style = accentStyles[accent]
 
   return (
-    <div className="grid grid-cols-[3rem_1fr] gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-4">
-      <span className={`flex h-12 w-12 items-center justify-center rounded-2xl border ${style.icon}`}>
-        <Icon size={21} />
+    <div className="grid grid-cols-[2.5rem_1fr] gap-3 rounded-xl border border-white/10 bg-white/[0.035] p-3">
+      <span className={`flex h-10 w-10 items-center justify-center rounded-lg border ${style.icon}`}>
+        <Icon size={17} />
       </span>
       <div className="min-w-0">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="truncate text-sm font-black text-white">{title}</p>
-            <p className="mt-1 text-sm font-semibold text-slate-400">{detail}</p>
+            <p className="truncate text-xs font-black text-white">{title}</p>
+            <p className="mt-1 text-xs font-semibold text-slate-400">{detail}</p>
           </div>
           {pill && (
-            <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-black ${style.icon}`}>{pill}</span>
+            <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-black ${style.icon}`}>{pill}</span>
           )}
         </div>
-        <p className="mt-2 text-xs font-bold text-slate-500">{meta}</p>
+        <p className="mt-2 text-[10px] font-bold text-slate-500">{meta}</p>
         {label && <p className={`mt-1 text-xs font-black ${style.text}`}>{label}</p>}
       </div>
     </div>
@@ -374,14 +324,14 @@ function ActivityRow({ accent = 'cyan', detail, icon: Icon, label, meta, pill, t
 
 function PendingApprovalRow({ approval }) {
   return (
-    <div className="grid gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-4 sm:grid-cols-[12rem_1fr_auto] sm:items-center">
+    <div className="grid gap-3 rounded-xl border border-white/10 bg-white/[0.035] p-3 sm:grid-cols-[10rem_1fr_auto] sm:items-center">
       <div>
-        <p className="text-base font-black text-white">{approval.name}</p>
-        <p className="mt-1 text-sm font-bold text-violet-200">{approval.count} mention{approval.count === 1 ? '' : 's'}</p>
+        <p className="text-sm font-black text-white">{approval.name}</p>
+        <p className="mt-1 text-xs font-bold text-violet-200">{approval.count} mention{approval.count === 1 ? '' : 's'}</p>
       </div>
-      <p className="line-clamp-2 text-sm font-semibold leading-6 text-slate-400">"{approval.excerpt}"</p>
+      <p className="line-clamp-2 text-xs font-semibold leading-5 text-slate-400">"{approval.excerpt}"</p>
       <Link
-        className="inline-flex h-11 items-center justify-center rounded-xl border border-violet-300/15 bg-violet-300/[0.07] px-5 text-sm font-black text-violet-100 transition hover:bg-violet-300/[0.12]"
+        className="inline-flex h-9 items-center justify-center rounded-lg border border-violet-300/15 bg-violet-300/[0.07] px-4 text-xs font-black text-violet-100 transition hover:bg-violet-300/[0.12]"
         to="/dashboard/reviews"
       >
         Review
@@ -390,45 +340,12 @@ function PendingApprovalRow({ approval }) {
   )
 }
 
-function RewardProgressRow({ accent, item }) {
-  const style = accentStyles[accent]
-
-  return (
-    <div className="grid gap-4 rounded-2xl border border-white/10 bg-white/[0.035] p-4 md:grid-cols-[1fr_auto] md:items-center">
-      <div className="flex min-w-0 items-center gap-4">
-        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/10 text-base font-black text-white">
-          {initials(item.person.name)}
-        </span>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <p className="truncate text-base font-black text-white">{item.person.name}</p>
-              <p className="truncate text-sm font-semibold text-slate-400">{item.reward.title}</p>
-            </div>
-            <p className="shrink-0 text-right text-sm font-black text-slate-200">
-              {item.current} / {item.required} pts
-            </p>
-          </div>
-          <div className="mt-4 h-3 overflow-hidden rounded-full bg-white/10">
-            <div
-              className="h-full rounded-full"
-              style={{ backgroundColor: style.stroke, width: `${item.progress}%` }}
-            />
-          </div>
-        </div>
-      </div>
-      <p className={`text-right text-sm font-black ${style.text}`}>{item.toGo} pts to go</p>
-    </div>
-  )
-}
-
 export default function Overview() {
   const [activePeriod, setActivePeriod] = useState('Month')
   const {
-    leaderboard = [],
+    account,
     nameApprovals = [],
     pointEvents = [],
-    rewards = [],
     reviews = [],
   } = useDashboard()
   const selectedRange = useMemo(() => getPeriodRange(activePeriod), [activePeriod])
@@ -461,7 +378,12 @@ export default function Overview() {
     neutral: periodReviews.filter((review) => Number(review.rating) === 3).length,
     negative: periodReviews.filter((review) => Number(review.rating) <= 2).length,
   }
-  const topStaff = leaderboard.slice(0, 3)
+  const businessName = String(account?.businessProfile?.business_name || 'Hilton Glasgow').replace(
+    /\s+Demo$/i,
+    '',
+  )
+  const hour = new Date().getHours()
+  const greeting = hour >= 5 && hour < 12 ? 'Good Morning' : hour >= 12 && hour < 17 ? 'Good Afternoon' : 'Good Evening'
   const pendingApprovals = Object.values(
     periodApprovals.reduce((groups, approval) => {
       const key = approval.name.toLowerCase()
@@ -524,46 +446,45 @@ export default function Overview() {
           title: 'Reward unlocked',
         },
       ]
-  const rewardProgress = leaderboard
-    .map((person) => {
-      const reward = getNextReward(person, rewards)
-      const current = Number(person.points || 0)
-      const required = Number(reward?.points_required || 0)
-      return reward && required
-        ? {
-            current,
-            person,
-            progress: Math.min(100, Math.round((current / required) * 100)),
-            required,
-            reward,
-            toGo: Math.max(0, required - current),
-          }
-        : null
-    })
-    .filter(Boolean)
-    .sort((a, b) => a.toGo - b.toGo)
-    .slice(0, 3)
-
   return (
-    <div className="space-y-8 pb-12">
-      <section className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-violet-300">Overview</p>
-          <h2 className="mt-2 text-4xl font-black tracking-tight text-white lg:text-5xl">
-            AURA Command Centre
-          </h2>
-          <p className="mt-3 text-lg font-semibold text-slate-400">Your review recognition hub.</p>
+    <div className="space-y-5 pb-12">
+      <section className="border-b border-white/[0.055] pb-5">
+        <div className="flex flex-col gap-7 lg:flex-row lg:items-start lg:justify-between">
+          <div className="max-w-3xl">
+            <h2 className="text-4xl font-semibold leading-[1.08] tracking-[-0.04em] text-white lg:text-[3.35rem]">
+              {greeting}, let&apos;s get you up to speed on {businessName}.
+            </h2>
+            <p className="mt-5 text-lg font-normal text-slate-400">Your review recognition hub</p>
+          </div>
+
+          <div className="flex shrink-0 flex-wrap gap-3 lg:pt-14">
+            <Link
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-violet-300 px-4 text-xs font-black text-slate-950 shadow-[0_0_24px_rgba(167,139,250,0.16)] transition hover:bg-violet-200"
+              to="/dashboard/staff"
+            >
+              Add Staff
+              <Plus size={14} />
+            </Link>
+            <Link
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-violet-300 px-4 text-xs font-black text-slate-950 shadow-[0_0_24px_rgba(167,139,250,0.16)] transition hover:bg-violet-200"
+              to="/dashboard/rewards"
+            >
+              Add reward
+              <Plus size={14} />
+            </Link>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-3">
-          <div className="flex flex-wrap rounded-xl border border-white/[0.07] bg-[#0b0a0e]/90 p-1 shadow-[0_18px_70px_rgba(0,0,0,0.22)]">
+
+        <div className="mt-7 flex flex-wrap justify-start gap-2 lg:justify-end">
+          <div className="flex flex-wrap rounded-lg border border-white/[0.07] bg-[#0b0a0e] p-1">
             {periodOptions.map((period) => {
               const isActive = activePeriod === period
 
               return (
                 <button
-                  className={`h-10 rounded-xl px-4 text-sm font-black transition ${
+                  className={`h-9 rounded-lg px-4 text-xs font-black transition ${
                     isActive
-                      ? 'bg-violet-300 text-slate-950 shadow-[0_0_26px_rgba(167,139,250,0.22)]'
+                      ? 'bg-violet-300 text-slate-950'
                       : 'text-slate-300 hover:bg-white/[0.07] hover:text-white'
                   }`}
                   key={period}
@@ -576,24 +497,24 @@ export default function Overview() {
             })}
           </div>
           <button
-            className="inline-flex h-12 items-center justify-center gap-3 rounded-xl border border-white/[0.07] bg-[#0b0a0e]/90 px-5 text-sm font-black text-slate-200 shadow-[0_18px_70px_rgba(0,0,0,0.22)] transition hover:border-violet-300/20 hover:bg-violet-300/[0.05]"
+            className="inline-flex h-11 items-center justify-center gap-3 rounded-lg border border-white/[0.07] bg-[#0b0a0e] px-4 text-xs font-black text-slate-200 transition hover:border-violet-300/20 hover:bg-violet-300/[0.05]"
             type="button"
           >
-            <CalendarDays size={18} />
+            <CalendarDays size={16} />
             {formatDateRange(selectedRange)}
-            <ChevronDown size={17} />
+            <ChevronDown size={15} />
           </button>
           <button
-            className="inline-flex h-12 items-center justify-center gap-3 rounded-xl border border-white/[0.07] bg-[#0b0a0e]/90 px-5 text-sm font-black text-slate-200 shadow-[0_18px_70px_rgba(0,0,0,0.22)] transition hover:border-violet-300/20 hover:bg-violet-300/[0.05]"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-white/[0.07] bg-[#0b0a0e] px-4 text-xs font-black text-slate-200 transition hover:border-violet-300/20 hover:bg-violet-300/[0.05]"
             type="button"
           >
-            <Download size={18} />
+            <Download size={16} />
             Export
           </button>
         </div>
       </section>
 
-      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard
           accent="cyan"
           comparison={comparisonLabel('+12%', activePeriod)}
@@ -628,15 +549,15 @@ export default function Overview() {
         />
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+      <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
         <Panel icon={Activity} iconAccent="cyan" subtitle={guestFeedbackLabel(activePeriod)} title="Customer Experience Score">
           <DonutChart counts={sentimentCounts} />
-          <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.035] p-5">
-            <p className="text-base font-black text-white">Great work. Guests are recognising the service your team is delivering.</p>
+          <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.035] p-4">
+            <p className="text-sm font-black text-white">Great work. Guests are recognising the service your team is delivering.</p>
           </div>
         </Panel>
 
-        <div className="grid gap-6">
+        <div className="grid gap-4">
           <Panel
             action={<Activity className="text-slate-400" size={23} />}
             iconAccent="cyan"
@@ -665,7 +586,7 @@ export default function Overview() {
                   .slice(0, 2)
                   .map((approval) => <PendingApprovalRow approval={approval} key={approval.name} />)
               ) : (
-                <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4 text-sm font-semibold text-slate-400">
+                <div className="rounded-xl border border-white/10 bg-white/[0.035] p-3 text-xs font-semibold text-slate-400">
                   No pending names need approval right now.
                 </div>
               )}
@@ -674,47 +595,6 @@ export default function Overview() {
         </div>
       </section>
 
-      <section>
-        <Panel
-          action={<ActionButton to="/dashboard/staff">View all team</ActionButton>}
-          icon={Trophy}
-          iconAccent="amber"
-          subtitle="Based on points earned from recognised review mentions"
-          title="Top performers this month"
-        >
-          <div className="grid gap-5 lg:grid-cols-3">
-            {topStaff.map((person, index) => (
-              <TopPerformerCard key={person.id} person={person} rank={index} />
-            ))}
-          </div>
-        </Panel>
-      </section>
-
-      <section>
-        <Panel
-          action={<ActionButton to="/dashboard/rewards">View all rewards</ActionButton>}
-          icon={Gift}
-          iconAccent="violet"
-          subtitle="See who's close to unlocking rewards"
-          title="Rewards progress"
-        >
-          <div className="space-y-4">
-            {rewardProgress.length ? (
-              rewardProgress.map((item, index) => (
-                <RewardProgressRow
-                  accent={['violet', 'amber', 'violet'][index] || 'cyan'}
-                  item={item}
-                  key={`${item.person.id}-${item.reward.id}`}
-                />
-              ))
-            ) : (
-              <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4 text-sm font-semibold text-slate-400">
-                Add active rewards to show progress here.
-              </div>
-            )}
-          </div>
-        </Panel>
-      </section>
     </div>
   )
 }

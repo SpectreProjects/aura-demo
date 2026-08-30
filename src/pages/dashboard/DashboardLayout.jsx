@@ -3,8 +3,8 @@ import {
   Gift,
   Home,
   LogOut,
-  MessageSquareText,
   Sparkles,
+  Star,
   Users,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
@@ -28,10 +28,10 @@ const STORAGE_KEY = 'aura-dashboard-state-v1'
 const DEV_ACCOUNT_EMAIL = 'info@spectreprojects.co.uk'
 
 const navItems = [
-  { end: true, href: '/dashboard', icon: BarChart3, label: 'Overview' },
-  { href: '/dashboard/reviews', icon: MessageSquareText, label: 'Reviews' },
-  { href: '/dashboard/staff', icon: Users, label: 'Team' },
-  { href: '/dashboard/rewards', icon: Gift, label: 'Rewards' },
+  { end: true, href: '/dashboard', icon: BarChart3, iconClass: 'text-violet-400', label: 'Dashboard' },
+  { href: '/dashboard/reviews', icon: Star, iconClass: 'text-yellow-300', label: 'Reviews' },
+  { href: '/dashboard/staff', icon: Users, iconClass: 'text-violet-400', label: 'Team' },
+  { href: '/dashboard/rewards', icon: Gift, iconClass: 'text-yellow-600', label: 'Rewards' },
 ]
 
 function createId(prefix) {
@@ -241,32 +241,32 @@ function buildStaffRecord(form) {
 
 function Sidebar({ nameApprovalsCount }) {
   return (
-    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-white/[0.07] bg-[#070908]/95 px-4 py-5 text-white backdrop-blur-2xl lg:flex lg:flex-col">
-      <Link to="/" className="mb-9 flex items-center gap-3 rounded-xl px-2">
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-violet-200/20 bg-violet-300 text-[#100722] shadow-[0_0_36px_rgba(167,139,250,0.24)]">
+    <aside className="sticky top-0 hidden h-screen w-56 shrink-0 border-r border-white/[0.06] bg-[#111113] px-5 py-10 text-white lg:flex lg:flex-col">
+      <Link to="/" className="mb-16 flex items-center gap-3 rounded-xl px-2">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-violet-300/25 bg-violet-300/10 text-violet-300">
           <Sparkles size={20} />
         </span>
         <span>
           <span className="block text-base font-black tracking-[0.12em]">AURA</span>
-          <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Review intelligence</span>
+          <span className="block text-[9px] font-bold uppercase tracking-[0.18em] text-slate-600">Review intelligence</span>
         </span>
       </Link>
 
-      <nav className="space-y-1.5">
+      <nav className="space-y-3">
         {navItems.map((item) => (
           <NavLink
             className={({ isActive }) =>
-              `group flex items-center gap-3 rounded-xl border px-3 py-2.5 text-sm font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-violet-300/45 ${
+              `group flex items-center gap-3 rounded-xl px-2 py-2 text-base font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-violet-300/45 ${
                 isActive
-                  ? 'border-violet-300/20 bg-violet-300/10 text-violet-200 shadow-[0_0_32px_rgba(167,139,250,0.08)]'
-                  : 'border-transparent text-slate-400 hover:border-white/[0.06] hover:bg-white/[0.035] hover:text-white'
+                  ? 'text-white'
+                  : 'text-slate-300 hover:bg-white/[0.035] hover:text-white'
               }`
             }
             end={item.end}
             key={item.href}
             to={item.href}
           >
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.035] text-current transition group-hover:bg-white/[0.06]">
+            <span className={`flex h-8 w-8 items-center justify-center ${item.iconClass}`}>
               <item.icon size={17} />
             </span>
             {item.label}
@@ -279,13 +279,6 @@ function Sidebar({ nameApprovalsCount }) {
         ))}
       </nav>
 
-      <div className="mt-auto rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4">
-        <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-violet-200">
-          <span className="h-2 w-2 rounded-full bg-violet-300 shadow-[0_0_14px_rgba(167,139,250,0.85)]" />
-          Workspace active
-        </div>
-        <p className="mt-2 text-xs leading-5 text-slate-500">Review monitoring will appear here once Google is connected.</p>
-      </div>
     </aside>
   )
 }
@@ -640,27 +633,29 @@ export default function DashboardLayout() {
           <section
             className={
               isOverviewRoute
-                ? 'mx-auto max-w-[1680px] px-5 py-6 sm:px-8 lg:px-10 lg:py-8'
+                ? 'mx-auto max-w-[1500px] px-5 py-6 sm:px-8 lg:px-7 lg:py-10 xl:px-9'
                 : 'mx-auto max-w-7xl px-5 py-6 sm:px-8 lg:px-10 lg:py-8'
             }
           >
-            <div className="mb-6 flex flex-col justify-between gap-3 rounded-2xl border border-white/[0.07] bg-[#0b0a0e]/90 p-4 shadow-[0_24px_90px_rgba(0,0,0,0.24)] backdrop-blur-xl sm:flex-row sm:items-center">
-              <div>
-                <p className="text-sm font-black text-violet-200">
-                  {businessProfile?.business_name || 'AURA workspace'}
-                </p>
-                <p className="mt-1 text-xs font-semibold text-slate-400">{user?.email}</p>
+            {!isOverviewRoute && (
+              <div className="mb-6 flex flex-col justify-between gap-3 rounded-2xl border border-white/[0.07] bg-[#0b0a0e]/90 p-4 shadow-[0_24px_90px_rgba(0,0,0,0.24)] sm:flex-row sm:items-center">
+                <div>
+                  <p className="text-sm font-black text-violet-200">
+                    {businessProfile?.business_name || 'AURA workspace'}
+                  </p>
+                  <p className="mt-1 text-xs font-semibold text-slate-400">{user?.email}</p>
+                </div>
+                <button
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.035] px-4 py-2.5 text-sm font-bold text-slate-300 transition hover:border-violet-300/20 hover:bg-violet-300/[0.06] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={isSigningOut}
+                  onClick={handleSignOut}
+                  type="button"
+                >
+                  <LogOut size={17} />
+                  {isSigningOut ? 'Logging out...' : 'Log out'}
+                </button>
               </div>
-              <button
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.035] px-4 py-2.5 text-sm font-bold text-slate-300 transition hover:border-violet-300/20 hover:bg-violet-300/[0.06] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-                disabled={isSigningOut}
-                onClick={handleSignOut}
-                type="button"
-              >
-                <LogOut size={17} />
-                {isSigningOut ? 'Logging out...' : 'Log out'}
-              </button>
-            </div>
+            )}
             <Outlet context={dashboard} />
           </section>
         </div>
