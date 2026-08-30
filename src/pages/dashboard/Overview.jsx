@@ -21,28 +21,28 @@ const periodOptions = ['Day', 'Week', 'Month', 'Quarter', 'Year']
 
 const accentStyles = {
   cyan: {
-    glow: 'shadow-[0_0_52px_rgba(34,211,238,0.16)]',
-    icon: 'border-cyan-300/20 bg-cyan-400/10 text-cyan-200',
-    text: 'text-cyan-200',
-    stroke: '#22d3ee',
+    glow: 'shadow-[0_0_52px_rgba(110,231,183,0.10)]',
+    icon: 'border-emerald-300/15 bg-emerald-300/[0.07] text-emerald-200',
+    text: 'text-emerald-200',
+    stroke: '#6ee7b7',
   },
   emerald: {
-    glow: 'shadow-[0_0_52px_rgba(16,185,129,0.14)]',
-    icon: 'border-emerald-300/20 bg-emerald-400/10 text-emerald-200',
+    glow: 'shadow-[0_0_52px_rgba(110,231,183,0.10)]',
+    icon: 'border-emerald-300/15 bg-emerald-300/[0.07] text-emerald-200',
     text: 'text-emerald-200',
-    stroke: '#10b981',
+    stroke: '#7be7c1',
   },
   violet: {
-    glow: 'shadow-[0_0_52px_rgba(168,85,247,0.16)]',
-    icon: 'border-violet-300/20 bg-violet-400/10 text-violet-200',
-    text: 'text-violet-200',
-    stroke: '#a855f7',
+    glow: 'shadow-[0_0_52px_rgba(110,231,183,0.08)]',
+    icon: 'border-emerald-300/15 bg-emerald-300/[0.07] text-emerald-200',
+    text: 'text-emerald-200',
+    stroke: '#57cfa5',
   },
   amber: {
-    glow: 'shadow-[0_0_52px_rgba(245,158,11,0.16)]',
-    icon: 'border-amber-300/20 bg-amber-400/10 text-amber-200',
-    text: 'text-amber-200',
-    stroke: '#f59e0b',
+    glow: 'shadow-[0_0_52px_rgba(110,231,183,0.08)]',
+    icon: 'border-emerald-300/15 bg-emerald-300/[0.07] text-emerald-200',
+    text: 'text-emerald-200',
+    stroke: '#43b990',
   },
 }
 
@@ -186,7 +186,7 @@ function MetricCard({ accent, comparison, icon: Icon, label, sparkline, value })
   const style = accentStyles[accent]
 
   return (
-    <article className={`relative h-full overflow-hidden rounded-[1.25rem] border border-white/10 bg-[#07111f]/78 p-5 ${style.glow}`}>
+    <article className={`relative h-full overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0a0d0b]/90 p-5 ${style.glow}`}>
       <div
         className="pointer-events-none absolute -right-10 top-4 h-28 w-28 rounded-full opacity-30 blur-3xl"
         style={{ backgroundColor: style.stroke }}
@@ -210,7 +210,7 @@ function Panel({ action, children, icon: Icon, iconAccent = 'cyan', subtitle, ti
   const style = accentStyles[iconAccent]
 
   return (
-    <section className="rounded-[1.35rem] border border-white/10 bg-[#07111f]/78 p-5 shadow-[0_24px_90px_rgba(0,0,0,0.24)] backdrop-blur-xl">
+    <section className="rounded-2xl border border-white/[0.07] bg-[#0a0d0b]/90 p-5 shadow-[0_24px_90px_rgba(0,0,0,0.24)] backdrop-blur-xl">
       <div className="mb-5 flex items-start justify-between gap-4">
         <div className="flex min-w-0 items-start gap-3">
           {Icon && (
@@ -299,7 +299,7 @@ function DonutChart({ counts }) {
 function ActionButton({ children, to }) {
   return (
     <Link
-      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.045] px-4 text-sm font-black text-slate-200 transition hover:-translate-y-0.5 hover:border-cyan-300/30 hover:bg-white/[0.08] hover:text-white"
+      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-white/[0.07] bg-white/[0.035] px-4 text-sm font-black text-slate-200 transition hover:-translate-y-0.5 hover:border-emerald-300/25 hover:bg-emerald-300/[0.06] hover:text-white"
       to={to}
     >
       {children}
@@ -317,12 +317,12 @@ function TopPerformerCard({ person, rank }) {
 
   return (
     <article
-      className={`rounded-[1.2rem] border bg-[#081422]/88 p-5 text-center ${
-        rank === 0 ? 'border-amber-300/50 shadow-[0_0_42px_rgba(245,158,11,0.16)]' : 'border-white/10'
+      className={`rounded-2xl border bg-[#070a08]/88 p-5 text-center ${
+        rank === 0 ? 'border-emerald-300/30 shadow-[0_0_42px_rgba(110,231,183,0.10)]' : 'border-white/[0.07]'
       }`}
     >
       <div className="mb-4 flex items-center justify-between">
-        <span className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-black text-slate-950 ${rank === 0 ? 'bg-amber-300' : 'bg-white/70'}`}>
+        <span className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-black text-[#06110c] ${rank === 0 ? 'bg-emerald-300' : 'bg-emerald-100/70'}`}>
           {rank + 1}
         </span>
         <span className={`rounded-full border px-3 py-1 text-xs font-black ${style.icon}`}>
@@ -377,11 +377,11 @@ function PendingApprovalRow({ approval }) {
     <div className="grid gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-4 sm:grid-cols-[12rem_1fr_auto] sm:items-center">
       <div>
         <p className="text-base font-black text-white">{approval.name}</p>
-        <p className="mt-1 text-sm font-bold text-violet-200">{approval.count} mention{approval.count === 1 ? '' : 's'}</p>
+        <p className="mt-1 text-sm font-bold text-emerald-200">{approval.count} mention{approval.count === 1 ? '' : 's'}</p>
       </div>
       <p className="line-clamp-2 text-sm font-semibold leading-6 text-slate-400">"{approval.excerpt}"</p>
       <Link
-        className="inline-flex h-11 items-center justify-center rounded-xl border border-violet-300/20 bg-violet-400/10 px-5 text-sm font-black text-violet-100 transition hover:bg-violet-400/16"
+        className="inline-flex h-11 items-center justify-center rounded-xl border border-emerald-300/15 bg-emerald-300/[0.07] px-5 text-sm font-black text-emerald-100 transition hover:bg-emerald-300/[0.12]"
         to="/dashboard/reviews"
       >
         Review
@@ -555,7 +555,7 @@ export default function Overview() {
           <p className="mt-3 text-lg font-semibold text-slate-400">Your review recognition hub.</p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <div className="flex flex-wrap rounded-2xl border border-white/10 bg-[#07111f]/78 p-1 shadow-[0_18px_70px_rgba(0,0,0,0.22)]">
+          <div className="flex flex-wrap rounded-xl border border-white/[0.07] bg-[#0a0d0b]/90 p-1 shadow-[0_18px_70px_rgba(0,0,0,0.22)]">
             {periodOptions.map((period) => {
               const isActive = activePeriod === period
 
@@ -576,7 +576,7 @@ export default function Overview() {
             })}
           </div>
           <button
-            className="inline-flex h-12 items-center justify-center gap-3 rounded-xl border border-white/10 bg-[#07111f]/78 px-5 text-sm font-black text-slate-200 shadow-[0_18px_70px_rgba(0,0,0,0.22)] transition hover:bg-white/[0.07]"
+            className="inline-flex h-12 items-center justify-center gap-3 rounded-xl border border-white/[0.07] bg-[#0a0d0b]/90 px-5 text-sm font-black text-slate-200 shadow-[0_18px_70px_rgba(0,0,0,0.22)] transition hover:border-emerald-300/20 hover:bg-emerald-300/[0.05]"
             type="button"
           >
             <CalendarDays size={18} />
@@ -584,7 +584,7 @@ export default function Overview() {
             <ChevronDown size={17} />
           </button>
           <button
-            className="inline-flex h-12 items-center justify-center gap-3 rounded-xl border border-white/10 bg-[#07111f]/78 px-5 text-sm font-black text-slate-200 shadow-[0_18px_70px_rgba(0,0,0,0.22)] transition hover:bg-white/[0.07]"
+            className="inline-flex h-12 items-center justify-center gap-3 rounded-xl border border-white/[0.07] bg-[#0a0d0b]/90 px-5 text-sm font-black text-slate-200 shadow-[0_18px_70px_rgba(0,0,0,0.22)] transition hover:border-emerald-300/20 hover:bg-emerald-300/[0.05]"
             type="button"
           >
             <Download size={18} />

@@ -37,9 +37,9 @@ export default function Rewards() {
 
   return (
     <div className="space-y-6">
-      <section className="flex flex-col justify-between gap-5 rounded-[2rem] border border-white/10 bg-white/[0.065] p-6 shadow-[0_30px_120px_rgba(0,0,0,0.22)] backdrop-blur-2xl lg:flex-row lg:items-end">
+      <section className="flex flex-col justify-between gap-5 rounded-2xl border border-white/[0.07] bg-[#0a0d0b]/90 p-6 shadow-[0_30px_120px_rgba(0,0,0,0.22)] backdrop-blur-2xl lg:flex-row lg:items-end">
         <div>
-          <p className="mb-4 inline-flex rounded-full border border-cyan-300/20 bg-cyan-400/10 px-3 py-1 text-xs font-black uppercase tracking-[0.16em] text-cyan-100">
+          <p className="mb-4 inline-flex rounded-full border border-emerald-300/15 bg-emerald-300/[0.07] px-3 py-1 text-xs font-black uppercase tracking-[0.16em] text-emerald-200">
             Rewards
           </p>
           <h2 className="max-w-3xl text-4xl font-black tracking-tight text-white">
@@ -50,7 +50,7 @@ export default function Rewards() {
           </p>
         </div>
         <button
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-4 text-sm font-black text-slate-950 transition hover:-translate-y-0.5 hover:bg-slate-200"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-300 px-5 py-3.5 text-sm font-black text-[#06110c] shadow-[0_0_32px_rgba(110,231,183,0.12)] transition hover:-translate-y-0.5 hover:bg-emerald-200"
           onClick={openAdd}
           type="button"
         >
@@ -59,9 +59,9 @@ export default function Rewards() {
         </button>
       </section>
 
-      <section className="rounded-[1.7rem] border border-white/10 bg-white/[0.065] p-5 shadow-[0_22px_90px_rgba(0,0,0,0.18)] backdrop-blur-xl">
+      <section className="rounded-2xl border border-white/[0.07] bg-[#0a0d0b]/90 p-5 shadow-[0_22px_90px_rgba(0,0,0,0.18)] backdrop-blur-xl">
         <div className="mb-5">
-          <p className="text-sm font-black uppercase tracking-[0.16em] text-cyan-100">Points rules</p>
+          <p className="text-sm font-black uppercase tracking-[0.16em] text-emerald-200">Points rules</p>
           <h3 className="mt-1 text-2xl font-black tracking-tight text-white">How reviews become points</h3>
           <p className="mt-2 text-sm leading-6 text-slate-400">
             4 and 5 star staff mentions earn points. 1 to 3 star reviews are tracked in staff stats but do not earn points.
@@ -72,7 +72,7 @@ export default function Rewards() {
             const earnsPoints = rating >= 4
 
             return (
-              <label className="rounded-3xl border border-white/10 bg-[#050816]/72 p-4" key={rating}>
+              <label className="rounded-xl border border-white/[0.07] bg-[#060807] p-4" key={rating}>
                 <span className="block text-sm font-black text-white">
                   {rating} star{rating === 1 ? '' : 's'}
                 </span>
@@ -95,12 +95,12 @@ export default function Rewards() {
 
       {isFormOpen && (
         <form
-          className="rounded-[1.7rem] border border-cyan-300/20 bg-cyan-400/10 p-5 shadow-[0_22px_90px_rgba(0,0,0,0.18)] backdrop-blur-xl"
+          className="rounded-2xl border border-emerald-300/20 bg-emerald-300/[0.07] p-5 shadow-[0_22px_90px_rgba(0,0,0,0.18)] backdrop-blur-xl"
           onSubmit={handleSubmit}
         >
           <div className="mb-5 flex items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-black uppercase tracking-[0.16em] text-cyan-100">
+              <p className="text-sm font-black uppercase tracking-[0.16em] text-emerald-200">
                 {form.id ? 'Edit reward' : 'New reward'}
               </p>
               <h3 className="mt-1 text-2xl font-black tracking-tight text-white">
@@ -143,13 +143,13 @@ export default function Rewards() {
           <label className="mt-4 flex w-fit items-center gap-3 text-sm font-bold text-slate-200">
             <input
               checked={form.is_active}
-              className="h-4 w-4 accent-cyan-200"
+              className="h-4 w-4 accent-emerald-300"
               onChange={(event) => updateField('is_active', event.target.checked)}
               type="checkbox"
             />
             Active
           </label>
-          <button className="mt-5 rounded-2xl bg-white px-5 py-4 text-sm font-black text-slate-950 transition hover:-translate-y-0.5 hover:bg-slate-200" type="submit">
+          <button className="mt-5 rounded-xl bg-emerald-300 px-5 py-4 text-sm font-black text-[#06110c] transition hover:-translate-y-0.5 hover:bg-emerald-200" type="submit">
             Save reward
           </button>
         </form>
@@ -158,11 +158,11 @@ export default function Rewards() {
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {rewards.map((reward) => (
           <article
-            className="rounded-[1.7rem] border border-white/10 bg-white/[0.065] p-5 shadow-[0_22px_90px_rgba(0,0,0,0.18)] backdrop-blur-xl transition hover:-translate-y-1 hover:bg-white/[0.09]"
+            className="rounded-2xl border border-white/[0.07] bg-[#0a0d0b]/90 p-5 shadow-[0_22px_90px_rgba(0,0,0,0.18)] backdrop-blur-xl transition hover:-translate-y-1 hover:border-emerald-300/20 hover:bg-[#0d120f]"
             key={reward.id}
           >
             <div className="flex items-start justify-between gap-4">
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-950">
+              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-300 text-[#06110c]">
                 <Gift size={21} />
               </span>
               <span
@@ -175,7 +175,7 @@ export default function Rewards() {
             </div>
             <h3 className="mt-5 text-xl font-black text-white">{reward.title}</h3>
             <p className="mt-2 min-h-12 text-sm leading-6 text-slate-400">{reward.description}</p>
-            <p className="mt-5 rounded-2xl border border-white/10 bg-[#050816]/72 px-4 py-3 text-sm font-black text-white">
+            <p className="mt-5 rounded-xl border border-white/[0.07] bg-[#060807] px-4 py-3 text-sm font-black text-white">
               {reward.points_required} points required
             </p>
             <div className="mt-4 grid grid-cols-2 gap-2">

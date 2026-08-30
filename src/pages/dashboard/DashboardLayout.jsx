@@ -4,7 +4,6 @@ import {
   Home,
   LogOut,
   MessageSquareText,
-  Settings,
   Sparkles,
   Users,
 } from 'lucide-react'
@@ -21,10 +20,7 @@ import { useAuth } from '../../lib/AuthContext'
 import { supabase } from '../../lib/supabaseClient'
 import {
   applyReviewToStaff,
-  createExcerpt,
   createStaffRecord,
-  detectMentionedStaff,
-  detectUnresolvedStaffNames,
   getPointsForRating,
 } from '../../utils/mvpRecognition'
 
@@ -36,7 +32,6 @@ const navItems = [
   { href: '/dashboard/reviews', icon: MessageSquareText, label: 'Reviews' },
   { href: '/dashboard/staff', icon: Users, label: 'Team' },
   { href: '/dashboard/rewards', icon: Gift, label: 'Rewards' },
-  { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
 ]
 
 function createId(prefix) {
@@ -124,42 +119,6 @@ function normalizeReviews(reviews) {
       created_at: review.created_at || new Date().toISOString(),
     }))
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-}
-
-function manualReviewToDashboardReview(review) {
-  const staffMember = String(review.staff_member || '').trim()
-
-  return {
-    id: review.id,
-    business_profile_id: review.business_profile_id,
-    created_at: review.created_at || new Date().toISOString(),
-    customer_name: review.customer_name || 'Customer',
-    mentioned_staff: staffMember ? [staffMember] : [],
-    rating: Number(review.rating || 0),
-    source: review.source || 'manual',
-    staff_member: staffMember,
-    text: review.review_text || '',
-    user_id: review.user_id,
-  }
-}
-
-function createManualReviewError(type, message, cause) {
-  const error = new Error(message)
-  error.type = type
-  error.cause = cause
-  return error
-}
-
-function isPolicyError(error) {
-  const errorText = [error?.code, error?.message, error?.details, error?.hint].filter(Boolean).join(' ').toLowerCase()
-
-  return (
-    error?.code === '42501' ||
-    errorText.includes('row-level security') ||
-    errorText.includes('rls') ||
-    errorText.includes('policy') ||
-    errorText.includes('permission denied')
-  )
 }
 
 function normalizeNameApprovals(approvals) {
@@ -282,35 +241,37 @@ function buildStaffRecord(form) {
 
 function Sidebar({ nameApprovalsCount }) {
   return (
-    <aside className="hidden min-h-screen w-72 shrink-0 border-r border-white/10 bg-[#050816]/95 px-5 py-6 text-white shadow-[24px_0_100px_rgba(2,6,23,0.28)] backdrop-blur-2xl lg:block">
-      <Link to="/" className="mb-8 flex items-center gap-3 rounded-2xl px-2">
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/10 text-cyan-100 shadow-[0_0_40px_rgba(34,211,238,0.14)]">
+    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-white/[0.07] bg-[#070908]/95 px-4 py-5 text-white backdrop-blur-2xl lg:flex lg:flex-col">
+      <Link to="/" className="mb-9 flex items-center gap-3 rounded-xl px-2">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-200/20 bg-emerald-300 text-[#06110c] shadow-[0_0_36px_rgba(110,231,183,0.24)]">
           <Sparkles size={20} />
         </span>
         <span>
-          <span className="block text-lg font-black tracking-tight">AURA</span>
-          <span className="block text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Customer dashboard</span>
+          <span className="block text-base font-black tracking-[0.12em]">AURA</span>
+          <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Review intelligence</span>
         </span>
       </Link>
 
-      <nav className="space-y-2">
+      <nav className="space-y-1.5">
         {navItems.map((item) => (
           <NavLink
             className={({ isActive }) =>
-              `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold transition hover:-translate-y-0.5 ${
+              `group flex items-center gap-3 rounded-xl border px-3 py-2.5 text-sm font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-emerald-300/45 ${
                 isActive
-                  ? 'bg-white text-slate-950 shadow-[0_18px_60px_rgba(34,211,238,0.18)]'
-                  : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                  ? 'border-emerald-300/20 bg-emerald-300/10 text-emerald-200 shadow-[0_0_32px_rgba(110,231,183,0.08)]'
+                  : 'border-transparent text-slate-400 hover:border-white/[0.06] hover:bg-white/[0.035] hover:text-white'
               }`
             }
             end={item.end}
             key={item.href}
             to={item.href}
           >
-            <item.icon size={18} />
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.035] text-current transition group-hover:bg-white/[0.06]">
+              <item.icon size={17} />
+            </span>
             {item.label}
             {item.href === '/dashboard/reviews' && nameApprovalsCount > 0 && (
-              <span className="ml-auto rounded-full bg-cyan-300 px-2 py-0.5 text-xs font-black text-slate-950">
+              <span className="ml-auto rounded-full bg-emerald-300 px-2 py-0.5 text-xs font-black text-[#06110c]">
                 {nameApprovalsCount}
               </span>
             )}
@@ -318,11 +279,12 @@ function Sidebar({ nameApprovalsCount }) {
         ))}
       </nav>
 
-      <div className="mt-8 rounded-[1.7rem] border border-cyan-300/15 bg-cyan-400/10 p-4">
-        <p className="text-sm font-black text-cyan-100">Recognition workspace</p>
-        <p className="mt-2 text-sm leading-6 text-slate-400">
-          4 and 5 star mentions become points, rewards and team momentum.
-        </p>
+      <div className="mt-auto rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4">
+        <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-emerald-200">
+          <span className="h-2 w-2 rounded-full bg-emerald-300 shadow-[0_0_14px_rgba(110,231,183,0.85)]" />
+          Workspace active
+        </div>
+        <p className="mt-2 text-xs leading-5 text-slate-500">Review monitoring will appear here once Google is connected.</p>
       </div>
     </aside>
   )
@@ -330,12 +292,12 @@ function Sidebar({ nameApprovalsCount }) {
 
 function MobileNav({ nameApprovalsCount }) {
   return (
-    <nav className="fixed inset-x-3 bottom-3 z-30 grid grid-cols-5 rounded-3xl border border-white/10 bg-[#050816]/95 p-2 text-white shadow-[0_24px_90px_rgba(0,0,0,0.4)] backdrop-blur-xl lg:hidden">
+    <nav className="fixed inset-x-3 bottom-3 z-30 grid grid-cols-4 rounded-2xl border border-white/10 bg-[#070908]/95 p-2 text-white shadow-[0_24px_90px_rgba(0,0,0,0.5)] backdrop-blur-xl lg:hidden">
       {navItems.map((item) => (
         <NavLink
           className={({ isActive }) =>
-            `relative flex flex-col items-center justify-center gap-1 rounded-2xl py-2 text-[10px] font-bold transition ${
-              isActive ? 'bg-white text-slate-950' : 'text-slate-400'
+            `relative flex flex-col items-center justify-center gap-1 rounded-2xl py-2 text-[10px] font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-emerald-300/45 ${
+              isActive ? 'bg-emerald-300 text-[#06110c]' : 'text-slate-400'
             }`
           }
           end={item.end}
@@ -345,7 +307,7 @@ function MobileNav({ nameApprovalsCount }) {
           <item.icon size={17} />
           {item.label}
           {item.href === '/dashboard/reviews' && nameApprovalsCount > 0 && (
-            <span className="absolute right-2 top-1 h-2 w-2 rounded-full bg-cyan-300" />
+            <span className="absolute right-2 top-1 h-2 w-2 rounded-full bg-emerald-300" />
           )}
         </NavLink>
       ))}
@@ -358,8 +320,24 @@ export default function DashboardLayout() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const isOverviewRoute = location.pathname === '/dashboard'
-  const initialState = useMemo(() => readLocalState(), [])
-  const [businessProfile, setBusinessProfile] = useState(null)
+  const isLocalPreview = import.meta.env.DEV
+  const initialState = useMemo(() => {
+    if (!isLocalPreview) return readLocalState()
+
+    const demoState = buildDemoDashboardState(defaultReviews)
+    return {
+      categories: defaultCategories,
+      nameApprovals: [],
+      pointEvents: demoState.pointEvents,
+      pointsRules: defaultPointsRules,
+      rewards: defaultRewards,
+      reviews: demoState.reviews,
+      staff: demoState.staff,
+    }
+  }, [isLocalPreview])
+  const [businessProfile, setBusinessProfile] = useState(
+    isLocalPreview ? { business_name: 'Hilton Glasgow Demo' } : null,
+  )
   const [categories, setCategories] = useState(initialState.categories)
   const [nameApprovals, setNameApprovals] = useState(initialState.nameApprovals)
   const [pointEvents, setPointEvents] = useState(initialState.pointEvents)
@@ -412,19 +390,7 @@ export default function DashboardLayout() {
           profile = createdProfile
         }
 
-        const { data: manualReviews, error: manualReviewsError } = await supabase
-          .from('manual_reviews')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('business_profile_id', profile.id)
-          .order('created_at', { ascending: false })
-
-        if (manualReviewsError) throw manualReviewsError
-
-        const accountReviews = normalizeReviews((manualReviews || []).map(manualReviewToDashboardReview))
-        const visibleReviews = isDevAccount
-          ? normalizeReviews([...accountReviews, ...defaultReviews])
-          : accountReviews
+        const visibleReviews = isDevAccount ? normalizeReviews(defaultReviews) : []
         const demoState = isDevAccount ? buildDemoDashboardState(visibleReviews) : null
 
         if (!isMounted) return
@@ -445,7 +411,7 @@ export default function DashboardLayout() {
         setConnectionStatus('demo')
         setReviews([])
         setTechnicalNotice(
-          'AURA could not load your account workspace. Run the business_profiles and manual_reviews SQL, then refresh.',
+          'AURA could not load your account workspace. Please refresh and try again.',
         )
       }
     }
@@ -495,149 +461,6 @@ export default function DashboardLayout() {
         ),
     [staff],
   )
-
-  async function getCurrentManualReviewUser() {
-    if (!supabase) {
-      throw createManualReviewError('no_logged_in_user', 'Supabase is not configured.')
-    }
-
-    const { data, error } = await supabase.auth.getUser()
-
-    if (error) {
-      console.error('[Manual review] Current user lookup failed:', error)
-      throw createManualReviewError(
-        isPolicyError(error) ? 'rls_policy_error' : 'no_logged_in_user',
-        'AURA could not confirm your logged-in user.',
-        error,
-      )
-    }
-
-    if (!data.user) {
-      throw createManualReviewError('no_logged_in_user', 'No logged-in user was found.')
-    }
-
-    return data.user
-  }
-
-  async function getBusinessProfileForManualReview(currentUser) {
-    const { data: existingProfile, error: profileLoadError } = await supabase
-      .from('business_profiles')
-      .select('*')
-      .eq('user_id', currentUser.id)
-      .maybeSingle()
-
-    if (profileLoadError) {
-      console.error('[Manual review] Business profile lookup failed:', profileLoadError)
-      throw createManualReviewError(
-        isPolicyError(profileLoadError) ? 'rls_policy_error' : 'missing_business_profile',
-        'AURA could not load your business profile.',
-        profileLoadError,
-      )
-    }
-
-    if (existingProfile) return existingProfile
-
-    const { data: createdProfile, error: profileCreateError } = await supabase
-      .from('business_profiles')
-      .insert({
-        business_name: 'My Business',
-        user_id: currentUser.id,
-      })
-      .select('*')
-      .single()
-
-    if (profileCreateError) {
-      console.error('[Manual review] Business profile creation failed:', profileCreateError)
-      throw createManualReviewError(
-        isPolicyError(profileCreateError) ? 'rls_policy_error' : 'missing_business_profile',
-        'AURA could not create your business profile.',
-        profileCreateError,
-      )
-    }
-
-    if (!createdProfile?.id) {
-      console.error('[Manual review] Business profile creation returned no profile row:', createdProfile)
-      throw createManualReviewError(
-        'missing_business_profile',
-        'AURA could not create your business profile.',
-      )
-    }
-
-    return createdProfile
-  }
-
-  async function publishReview(form) {
-    const currentUser = await getCurrentManualReviewUser()
-    const profile = await getBusinessProfileForManualReview(currentUser)
-    const rating = Number(form.rating)
-    const reviewText = form.text.trim()
-    const staffMember = form.staff_member?.trim() || ''
-    const detectedStaff = detectMentionedStaff(reviewText, staff)
-    const matchedStaffMember = staffMember ? findStaffByName(staff, staffMember)?.name : ''
-    const mentionedStaff = uniqueNames([...detectedStaff, matchedStaffMember].filter(Boolean))
-    const newNames = uniqueNames([
-      ...detectUnresolvedStaffNames(reviewText, staff),
-      staffMember && !matchedStaffMember ? staffMember : '',
-    ])
-
-    const { data: manualReview, error: manualReviewError } = await supabase
-      .from('manual_reviews')
-      .insert({
-        business_profile_id: profile.id,
-        customer_name: form.customer_name.trim(),
-        rating,
-        review_text: reviewText,
-        source: 'manual',
-        staff_member: staffMember || null,
-        user_id: currentUser.id,
-      })
-      .select('*')
-      .single()
-
-    if (manualReviewError) {
-      console.error('[Manual review] manual_reviews insert failed:', manualReviewError)
-      throw createManualReviewError(
-        isPolicyError(manualReviewError) ? 'rls_policy_error' : 'manual_reviews_insert_error',
-        'AURA could not save the manual review.',
-        manualReviewError,
-      )
-    }
-
-    console.log('[Manual review] manual_reviews insert succeeded:', manualReview)
-
-    const review = {
-      ...manualReviewToDashboardReview(manualReview),
-      mentioned_staff: uniqueNames([...manualReviewToDashboardReview(manualReview).mentioned_staff, ...mentionedStaff]),
-    }
-    const nextApprovals = newNames.map((name) => ({
-      id: createId('name'),
-      name,
-      review_id: review.id,
-      review_excerpt: createExcerpt(review.text),
-      rating,
-      created_at: new Date().toISOString(),
-    }))
-    const nextStaff = applyReviewToStaff(staff, review, pointsRules)
-    const nextPointEvents = createPointEventsForReview(review, nextStaff, pointsRules)
-    const nextReviews = normalizeReviews([review, ...reviews])
-    const allApprovals = normalizeNameApprovals([...nextApprovals, ...nameApprovals])
-    const allPointEvents = normalizePointEvents([...nextPointEvents, ...pointEvents])
-
-    setBusinessProfile(profile)
-    setReviews(nextReviews)
-    setStaff(nextStaff)
-    setNameApprovals(allApprovals)
-    setPointEvents(allPointEvents)
-
-    return {
-      matchedNames: mentionedStaff,
-      newNames,
-      pointsAwarded: nextPointEvents.reduce(
-        (total, event) => total + Number(event.points_awarded || 0),
-        0,
-      ),
-    }
-  }
 
   async function addStaff(form) {
     const record = buildStaffRecord(form)
@@ -768,7 +591,6 @@ export default function DashboardLayout() {
       approveName,
       deleteReward,
       ignoreName,
-      publishReview,
       saveReward,
       updatePointsRule,
     },
@@ -791,17 +613,17 @@ export default function DashboardLayout() {
   }
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#030711] text-white">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_28%_0%,rgba(34,211,238,0.16),transparent_32%),radial-gradient(circle_at_85%_15%,rgba(124,58,237,0.13),transparent_30%),linear-gradient(rgba(255,255,255,0.028)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.028)_1px,transparent_1px)] bg-[size:auto,auto,72px_72px,72px_72px]" />
+    <main className="min-h-screen overflow-hidden bg-[#030504] text-white">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_38%_-12%,rgba(110,231,183,0.10),transparent_34%),radial-gradient(circle_at_92%_18%,rgba(75,192,151,0.055),transparent_24%),linear-gradient(rgba(255,255,255,0.014)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.014)_1px,transparent_1px)] bg-[size:auto,auto,84px_84px,84px_84px]" />
       <div className="relative flex">
         <Sidebar nameApprovalsCount={nameApprovals.length} />
 
         <div className="min-w-0 flex-1 pb-28 lg:pb-0">
           {!isOverviewRoute && (
-            <header className="sticky top-0 z-20 border-b border-white/10 bg-[#030711]/72 px-5 py-4 backdrop-blur-2xl sm:px-8 lg:px-10">
+            <header className="sticky top-0 z-20 border-b border-white/[0.07] bg-[#030504]/82 px-5 py-4 backdrop-blur-2xl sm:px-8 lg:px-10">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-sm font-bold text-cyan-100">Recognition workspace</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-200">Recognition workspace</p>
                   <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl">
                     AURA Command Centre
                   </h1>
@@ -823,15 +645,15 @@ export default function DashboardLayout() {
                 : 'mx-auto max-w-7xl px-5 py-6 sm:px-8 lg:px-10 lg:py-8'
             }
           >
-            <div className="mb-6 flex flex-col justify-between gap-3 rounded-[1.35rem] border border-white/10 bg-white/[0.055] p-4 shadow-[0_20px_80px_rgba(0,0,0,0.18)] backdrop-blur-xl sm:flex-row sm:items-center">
+            <div className="mb-6 flex flex-col justify-between gap-3 rounded-2xl border border-white/[0.07] bg-[#0a0d0b]/90 p-4 shadow-[0_24px_90px_rgba(0,0,0,0.24)] backdrop-blur-xl sm:flex-row sm:items-center">
               <div>
-                <p className="text-sm font-black text-cyan-100">
+                <p className="text-sm font-black text-emerald-200">
                   {businessProfile?.business_name || 'AURA workspace'}
                 </p>
                 <p className="mt-1 text-xs font-semibold text-slate-400">{user?.email}</p>
               </div>
               <button
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/8 px-4 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-white/12 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.035] px-4 py-2.5 text-sm font-bold text-slate-300 transition hover:border-emerald-300/20 hover:bg-emerald-300/[0.06] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={isSigningOut}
                 onClick={handleSignOut}
                 type="button"

@@ -29,12 +29,12 @@ export default function StaffModal({ categories, initialName = '', onClose, onSa
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-8 backdrop-blur-sm">
       <form
-        className="w-full max-w-xl rounded-[1.7rem] border border-white/10 bg-[#07101f] p-6 text-white shadow-[0_34px_140px_rgba(0,0,0,0.5)]"
+        className="w-full max-w-xl rounded-2xl border border-white/10 bg-[#090d0b] p-6 text-white shadow-[0_34px_140px_rgba(0,0,0,0.5)]"
         onSubmit={handleSubmit}
       >
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.16em] text-cyan-100">Team setup</p>
+            <p className="text-sm font-bold uppercase tracking-[0.16em] text-emerald-200">Team setup</p>
             <h2 className="mt-2 text-2xl font-black tracking-tight">{title}</h2>
           </div>
           <button
@@ -87,7 +87,7 @@ export default function StaffModal({ categories, initialName = '', onClose, onSa
           />
         </div>
 
-        <button className="mt-6 inline-flex w-full items-center justify-center rounded-2xl bg-white px-5 py-4 text-sm font-black text-slate-950 transition hover:-translate-y-0.5 hover:bg-slate-200" type="submit">
+        <button className="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-emerald-300 px-5 py-4 text-sm font-black text-[#06110c] transition hover:-translate-y-0.5 hover:bg-emerald-200" type="submit">
           Save staff member
         </button>
       </form>
