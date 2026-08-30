@@ -9,11 +9,13 @@ import {
   Plus,
   SearchCheck,
   Star,
+  Trophy,
   UserPlus,
   Users,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { getNextReward } from '../../utils/mvpRecognition'
 import { useDashboard } from './useDashboard'
 
 const periodOptions = ['Day', 'Week', 'Month', 'Quarter', 'Year']
@@ -121,6 +123,16 @@ function guestFeedbackLabel(period) {
 
 function comparisonLabel(value, period) {
   return `${value} vs previous ${period.toLowerCase()}`
+}
+
+function initials(name) {
+  return String(name || 'A')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase()
 }
 
 function formatRelativeTime(dateValue) {
@@ -297,6 +309,57 @@ function ActionButton({ children, to }) {
   )
 }
 
+function TopPerformerCard({ person, rank }) {
+  const accents = ['amber', 'cyan', 'violet']
+  const accent = accents[rank] || 'cyan'
+  const style = accentStyles[accent]
+  const changes = [35, 18, 12]
+  const sparkline = [sparklineSets.staffA, sparklineSets.staffB, sparklineSets.staffC][rank]
+
+  return (
+    <article
+      className={`rounded-xl border bg-[#07070a] p-4 text-center ${
+        rank === 0
+          ? 'border-violet-300/25 shadow-[0_0_42px_rgba(167,139,250,0.10)]'
+          : 'border-white/[0.07]'
+      }`}
+    >
+      <div className="mb-3 flex items-center justify-between">
+        <span
+          className={`flex h-9 w-9 items-center justify-center rounded-full text-xs font-black text-[#100722] ${
+            rank === 0 ? 'bg-violet-300' : 'bg-violet-100/70'
+          }`}
+        >
+          {rank + 1}
+        </span>
+        <span className={`rounded-full border px-2.5 py-1 text-[10px] font-black ${style.icon}`}>
+          +{changes[rank] || 8} pts
+        </span>
+      </div>
+      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-white/10 bg-white/10 text-xl font-black text-white">
+        {initials(person.name)}
+      </div>
+      <h4 className="mt-3 truncate text-xl font-black text-white">{person.name}</h4>
+      <p className="mt-1 truncate text-xs font-semibold text-slate-400">
+        {person.job_title || person.job_category}
+      </p>
+      <p className={`mt-4 text-4xl font-black tracking-tight ${style.text}`}>
+        {Number(person.points || 0)}
+        <span className="ml-1 text-base">pts</span>
+      </p>
+      <p className="mt-1 text-xs font-bold text-slate-400">
+        {Number(person.total_mentions || 0)} mentions
+      </p>
+      <div className="mt-3 flex justify-center">
+        <Sparkline accent={accent} data={sparkline} />
+      </div>
+      <p className={`mt-1 text-xs font-black ${style.text}`}>
+        +{changes[rank] || 8} pts vs last month
+      </p>
+    </article>
+  )
+}
+
 function ActivityRow({ accent = 'cyan', detail, icon: Icon, label, meta, pill, title }) {
   const style = accentStyles[accent]
 
@@ -340,12 +403,46 @@ function PendingApprovalRow({ approval }) {
   )
 }
 
+function RewardProgressRow({ accent, item }) {
+  const style = accentStyles[accent]
+
+  return (
+    <div className="grid gap-3 rounded-xl border border-white/10 bg-white/[0.035] p-3 md:grid-cols-[1fr_auto] md:items-center">
+      <div className="flex min-w-0 items-center gap-3">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/10 text-sm font-black text-white">
+          {initials(item.person.name)}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-black text-white">{item.person.name}</p>
+              <p className="truncate text-xs font-semibold text-slate-400">{item.reward.title}</p>
+            </div>
+            <p className="shrink-0 text-right text-xs font-black text-slate-200">
+              {item.current} / {item.required} pts
+            </p>
+          </div>
+          <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
+            <div
+              className="h-full rounded-full"
+              style={{ backgroundColor: style.stroke, width: `${item.progress}%` }}
+            />
+          </div>
+        </div>
+      </div>
+      <p className={`text-right text-xs font-black ${style.text}`}>{item.toGo} pts to go</p>
+    </div>
+  )
+}
+
 export default function Overview() {
   const [activePeriod, setActivePeriod] = useState('Month')
   const {
     account,
+    leaderboard = [],
     nameApprovals = [],
     pointEvents = [],
+    rewards = [],
     reviews = [],
   } = useDashboard()
   const selectedRange = useMemo(() => getPeriodRange(activePeriod), [activePeriod])
@@ -378,6 +475,7 @@ export default function Overview() {
     neutral: periodReviews.filter((review) => Number(review.rating) === 3).length,
     negative: periodReviews.filter((review) => Number(review.rating) <= 2).length,
   }
+  const topStaff = leaderboard.slice(0, 3)
   const businessName = String(account?.businessProfile?.business_name || 'Hilton Glasgow').replace(
     /\s+Demo$/i,
     '',
@@ -446,6 +544,27 @@ export default function Overview() {
           title: 'Reward unlocked',
         },
       ]
+  const rewardProgress = leaderboard
+    .map((person) => {
+      const reward = getNextReward(person, rewards)
+      const current = Number(person.points || 0)
+      const required = Number(reward?.points_required || 0)
+
+      return reward && required
+        ? {
+            current,
+            person,
+            progress: Math.min(100, Math.round((current / required) * 100)),
+            required,
+            reward,
+            toGo: Math.max(0, required - current),
+          }
+        : null
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.toGo - b.toGo)
+    .slice(0, 3)
+
   return (
     <div className="space-y-5 pb-12">
       <section className="border-b border-white/[0.055] pb-5">
@@ -595,6 +714,53 @@ export default function Overview() {
         </div>
       </section>
 
+      <section className="pt-4">
+        <Panel
+          action={<ActionButton to="/dashboard/staff">View all team</ActionButton>}
+          icon={Trophy}
+          iconAccent="amber"
+          subtitle="Based on points earned from recognised review mentions"
+          title="Top performers this month"
+        >
+          {topStaff.length ? (
+            <div className="grid gap-4 lg:grid-cols-3">
+              {topStaff.map((person, index) => (
+                <TopPerformerCard key={person.id} person={person} rank={index} />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-xl border border-white/10 bg-white/[0.035] p-4 text-xs font-semibold text-slate-400">
+              Add team members to start building your leaderboard.
+            </div>
+          )}
+        </Panel>
+      </section>
+
+      <section>
+        <Panel
+          action={<ActionButton to="/dashboard/rewards">View all rewards</ActionButton>}
+          icon={Gift}
+          iconAccent="violet"
+          subtitle="See who's close to unlocking rewards"
+          title="Rewards progress"
+        >
+          <div className="space-y-3">
+            {rewardProgress.length ? (
+              rewardProgress.map((item, index) => (
+                <RewardProgressRow
+                  accent={['violet', 'amber', 'violet'][index] || 'cyan'}
+                  item={item}
+                  key={`${item.person.id}-${item.reward.id}`}
+                />
+              ))
+            ) : (
+              <div className="rounded-xl border border-white/10 bg-white/[0.035] p-4 text-xs font-semibold text-slate-400">
+                Add active rewards to show progress here.
+              </div>
+            )}
+          </div>
+        </Panel>
+      </section>
     </div>
   )
 }
