@@ -236,7 +236,8 @@ function TopPerformersMetricCard({ people }) {
                   {person.name}
                 </span>
                 <span className="shrink-0 text-xs font-black text-violet-200">
-                  {Number(person.points || 0)} pts
+                  {Number(person.total_mentions || 0)}{' '}
+                  {Number(person.total_mentions || 0) === 1 ? 'mention' : 'mentions'}
                 </span>
               </li>
             ))}
