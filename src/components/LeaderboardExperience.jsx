@@ -1,18 +1,27 @@
-import { Award, Gift, LayoutGrid, List, Medal, Sparkles, Star, Trophy } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { Award, Gift, Medal, Sparkles, Star, Trophy } from 'lucide-react'
+import { useMemo } from 'react'
 
 const medalStyles = [
   {
     avatar: 'border-amber-300/35 bg-amber-300/12 text-amber-200 shadow-[0_0_46px_rgba(251,191,36,0.12)]',
     text: 'text-amber-300',
+    glow: 'shadow-[0_-32px_110px_rgba(245,158,11,0.18)]',
+    podium: 'border-amber-300/20 bg-[linear-gradient(180deg,rgba(245,158,11,0.14),rgba(55,26,83,0.28)_52%,rgba(10,7,14,0.98))]',
+    face: 'border-amber-300/25 bg-[linear-gradient(135deg,rgba(245,158,11,0.22),rgba(124,58,237,0.18))]',
   },
   {
     avatar: 'border-slate-300/30 bg-slate-200/10 text-slate-200 shadow-[0_0_42px_rgba(226,232,240,0.08)]',
     text: 'text-slate-300',
+    glow: 'shadow-[0_-25px_100px_rgba(196,181,253,0.13)]',
+    podium: 'border-slate-200/15 bg-[linear-gradient(180deg,rgba(226,232,240,0.09),rgba(76,29,149,0.2)_50%,rgba(9,7,13,0.98))]',
+    face: 'border-slate-200/20 bg-[linear-gradient(135deg,rgba(226,232,240,0.13),rgba(109,40,217,0.16))]',
   },
   {
     avatar: 'border-orange-400/30 bg-orange-400/10 text-orange-300 shadow-[0_0_42px_rgba(251,146,60,0.08)]',
     text: 'text-orange-400',
+    glow: 'shadow-[0_-22px_90px_rgba(251,146,60,0.1)]',
+    podium: 'border-orange-300/15 bg-[linear-gradient(180deg,rgba(251,146,60,0.1),rgba(67,25,111,0.2)_50%,rgba(9,7,13,0.98))]',
+    face: 'border-orange-300/20 bg-[linear-gradient(135deg,rgba(251,146,60,0.14),rgba(109,40,217,0.15))]',
   },
 ]
 
@@ -57,67 +66,111 @@ function Progress({ value = 0 }) {
 }
 
 function Podium({ people }) {
-  const topThree = people.slice(0, 3)
+  const podium = [
+    {
+      person: people[1],
+      rank: 2,
+      height: 'lg:h-[292px]',
+      avatarSize: 'h-20 w-20 lg:h-24 lg:w-24',
+      nameSize: 'text-2xl',
+    },
+    {
+      person: people[0],
+      rank: 1,
+      height: 'lg:h-[370px]',
+      avatarSize: 'h-24 w-24 lg:h-28 lg:w-28',
+      nameSize: 'text-3xl',
+    },
+    {
+      person: people[2],
+      rank: 3,
+      height: 'lg:h-[262px]',
+      avatarSize: 'h-20 w-20 lg:h-24 lg:w-24',
+      nameSize: 'text-2xl',
+    },
+  ].filter(({ person }) => Boolean(person))
 
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-white/[0.07] bg-[#09080b] px-5 pb-6 pt-16 shadow-[0_30px_130px_rgba(0,0,0,0.38)] lg:px-8 lg:pt-24">
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-80 w-3/4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-700/10 blur-[100px]" />
-      <div className="relative grid gap-4 lg:grid-cols-3 lg:items-end">
-        {topThree.map((person, index) => {
-          const medal = medalStyles[index]
-          const achievements = achievementsFor(person, index + 1)
+    <section className="relative overflow-hidden rounded-[2rem] border border-violet-300/[0.09] bg-[#050407] px-5 pb-0 pt-7 shadow-[0_30px_130px_rgba(0,0,0,0.5)] lg:min-h-[660px] lg:px-10 lg:pt-9">
+      <div className="pointer-events-none absolute inset-x-[8%] top-0 h-[78%] rounded-[50%] bg-violet-700/[0.13] blur-[110px]" />
+      <div className="pointer-events-none absolute left-1/2 top-[42%] h-56 w-56 -translate-x-1/2 rounded-full bg-amber-400/[0.09] blur-[90px]" />
+      <div className="pointer-events-none absolute inset-0 opacity-[0.11] [background-image:radial-gradient(rgba(196,181,253,0.4)_0.7px,transparent_0.7px)] [background-size:8px_8px] [mask-image:linear-gradient(to_bottom,black,transparent_70%)]" />
+
+      <div className="relative flex flex-col gap-2 border-b border-white/[0.06] pb-5 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-violet-200">
+            <Sparkles size={13} /> Monthly recognition
+          </p>
+          <h3 className="mt-2 text-2xl font-black tracking-tight text-white">The AURA podium</h3>
+        </div>
+        <p className="max-w-sm text-xs font-semibold leading-5 text-slate-500 sm:text-right">
+          The team members making the biggest impression on guests this month.
+        </p>
+      </div>
+
+      <div className="relative mx-auto mt-10 grid max-w-6xl gap-5 pb-7 lg:mt-12 lg:grid-cols-3 lg:items-end lg:gap-0 lg:pb-0">
+        {podium.map(({ person, rank, height, avatarSize, nameSize }) => {
+          const medal = medalStyles[rank - 1]
+          const achievements = achievementsFor(person, rank)
           return (
             <article
-              className={`relative rounded-2xl border bg-[#0d0b11]/95 p-5 text-center ${
-                index === 0
-                  ? 'border-amber-300/20 lg:order-2 lg:-translate-y-8 lg:pb-8'
-                  : index === 1
-                    ? 'border-slate-300/15 lg:order-1'
-                    : 'border-orange-400/15 lg:order-3'
-              }`}
+              className={`relative flex flex-col justify-end text-center ${rank === 1 ? 'lg:z-20' : 'lg:z-10'}`}
               key={person.id}
             >
-              <span className="absolute right-4 top-4 rounded-full border border-white/[0.07] bg-white/[0.035] px-2.5 py-1 text-[10px] font-black text-slate-400">
-                Lifetime {Number(person.lifetime_points || 0)}
-              </span>
-              <div className={`mx-auto flex h-20 w-20 items-center justify-center rounded-2xl border text-2xl font-black ${medal.avatar}`}>
-                {initials(person.name)}
-              </div>
-              <div className={`mt-4 inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] ${medal.text}`}>
-                {index === 0 ? <Trophy size={15} /> : <Medal size={15} />}
-                Rank {index + 1}
-              </div>
-              <h3 className="mt-2 text-2xl font-black tracking-tight text-white">{person.name}</h3>
-              <p className="mt-1 text-xs font-semibold text-slate-500">
-                {person.job_title || person.job_category || 'Team member'}
-              </p>
-              <div className="mt-5 grid grid-cols-2 gap-2 border-y border-white/[0.07] py-4">
-                <div>
-                  <p className="text-3xl font-black text-white">{Number(person.monthly_points || 0)}</p>
-                  <p className="mt-1 text-[10px] font-black uppercase tracking-[0.12em] text-slate-500">Monthly points</p>
+              <div className={`relative z-10 mx-auto mb-5 ${rank === 1 ? 'lg:mb-7' : 'lg:mb-5'}`}>
+                <span className="absolute -right-10 -top-2 rounded-full border border-white/[0.08] bg-black/75 px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.1em] text-slate-400 backdrop-blur">
+                  Lifetime {Number(person.lifetime_points || 0)}
+                </span>
+                <div className={`mx-auto flex ${avatarSize} items-center justify-center rounded-[1.6rem] border text-2xl font-black ${medal.avatar}`}>
+                  {initials(person.name)}
                 </div>
-                <div>
-                  <p className="text-3xl font-black text-white">{Number(person.mentions ?? person.total_mentions ?? 0)}</p>
-                  <p className="mt-1 text-[10px] font-black uppercase tracking-[0.12em] text-slate-500">Mentions</p>
-                </div>
-              </div>
-              <div className="mt-4 flex flex-wrap justify-center gap-2">
-                {achievements.map((achievement) => (
-                  <span className="rounded-full border border-violet-300/15 bg-violet-300/[0.06] px-2.5 py-1 text-[10px] font-black text-violet-100" key={achievement}>
-                    {achievement}
-                  </span>
-                ))}
-              </div>
-              <div className="mt-4 rounded-xl border border-white/[0.07] bg-black/25 p-3 text-left">
-                <p className="flex items-center gap-2 text-xs font-black text-slate-300">
-                  <Gift className="text-violet-200" size={14} />
-                  {rewardSummary(person)}
+                <h4 className={`mt-4 ${nameSize} font-black tracking-tight text-white`}>{person.name}</h4>
+                <p className="mt-1 text-xs font-bold text-slate-500">
+                  {person.job_title || person.job_category || 'Team member'}
                 </p>
-                {person.next_reward && <Progress value={person.next_reward.progress_percent} />}
+              </div>
+
+              <div className={`relative min-h-[250px] overflow-hidden rounded-t-[1.7rem] border border-b-0 px-5 pb-6 pt-12 ${height} ${medal.podium} ${medal.glow}`}>
+                <div className={`absolute inset-x-[-1px] top-0 h-9 border-b ${medal.face} [clip-path:polygon(8%_0,92%_0,100%_100%,0_100%)]`} />
+                <div className={`relative mx-auto flex h-12 w-12 items-center justify-center rounded-xl border border-current/20 bg-black/35 ${medal.text}`}>
+                  {rank === 1 ? <Trophy size={23} /> : <Medal size={22} />}
+                </div>
+                <p className={`mt-3 text-[10px] font-black uppercase tracking-[0.2em] ${medal.text}`}>Rank {rank}</p>
+
+                <div className="mt-5 grid grid-cols-2 divide-x divide-white/[0.07] border-y border-white/[0.07] py-4">
+                  <div>
+                    <p className="text-2xl font-black text-white">{Number(person.monthly_points || 0)}</p>
+                    <p className="mt-1 text-[9px] font-black uppercase tracking-[0.12em] text-slate-500">Monthly points</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-black text-white">{Number(person.mentions ?? person.total_mentions ?? 0)}</p>
+                    <p className="mt-1 text-[9px] font-black uppercase tracking-[0.12em] text-slate-500">Mentions</p>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex flex-wrap justify-center gap-1.5">
+                  {achievements.slice(0, 2).map((achievement) => (
+                    <span className="rounded-full border border-violet-300/10 bg-violet-300/[0.06] px-2 py-1 text-[9px] font-black text-violet-100" key={achievement}>
+                      {achievement}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="mt-4 text-left">
+                  <p className="flex items-center justify-center gap-2 text-[11px] font-black text-slate-300">
+                    <Gift className="text-violet-200" size={13} />
+                    {rewardSummary(person)}
+                  </p>
+                  {person.next_reward && <Progress value={person.next_reward.progress_percent} />}
+                </div>
               </div>
             </article>
           )
         })}
+      </div>
+
+      <div className="relative mx-auto hidden w-fit -translate-y-5 items-center gap-2 rounded-xl border border-violet-300/10 bg-[#0b0710]/90 px-4 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-violet-100 shadow-[0_0_40px_rgba(124,58,237,0.16)] lg:flex">
+        <Star size={13} /> Recognition earned from real guest reviews
       </div>
     </section>
   )
@@ -125,10 +178,19 @@ function Podium({ people }) {
 
 function RankingsList({ people }) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-white/[0.07] bg-[#09090c] shadow-[0_24px_100px_rgba(0,0,0,0.3)]">
+    <section className="overflow-hidden rounded-[2rem] border border-violet-300/[0.09] bg-[#08070a] shadow-[0_24px_100px_rgba(0,0,0,0.36)]">
+      <div className="flex flex-col gap-3 border-b border-white/[0.07] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h3 className="text-lg font-black tracking-tight text-white">Team standings</h3>
+          <p className="mt-1 text-xs font-semibold text-slate-500">Every active team member, ranked for this month.</p>
+        </div>
+        <span className="w-fit rounded-full border border-violet-300/15 bg-violet-300/[0.06] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-violet-200">
+          {people.length} team members
+        </span>
+      </div>
       <div className="overflow-x-auto">
         <div className="min-w-[1040px]">
-          <div className="grid grid-cols-[4rem_1.35fr_0.65fr_0.75fr_1.35fr_1.25fr_0.7fr] gap-4 border-b border-white/[0.07] bg-white/[0.025] px-5 py-3 text-[10px] font-black uppercase tracking-[0.14em] text-slate-500">
+          <div className="grid grid-cols-[4rem_1.35fr_0.65fr_0.75fr_1.35fr_1.25fr_0.7fr] gap-4 border-b border-violet-300/[0.08] bg-violet-950/[0.13] px-6 py-3 text-[10px] font-black uppercase tracking-[0.14em] text-slate-500">
             <span>Rank</span>
             <span>Team member</span>
             <span>Mentions</span>
@@ -143,7 +205,7 @@ function RankingsList({ people }) {
             const achievements = achievementsFor(person, rank)
             return (
               <article
-                className="grid grid-cols-[4rem_1.35fr_0.65fr_0.75fr_1.35fr_1.25fr_0.7fr] items-center gap-4 border-b border-white/[0.055] px-5 py-4 last:border-b-0"
+                className="grid grid-cols-[4rem_1.35fr_0.65fr_0.75fr_1.35fr_1.25fr_0.7fr] items-center gap-4 border-b border-white/[0.055] px-6 py-4 transition hover:bg-violet-300/[0.025] last:border-b-0"
                 key={person.id}
               >
                 <span className={`text-lg font-black ${medal?.text || 'text-slate-500'}`}>#{rank}</span>
@@ -182,7 +244,6 @@ function RankingsList({ people }) {
 }
 
 export default function LeaderboardExperience({ people = [] }) {
-  const [view, setView] = useState('list')
   const rankedPeople = useMemo(
     () =>
       people
@@ -208,35 +269,17 @@ export default function LeaderboardExperience({ people = [] }) {
   }
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+    <div className="space-y-6">
+      <div>
         <div>
           <p className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-violet-200">
             <Sparkles size={14} /> Live recognition
           </p>
           <h2 className="mt-2 text-2xl font-black tracking-tight text-white">This month&apos;s standings</h2>
         </div>
-        <div className="grid grid-cols-2 gap-1 rounded-xl border border-white/[0.07] bg-[#09090c] p-1.5">
-          {[
-            ['list', List, 'List'],
-            ['podium', LayoutGrid, 'Podium'],
-          ].map(([value, Icon, label]) => (
-            <button
-              className={`inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-xs font-black transition ${
-                view === value ? 'bg-violet-300 text-[#100722]' : 'text-slate-400 hover:text-white'
-              }`}
-              key={value}
-              onClick={() => setView(value)}
-              type="button"
-            >
-              <Icon size={14} />
-              {label}
-            </button>
-          ))}
-        </div>
       </div>
 
-      {view === 'podium' && <Podium people={rankedPeople} />}
+      <Podium people={rankedPeople} />
       <RankingsList people={rankedPeople} />
 
       <p className="flex items-center justify-center gap-2 text-center text-[11px] font-semibold text-slate-600">
