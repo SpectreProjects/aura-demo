@@ -1,11 +1,13 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import DashboardLayout from './pages/dashboard/DashboardLayout'
+import Leaderboard from './pages/dashboard/Leaderboard'
 import Overview from './pages/dashboard/Overview'
 import Reviews from './pages/dashboard/Reviews'
 import Rewards from './pages/dashboard/Rewards'
 import Staff from './pages/dashboard/Staff'
 import Landing from './pages/Landing'
 import Login from './pages/Login'
+import PublicLeaderboard from './pages/PublicLeaderboard'
 import Signup from './pages/Signup'
 import { AuthProvider, useAuth } from './lib/AuthContext'
 
@@ -37,6 +39,7 @@ export default function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/leaderboard/:slug" element={<PublicLeaderboard />} />
         <Route
           path="/dashboard"
           element={
@@ -48,6 +51,7 @@ export default function App() {
           <Route index element={<Overview />} />
           <Route path="reviews" element={<Reviews />} />
           <Route path="staff" element={<Staff />} />
+          <Route path="leaderboard" element={<Leaderboard />} />
           <Route path="rewards" element={<Rewards />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>

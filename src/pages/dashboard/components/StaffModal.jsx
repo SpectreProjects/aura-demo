@@ -5,15 +5,14 @@ const initialForm = {
   name: '',
   job_title: '',
   job_category: 'Front of House',
-  employment_type: '',
-  contractual_hours: '',
 }
 
-export default function StaffModal({ categories, initialName = '', onClose, onSave, title }) {
+export default function StaffModal({ categories, initialName = '', initialStaff, onClose, onSave, title }) {
   const [form, setForm] = useState({
     ...initialForm,
-    name: initialName,
-    job_category: categories[0] || 'Front of House',
+    ...(initialStaff || {}),
+    name: initialStaff?.name || initialName,
+    job_category: initialStaff?.job_category || categories[0] || 'Front of House',
   })
 
   function updateField(field, value) {
@@ -69,22 +68,9 @@ export default function StaffModal({ categories, initialName = '', onClose, onSa
               <option key={category}>{category}</option>
             ))}
           </select>
-          <select
-            className="aura-select"
-            onChange={(event) => updateField('employment_type', event.target.value)}
-            value={form.employment_type}
-          >
-            <option value="">Employment type</option>
-            <option>Full time</option>
-            <option>Part time</option>
-          </select>
-          <input
-            className="aura-field sm:col-span-2"
-            onChange={(event) => updateField('contractual_hours', event.target.value)}
-            placeholder="Contractual hours, optional"
-            type="number"
-            value={form.contractual_hours}
-          />
+          <div className="flex items-center rounded-xl border border-white/[0.07] bg-[#060807] px-4 text-sm font-semibold text-slate-400">
+            {initialStaff ? 'Performance history is preserved' : 'Active when added'}
+          </div>
         </div>
 
         <button className="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-violet-300 px-5 py-4 text-sm font-black text-[#100722] transition hover:-translate-y-0.5 hover:bg-violet-200" type="submit">

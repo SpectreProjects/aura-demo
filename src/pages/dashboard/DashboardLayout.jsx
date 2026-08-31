@@ -5,6 +5,7 @@ import {
   LogOut,
   Sparkles,
   Star,
+  Trophy,
   Users,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
@@ -31,6 +32,7 @@ const navItems = [
   { end: true, href: '/dashboard', icon: BarChart3, iconClass: 'text-violet-400', label: 'Dashboard' },
   { href: '/dashboard/reviews', icon: Star, iconClass: 'text-yellow-300', label: 'Reviews' },
   { href: '/dashboard/staff', icon: Users, iconClass: 'text-violet-400', label: 'Team' },
+  { href: '/dashboard/leaderboard', icon: Trophy, iconClass: 'text-amber-300', label: 'Leaderboard' },
   { href: '/dashboard/rewards', icon: Gift, iconClass: 'text-yellow-600', label: 'Rewards' },
 ]
 
@@ -67,10 +69,9 @@ function normalizePointsRules(pointsRules) {
 }
 
 function normalizeStaff(staff) {
-  const source = staff?.length ? staff : defaultStaff
+  const source = Array.isArray(staff) ? staff : []
   const byName = new Map()
 
-  defaultStaff.forEach((person) => byName.set(person.name.toLowerCase(), person))
   source.forEach((person) => {
     if (person?.name) byName.set(person.name.toLowerCase(), person)
   })
@@ -84,7 +85,11 @@ function normalizeStaff(staff) {
       job_category: person.job_category || 'Front of House',
       employment_type: person.employment_type || '',
       contractual_hours: person.contractual_hours || '',
+      is_active: person.is_active !== false,
       points: Number(person.points || 0),
+      monthly_points: Number(person.monthly_points ?? person.points ?? 0),
+      lifetime_points: Number(person.lifetime_points ?? person.points ?? 0),
+      redeemable_points: Number(person.redeemable_points ?? person.points ?? 0),
       total_mentions: Number(person.total_mentions || 0),
       positive_mentions: Number(person.positive_mentions || 0),
       neutral_mentions: Number(person.neutral_mentions || 0),
@@ -140,7 +145,12 @@ function normalizePointEvents(pointEvents) {
       staff_id: event.staff_id || toSlug(event.staff_name || 'staff'),
       staff_name: event.staff_name || 'Team member',
       review_id: event.review_id || '',
-      points_awarded: Number(event.points_awarded || 0),
+      points_delta: Number(event.points_delta ?? event.points_awarded ?? 0),
+      points_awarded: Number(event.points_delta ?? event.points_awarded ?? 0),
+      event_type: event.event_type || 'review_award',
+      include_in_monthly: event.include_in_monthly !== false,
+      include_in_lifetime: event.include_in_lifetime !== false,
+      include_in_balance: event.include_in_balance !== false,
       rating: Number(event.rating || 0),
       reason: event.reason || `${event.rating || ''} star review mention`.trim(),
       created_at: event.created_at || new Date().toISOString(),
@@ -202,6 +212,7 @@ function readLocalState() {
       nameApprovals: normalizeNameApprovals(saved.nameApprovals),
       pointEvents: normalizePointEvents(saved.pointEvents),
       pointsRules: normalizePointsRules(saved.pointsRules),
+      redemptions: Array.isArray(saved.redemptions) ? saved.redemptions : [],
       rewards: normalizeRewards(saved.rewards),
       reviews: [],
       staff: normalizeStaff(saved.staff),
@@ -212,6 +223,7 @@ function readLocalState() {
       nameApprovals: [],
       pointEvents: [],
       pointsRules: defaultPointsRules,
+      redemptions: [],
       rewards: defaultRewards,
       reviews: [],
       staff: defaultStaff,
@@ -230,13 +242,60 @@ function buildStaffRecord(form) {
 
   return {
     ...base,
+    created_at: form.created_at || base.created_at,
     id: form.id || base.id || createId('staff'),
+    latest_excerpt: form.latest_excerpt || base.latest_excerpt,
     name: base.name,
     job_title: form.job_title?.trim() || '',
     job_category: form.job_category || 'Front of House',
-    employment_type: form.employment_type || '',
-    contractual_hours: form.contractual_hours?.toString().trim() || '',
+    is_active: form.is_active !== false,
+    negative_mentions: Number(form.negative_mentions || 0),
+    neutral_mentions: Number(form.neutral_mentions || 0),
+    points: Number(form.points || 0),
+    positive_mentions: Number(form.positive_mentions || 0),
+    total_mentions: Number(form.total_mentions || 0),
   }
+}
+
+function isUuid(value) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    String(value || ''),
+  )
+}
+
+function addPointTotals(staff, pointEvents) {
+  return staff.map((person) => {
+    const events = pointEvents.filter(
+      (event) => event.staff_id === person.id || event.staff_name?.toLowerCase() === person.name.toLowerCase(),
+    )
+    const fallbackPoints = Number(person.points || 0)
+    const monthlyPoints = events.length
+      ? events
+          .filter((event) => event.include_in_monthly && isThisMonth(event.created_at))
+          .reduce((total, event) => total + Number(event.points_delta || 0), 0)
+      : fallbackPoints
+    const lifetimePoints = events.length
+      ? events
+          .filter((event) => event.include_in_lifetime)
+          .reduce((total, event) => total + Number(event.points_delta || 0), 0)
+      : Number(person.lifetime_points ?? fallbackPoints)
+    const redeemablePoints = events.length
+      ? Math.max(
+          0,
+          events
+            .filter((event) => event.include_in_balance)
+            .reduce((total, event) => total + Number(event.points_delta || 0), 0),
+        )
+      : Number(person.redeemable_points ?? fallbackPoints)
+
+    return {
+      ...person,
+      lifetime_points: lifetimePoints,
+      monthly_points: monthlyPoints,
+      points: monthlyPoints,
+      redeemable_points: redeemablePoints,
+    }
+  })
 }
 
 function Sidebar({ nameApprovalsCount }) {
@@ -285,7 +344,7 @@ function Sidebar({ nameApprovalsCount }) {
 
 function MobileNav({ nameApprovalsCount }) {
   return (
-    <nav className="fixed inset-x-3 bottom-3 z-30 grid grid-cols-4 rounded-2xl border border-white/10 bg-[#070908]/95 p-2 text-white shadow-[0_24px_90px_rgba(0,0,0,0.5)] backdrop-blur-xl lg:hidden">
+    <nav className="fixed inset-x-3 bottom-3 z-30 grid grid-cols-5 rounded-2xl border border-white/10 bg-[#070908]/95 p-2 text-white shadow-[0_24px_90px_rgba(0,0,0,0.5)] backdrop-blur-xl lg:hidden">
       {navItems.map((item) => (
         <NavLink
           className={({ isActive }) =>
@@ -323,18 +382,22 @@ export default function DashboardLayout() {
       nameApprovals: [],
       pointEvents: demoState.pointEvents,
       pointsRules: defaultPointsRules,
+      redemptions: [],
       rewards: defaultRewards,
       reviews: demoState.reviews,
       staff: demoState.staff,
     }
   }, [isLocalPreview])
   const [businessProfile, setBusinessProfile] = useState(
-    isLocalPreview ? { business_name: 'Hilton Glasgow Demo' } : null,
+    isLocalPreview
+      ? { business_name: 'Hilton Glasgow Demo', public_slug: 'hilton-glasgow-demo-9663c5f4' }
+      : null,
   )
   const [categories, setCategories] = useState(initialState.categories)
   const [nameApprovals, setNameApprovals] = useState(initialState.nameApprovals)
   const [pointEvents, setPointEvents] = useState(initialState.pointEvents)
   const [pointsRules, setPointsRules] = useState(initialState.pointsRules)
+  const [redemptions, setRedemptions] = useState(initialState.redemptions)
   const [rewards, setRewards] = useState(initialState.rewards)
   const [reviews, setReviews] = useState(initialState.reviews)
   const [staff, setStaff] = useState(initialState.staff)
@@ -345,6 +408,7 @@ export default function DashboardLayout() {
       : 'The dashboard is running in demo mode because environment variables have not been added yet.',
   )
   const [isSigningOut, setIsSigningOut] = useState(false)
+  const [leaderboardPinEnabled, setLeaderboardPinEnabled] = useState(false)
 
   useEffect(() => {
     if (!supabase || !user) return undefined
@@ -361,8 +425,10 @@ export default function DashboardLayout() {
           : user.user_metadata?.business_name || 'My Business'
         const { data: existingProfile, error: profileLoadError } = await supabase
           .from('business_profiles')
-          .select('*')
+          .select('id,user_id,business_name,public_slug,leaderboard_public,created_at')
           .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
           .maybeSingle()
 
         if (profileLoadError) throw profileLoadError
@@ -376,27 +442,106 @@ export default function DashboardLayout() {
               business_name: fallbackBusinessName,
               user_id: user.id,
             })
-            .select('*')
+            .select('id,user_id,business_name,public_slug,leaderboard_public,created_at')
             .single()
 
           if (profileCreateError) throw profileCreateError
           profile = createdProfile
         }
 
+        const publicSlug =
+          profile.public_slug || `${toSlug(profile.business_name || fallbackBusinessName)}-${profile.id.slice(0, 8)}`
+
+        if (!profile.public_slug || !profile.leaderboard_public) {
+          const { data: updatedProfile, error: profileUpdateError } = await supabase
+            .from('business_profiles')
+            .update({ leaderboard_public: true, public_slug: publicSlug })
+            .eq('id', profile.id)
+            .select('id,user_id,business_name,public_slug,leaderboard_public,created_at')
+            .single()
+
+          if (profileUpdateError) throw profileUpdateError
+          profile = updatedProfile
+        }
+
+        const [staffResult, rewardsResult, pointEventsResult, redemptionsResult] = await Promise.all([
+          supabase
+            .from('aura_staff')
+            .select('*')
+            .eq('business_profile_id', profile.id)
+            .order('name'),
+          supabase
+            .from('aura_rewards')
+            .select('*')
+            .eq('business_profile_id', profile.id)
+            .order('points_required'),
+          supabase
+            .from('aura_point_events')
+            .select('*')
+            .eq('business_profile_id', profile.id)
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('aura_reward_redemptions')
+            .select('*')
+            .eq('business_profile_id', profile.id)
+            .order('redeemed_at', { ascending: false }),
+        ])
+
+        const dataError =
+          staffResult.error || rewardsResult.error || pointEventsResult.error || redemptionsResult.error
+        if (dataError) throw dataError
+
+        let rewardRows = rewardsResult.data || []
+        if (!rewardRows.length) {
+          const { data: createdRewards, error: rewardsCreateError } = await supabase
+            .from('aura_rewards')
+            .insert(
+              defaultRewards.map((reward) => ({
+                business_profile_id: profile.id,
+                description: reward.description,
+                is_active: reward.is_active,
+                points_required: reward.points_required,
+                title: reward.title,
+              })),
+            )
+            .select('*')
+
+          if (rewardsCreateError) throw rewardsCreateError
+          rewardRows = createdRewards || []
+        }
+
+        const staffRows = normalizeStaff(staffResult.data || [])
+        const staffNames = new Map(staffRows.map((person) => [person.id, person.name]))
+        const eventRows = normalizePointEvents(
+          (pointEventsResult.data || []).map((event) => ({
+            ...event,
+            staff_name: staffNames.get(event.staff_id) || 'Team member',
+          })),
+        )
         const visibleReviews = isDevAccount ? normalizeReviews(defaultReviews) : []
-        const demoState = isDevAccount ? buildDemoDashboardState(visibleReviews) : null
+        const { data: publicAccess } = await supabase.rpc('get_aura_public_leaderboard', {
+          p_pin: null,
+          p_slug: profile.public_slug,
+        })
 
         if (!isMounted) return
         setBusinessProfile(profile)
         setReviews(visibleReviews)
         setConnectionStatus('connected')
         setTechnicalNotice('')
-        setCategories(defaultCategories)
+        setCategories(
+          normalizeCategories([
+            ...defaultCategories,
+            ...staffRows.map((person) => person.job_category),
+          ]),
+        )
         setNameApprovals([])
-        setPointEvents(demoState?.pointEvents || [])
+        setPointEvents(eventRows)
         setPointsRules(defaultPointsRules)
-        setRewards(defaultRewards)
-        setStaff(demoState?.staff || defaultStaff)
+        setRedemptions(redemptionsResult.data || [])
+        setRewards(normalizeRewards(rewardRows))
+        setStaff(staffRows)
+        setLeaderboardPinEnabled(publicAccess?.status === 'pin_required')
       } catch (error) {
         if (!isMounted) return
         console.error('[AURA dashboard] Account data connection failed:', error)
@@ -419,15 +564,15 @@ export default function DashboardLayout() {
   useEffect(() => {
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ categories, nameApprovals, pointEvents, pointsRules, rewards, reviews, staff }),
+      JSON.stringify({ categories, nameApprovals, pointEvents, pointsRules, redemptions, rewards, reviews, staff }),
     )
-  }, [categories, nameApprovals, pointEvents, pointsRules, rewards, reviews, staff])
+  }, [categories, nameApprovals, pointEvents, pointsRules, redemptions, rewards, reviews, staff])
 
   const overview = useMemo(() => {
     const reviewsThisMonth = reviews.filter((review) => isThisMonth(review.created_at))
     const pointsThisMonth = pointEvents
-      .filter((event) => isThisMonth(event.created_at))
-      .reduce((total, event) => total + Number(event.points_awarded || 0), 0)
+      .filter((event) => event.include_in_monthly && isThisMonth(event.created_at))
+      .reduce((total, event) => total + Number(event.points_delta || 0), 0)
     const totalMentions = staff.reduce(
       (total, person) => total + Number(person.total_mentions || 0),
       0,
@@ -442,27 +587,193 @@ export default function DashboardLayout() {
     }
   }, [nameApprovals.length, pointEvents, rewards, reviews, staff])
 
+  const staffWithPoints = useMemo(() => addPointTotals(staff, pointEvents), [pointEvents, staff])
+
   const leaderboard = useMemo(
     () =>
-      staff
+      staffWithPoints
+        .filter((person) => person.is_active)
         .slice()
         .sort(
           (a, b) =>
-            Number(b.points) - Number(a.points) ||
+            Number(b.monthly_points) - Number(a.monthly_points) ||
             Number(b.total_mentions) - Number(a.total_mentions) ||
             a.name.localeCompare(b.name),
         ),
-    [staff],
+    [staffWithPoints],
   )
 
   async function addStaff(form) {
-    const record = buildStaffRecord(form)
-    const nextStaff = normalizeStaff([...staff.filter((person) => person.id !== record.id), record])
+    let record = buildStaffRecord(form)
+
+    if (supabase && businessProfile) {
+      const payload = {
+        business_profile_id: businessProfile.id,
+        is_active: record.is_active,
+        job_category: record.job_category,
+        job_title: record.job_title,
+        name: record.name,
+      }
+      const query = isUuid(record.id)
+        ? supabase.from('aura_staff').update(payload).eq('id', record.id)
+        : supabase.from('aura_staff').insert(payload)
+      const { data, error } = await query.select('*').single()
+
+      if (error) throw error
+      record = normalizeStaff([data])[0]
+    }
+
+    const nextStaff = normalizeStaff([
+      ...staff.filter(
+        (person) => person.id !== record.id && person.name.toLowerCase() !== record.name.toLowerCase(),
+      ),
+      record,
+    ])
 
     setStaff(nextStaff)
     if (!categories.includes(record.job_category)) setCategories((current) => [...current, record.job_category])
 
     return record
+  }
+
+  async function setStaffActive(staffId, isActive) {
+    if (supabase && businessProfile && isUuid(staffId)) {
+      const { error } = await supabase
+        .from('aura_staff')
+        .update({ is_active: isActive, updated_at: new Date().toISOString() })
+        .eq('id', staffId)
+        .eq('business_profile_id', businessProfile.id)
+
+      if (error) throw error
+    }
+
+    setStaff((current) =>
+      current.map((person) => (person.id === staffId ? { ...person, is_active: isActive } : person)),
+    )
+  }
+
+  async function adjustPoints({ amount, reason, staffId }) {
+    const person = staffWithPoints.find((item) => item.id === staffId)
+    const pointsDelta = Number(amount)
+    if (!person || !pointsDelta || !reason.trim()) return
+
+    let nextEvent = normalizePointEvents([
+      {
+        created_at: new Date().toISOString(),
+        event_type: 'manual_adjustment',
+        id: createId('point'),
+        include_in_balance: true,
+        include_in_lifetime: true,
+        include_in_monthly: true,
+        points_delta: pointsDelta,
+        reason: reason.trim(),
+        staff_id: staffId,
+        staff_name: person.name,
+      },
+    ])[0]
+
+    if (supabase && businessProfile && isUuid(staffId)) {
+      const { data, error } = await supabase
+        .from('aura_point_events')
+        .insert({
+          business_profile_id: businessProfile.id,
+          created_by: user?.id || null,
+          event_type: 'manual_adjustment',
+          include_in_balance: true,
+          include_in_lifetime: true,
+          include_in_monthly: true,
+          points_delta: pointsDelta,
+          reason: reason.trim(),
+          staff_id: staffId,
+        })
+        .select('*')
+        .single()
+
+      if (error) throw error
+      nextEvent = normalizePointEvents([{ ...data, staff_name: person.name }])[0]
+    }
+
+    setPointEvents((current) => normalizePointEvents([nextEvent, ...current]))
+  }
+
+  async function redeemReward({ note = '', rewardId, staffId }) {
+    const person = staffWithPoints.find((item) => item.id === staffId)
+    const reward = rewards.find((item) => item.id === rewardId)
+    if (!person || !reward || person.redeemable_points < Number(reward.points_required)) return
+
+    if (supabase && businessProfile && isUuid(staffId) && isUuid(rewardId)) {
+      const { error: redemptionError } = await supabase.rpc('redeem_aura_reward', {
+        p_note: note,
+        p_reward_id: rewardId,
+        p_staff_id: staffId,
+      })
+      if (redemptionError) throw redemptionError
+
+      const [eventsResult, redemptionsResult] = await Promise.all([
+        supabase
+          .from('aura_point_events')
+          .select('*')
+          .eq('business_profile_id', businessProfile.id)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('aura_reward_redemptions')
+          .select('*')
+          .eq('business_profile_id', businessProfile.id)
+          .order('redeemed_at', { ascending: false }),
+      ])
+      if (eventsResult.error) throw eventsResult.error
+      if (redemptionsResult.error) throw redemptionsResult.error
+
+      const staffNames = new Map(staff.map((item) => [item.id, item.name]))
+      setPointEvents(
+        normalizePointEvents(
+          (eventsResult.data || []).map((event) => ({
+            ...event,
+            staff_name: staffNames.get(event.staff_id) || 'Team member',
+          })),
+        ),
+      )
+      setRedemptions(redemptionsResult.data || [])
+      return
+    }
+
+    const now = new Date().toISOString()
+    setPointEvents((current) =>
+      normalizePointEvents([
+        {
+          created_at: now,
+          event_type: 'reward_redemption',
+          include_in_balance: true,
+          include_in_lifetime: false,
+          include_in_monthly: false,
+          points_delta: -Number(reward.points_required),
+          reason: `Redeemed ${reward.title}`,
+          staff_id: staffId,
+          staff_name: person.name,
+        },
+        ...current,
+      ]),
+    )
+    setRedemptions((current) => [
+      {
+        id: createId('redemption'),
+        note,
+        points_spent: Number(reward.points_required),
+        redeemed_at: now,
+        reward_id: rewardId,
+        staff_id: staffId,
+      },
+      ...current,
+    ])
+  }
+
+  async function setLeaderboardPin(pin) {
+    if (!supabase) return
+    const { error } = await supabase.rpc('set_aura_leaderboard_pin', {
+      p_pin: pin.trim() || null,
+    })
+    if (error) throw error
+    setLeaderboardPinEnabled(Boolean(pin.trim()))
   }
 
   async function approveName(approval, form) {
@@ -475,8 +786,6 @@ export default function DashboardLayout() {
           name: record.name,
           job_title: record.job_title,
           job_category: record.job_category,
-          employment_type: record.employment_type,
-          contractual_hours: record.contractual_hours,
         }
       : record
     const baseStaff = existing
@@ -531,13 +840,32 @@ export default function DashboardLayout() {
   }
 
   async function saveReward(reward) {
-    const nextReward = {
+    let nextReward = {
       ...reward,
       id: reward.id || createId('reward'),
       points_required: Number(reward.points_required || 1),
       is_active: Boolean(reward.is_active),
       created_at: reward.created_at || new Date().toISOString(),
     }
+
+    if (supabase && businessProfile) {
+      const payload = {
+        business_profile_id: businessProfile.id,
+        description: nextReward.description,
+        is_active: nextReward.is_active,
+        points_required: nextReward.points_required,
+        title: nextReward.title,
+        updated_at: new Date().toISOString(),
+      }
+      const query = isUuid(nextReward.id)
+        ? supabase.from('aura_rewards').update(payload).eq('id', nextReward.id)
+        : supabase.from('aura_rewards').insert(payload)
+      const { data, error } = await query.select('*').single()
+
+      if (error) throw error
+      nextReward = normalizeRewards([data])[0]
+    }
+
     setRewards((current) =>
       normalizeRewards([
         ...current.filter((item) => item.id !== nextReward.id),
@@ -547,6 +875,15 @@ export default function DashboardLayout() {
   }
 
   async function deleteReward(rewardId) {
+    if (supabase && businessProfile && isUuid(rewardId)) {
+      const { error } = await supabase
+        .from('aura_rewards')
+        .delete()
+        .eq('id', rewardId)
+        .eq('business_profile_id', businessProfile.id)
+
+      if (error) throw error
+    }
     setRewards((current) => current.filter((reward) => reward.id !== rewardId))
   }
 
@@ -581,10 +918,14 @@ export default function DashboardLayout() {
     actions: {
       addCategory,
       addStaff,
+      adjustPoints,
       approveName,
       deleteReward,
       ignoreName,
+      redeemReward,
       saveReward,
+      setLeaderboardPin,
+      setStaffActive,
       updatePointsRule,
     },
     account: {
@@ -595,13 +936,15 @@ export default function DashboardLayout() {
     categories,
     connectionStatus,
     leaderboard,
+    leaderboardPinEnabled,
     nameApprovals,
     overview,
     pointEvents,
     pointsRules,
+    redemptions,
     rewards,
     reviews,
-    staff,
+    staff: staffWithPoints,
     technicalNotice,
   }
 

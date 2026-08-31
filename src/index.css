@@ -73,6 +73,10 @@ select {
   .aura-button-secondary {
     @apply inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50;
   }
+
+  .manager-action {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg border border-white/[0.07] bg-white/[0.035] px-2.5 py-2 text-[11px] font-black text-slate-300 transition hover:border-violet-300/20 hover:bg-violet-300/[0.06] hover:text-white;
+  }
 }
 
 .aura-field::placeholder,

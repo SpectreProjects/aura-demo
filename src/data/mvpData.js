@@ -12,7 +12,7 @@ export const defaultPointsRules = {
   1: 0,
   2: 0,
   3: 0,
-  4: 3,
+  4: 2,
   5: 5,
 }
 

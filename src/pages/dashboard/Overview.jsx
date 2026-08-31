@@ -1,6 +1,7 @@
 import {
   Activity,
   CalendarDays,
+  Check,
   ChevronDown,
   ChevronRight,
   Download,
@@ -8,6 +9,7 @@ import {
   MessageSquareText,
   Plus,
   SearchCheck,
+  Share2,
   Sparkles,
   Star,
   Trophy,
@@ -481,6 +483,7 @@ function RewardProgressRow({ accent, item }) {
 
 export default function Overview() {
   const [activePeriod, setActivePeriod] = useState('Month')
+  const [shareCopied, setShareCopied] = useState(false)
   const {
     account,
     leaderboard = [],
@@ -526,6 +529,26 @@ export default function Overview() {
   )
   const hour = new Date().getHours()
   const greeting = hour >= 5 && hour < 12 ? 'Good Morning' : hour >= 12 && hour < 17 ? 'Good Afternoon' : 'Good Evening'
+  const publicLeaderboardSlug = account?.businessProfile?.public_slug
+
+  async function shareLeaderboard() {
+    if (!publicLeaderboardSlug) return
+    const shareUrl = `${window.location.origin}/leaderboard/${publicLeaderboardSlug}`
+
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(shareUrl)
+    } else {
+      const input = document.createElement('textarea')
+      input.value = shareUrl
+      document.body.appendChild(input)
+      input.select()
+      document.execCommand('copy')
+      input.remove()
+    }
+
+    setShareCopied(true)
+    window.setTimeout(() => setShareCopied(false), 1800)
+  }
   const pendingApprovals = Object.values(
     periodApprovals.reduce((groups, approval) => {
       const key = approval.name.toLowerCase()
@@ -590,8 +613,8 @@ export default function Overview() {
       ]
   const rewardProgress = leaderboard
     .map((person) => {
-      const reward = getNextReward(person, rewards)
-      const current = Number(person.points || 0)
+      const reward = getNextReward({ ...person, points: person.redeemable_points }, rewards)
+      const current = Number(person.redeemable_points || 0)
       const required = Number(reward?.points_required || 0)
 
       return reward && required
@@ -621,6 +644,15 @@ export default function Overview() {
           </div>
 
           <div className="flex shrink-0 flex-wrap gap-3 lg:pt-14">
+            <button
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.035] px-4 text-xs font-black text-slate-300 transition hover:border-violet-300/20 hover:bg-violet-300/[0.06] hover:text-white disabled:cursor-not-allowed disabled:opacity-45"
+              disabled={!publicLeaderboardSlug}
+              onClick={shareLeaderboard}
+              type="button"
+            >
+              {shareCopied ? <Check size={14} /> : <Share2 size={14} />}
+              {shareCopied ? 'Leaderboard link copied' : 'Share leaderboard screen'}
+            </button>
             <Link
               className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-violet-300 px-4 text-xs font-black text-slate-950 shadow-[0_0_24px_rgba(167,139,250,0.16)] transition hover:bg-violet-200"
               to="/dashboard/staff"
