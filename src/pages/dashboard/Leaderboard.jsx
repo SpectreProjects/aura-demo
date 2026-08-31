@@ -1,4 +1,4 @@
-import { Check, Copy, Eye, LockKeyhole, ShieldCheck, Unlock } from 'lucide-react'
+import { Eye, LockKeyhole, Unlock } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import LeaderboardExperience from '../../components/LeaderboardExperience'
 import { useDashboard } from './useDashboard'
@@ -31,7 +31,6 @@ export default function Leaderboard() {
     redemptions,
     rewards,
   } = useDashboard()
-  const [copied, setCopied] = useState(false)
   const [pin, setPin] = useState('')
   const [pinMessage, setPinMessage] = useState('')
   const [isSavingPin, setIsSavingPin] = useState(false)
@@ -54,13 +53,6 @@ export default function Leaderboard() {
       })),
     [leaderboard, redemptions, rewards],
   )
-
-  async function copyLink() {
-    if (!leaderboardUrl) return
-    await navigator.clipboard.writeText(leaderboardUrl)
-    setCopied(true)
-    window.setTimeout(() => setCopied(false), 1800)
-  }
 
   async function savePin(event) {
     event.preventDefault()
@@ -93,27 +85,6 @@ export default function Leaderboard() {
 
   return (
     <div className="space-y-6">
-      <section className="flex flex-col justify-between gap-6 rounded-2xl border border-white/[0.07] bg-[#0b0a0e]/90 p-6 shadow-[0_30px_120px_rgba(0,0,0,0.22)] lg:flex-row lg:items-end">
-        <div>
-          <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-amber-300/15 bg-amber-300/[0.06] px-3 py-1 text-xs font-black uppercase tracking-[0.16em] text-amber-200">
-            <ShieldCheck size={14} /> Read-only recognition
-          </p>
-          <h2 className="max-w-3xl text-4xl font-black tracking-tight text-white">Celebrate progress without exposing manager controls.</h2>
-          <p className="mt-3 max-w-2xl text-base leading-7 text-slate-400">
-            Staff can see ranks, mentions, achievements and reward progress. Redeemable balances always stay private.
-          </p>
-        </div>
-        <button
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-300 px-5 py-3 text-sm font-black text-[#100722] transition hover:bg-violet-200 disabled:opacity-50"
-          disabled={!leaderboardUrl}
-          onClick={copyLink}
-          type="button"
-        >
-          {copied ? <Check size={17} /> : <Copy size={17} />}
-          {copied ? 'Link copied' : 'Copy public link'}
-        </button>
-      </section>
-
       <LeaderboardExperience people={people} />
 
       <section className="grid gap-5 rounded-2xl border border-white/[0.07] bg-[#0b0a0e]/90 p-5 lg:grid-cols-[1fr_1.1fr] lg:items-center">
