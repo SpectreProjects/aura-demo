@@ -3,6 +3,7 @@ import {
   Gift,
   Home,
   LogOut,
+  Settings,
   Sparkles,
   Star,
   Trophy,
@@ -300,7 +301,7 @@ function addPointTotals(staff, pointEvents) {
 
 function Sidebar({ nameApprovalsCount }) {
   return (
-    <aside className="sticky top-0 hidden h-screen w-56 shrink-0 border-r border-white/[0.06] bg-[#111113] px-5 py-10 text-white lg:flex lg:flex-col">
+    <aside className="hidden h-full w-56 shrink-0 border-r border-white/[0.06] bg-[#111113] px-5 py-8 text-white lg:flex lg:flex-col">
       <Link to="/" className="mb-16 flex items-center gap-3 rounded-xl px-2">
         <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-violet-300/25 bg-violet-300/10 text-violet-300">
           <Sparkles size={20} />
@@ -338,6 +339,16 @@ function Sidebar({ nameApprovalsCount }) {
         ))}
       </nav>
 
+      <button
+        className="mt-auto flex cursor-default items-center gap-3 rounded-xl border border-transparent px-3 py-2.5 text-base font-bold text-slate-500"
+        disabled
+        type="button"
+      >
+        <span className="flex h-8 w-8 items-center justify-center text-slate-600">
+          <Settings size={17} />
+        </span>
+        Settings
+      </button>
     </aside>
   )
 }
@@ -949,11 +960,11 @@ export default function DashboardLayout() {
   }
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#000000] text-white">
-      <div className="relative flex">
+    <main className="h-screen overflow-hidden bg-[#000000] text-white">
+      <div className="relative flex h-full">
         <Sidebar nameApprovalsCount={nameApprovals.length} />
 
-        <div className="min-w-0 flex-1 pb-28 lg:pb-0">
+        <div className="h-full min-w-0 flex-1 overflow-y-auto overscroll-contain pb-28 lg:pb-0">
           {!isOverviewRoute && (
             <header className="sticky top-0 z-20 border-b border-white/[0.07] bg-[#000000]/82 px-5 py-4 backdrop-blur-2xl sm:px-8 lg:px-10">
               <div className="flex items-center justify-between gap-4">

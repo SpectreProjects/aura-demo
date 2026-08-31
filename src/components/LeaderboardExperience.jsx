@@ -70,28 +70,28 @@ function Podium({ people }) {
     {
       person: people[1],
       rank: 2,
-      height: 'lg:h-[292px]',
+      height: 'lg:min-h-[342px]',
       avatarSize: 'h-20 w-20 lg:h-24 lg:w-24',
       nameSize: 'text-2xl',
     },
     {
       person: people[0],
       rank: 1,
-      height: 'lg:h-[370px]',
+      height: 'lg:min-h-[410px]',
       avatarSize: 'h-24 w-24 lg:h-28 lg:w-28',
       nameSize: 'text-3xl',
     },
     {
       person: people[2],
       rank: 3,
-      height: 'lg:h-[262px]',
+      height: 'lg:min-h-[322px]',
       avatarSize: 'h-20 w-20 lg:h-24 lg:w-24',
       nameSize: 'text-2xl',
     },
   ].filter(({ person }) => Boolean(person))
 
   return (
-    <section className="relative overflow-hidden rounded-[2rem] border border-violet-300/[0.09] bg-[#050407] px-5 pb-0 pt-7 shadow-[0_30px_130px_rgba(0,0,0,0.5)] lg:min-h-[660px] lg:px-10 lg:pt-9">
+    <section className="relative overflow-hidden rounded-[2rem] border border-violet-300/[0.09] bg-[#050407] px-5 pb-7 pt-7 shadow-[0_30px_130px_rgba(0,0,0,0.5)] lg:min-h-[720px] lg:px-10 lg:pb-8 lg:pt-9">
       <div className="pointer-events-none absolute inset-x-[8%] top-0 h-[78%] rounded-[50%] bg-violet-700/[0.13] blur-[110px]" />
       <div className="pointer-events-none absolute left-1/2 top-[42%] h-56 w-56 -translate-x-1/2 rounded-full bg-amber-400/[0.09] blur-[90px]" />
       <div className="pointer-events-none absolute inset-0 opacity-[0.11] [background-image:radial-gradient(rgba(196,181,253,0.4)_0.7px,transparent_0.7px)] [background-size:8px_8px] [mask-image:linear-gradient(to_bottom,black,transparent_70%)]" />
@@ -108,7 +108,7 @@ function Podium({ people }) {
         </p>
       </div>
 
-      <div className="relative mx-auto mt-10 grid max-w-6xl gap-5 pb-7 lg:mt-12 lg:grid-cols-3 lg:items-end lg:gap-0 lg:pb-0">
+      <div className="relative mx-auto mt-10 grid max-w-6xl gap-5 lg:mt-12 lg:grid-cols-3 lg:items-end lg:gap-0">
         {podium.map(({ person, rank, height, avatarSize, nameSize }) => {
           const medal = medalStyles[rank - 1]
           const achievements = achievementsFor(person, rank)
@@ -169,7 +169,7 @@ function Podium({ people }) {
         })}
       </div>
 
-      <div className="relative mx-auto hidden w-fit -translate-y-5 items-center gap-2 rounded-xl border border-violet-300/10 bg-[#0b0710]/90 px-4 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-violet-100 shadow-[0_0_40px_rgba(124,58,237,0.16)] lg:flex">
+      <div className="relative mx-auto mt-6 hidden w-fit items-center gap-2 rounded-xl border border-violet-300/10 bg-[#0b0710]/90 px-4 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-violet-100 shadow-[0_0_40px_rgba(124,58,237,0.16)] lg:flex">
         <Star size={13} /> Recognition earned from real guest reviews
       </div>
     </section>
