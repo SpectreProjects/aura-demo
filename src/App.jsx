@@ -4,6 +4,7 @@ import Leaderboard from './pages/dashboard/Leaderboard'
 import Overview from './pages/dashboard/Overview'
 import Reviews from './pages/dashboard/Reviews'
 import Rewards from './pages/dashboard/Rewards'
+import Settings from './pages/dashboard/Settings'
 import Staff from './pages/dashboard/Staff'
 import Landing from './pages/Landing'
 import Login from './pages/Login'
@@ -53,6 +54,7 @@ export default function App() {
           <Route path="staff" element={<Staff />} />
           <Route path="leaderboard" element={<Leaderboard />} />
           <Route path="rewards" element={<Rewards />} />
+          <Route path="settings" element={<Settings />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>
         <Route path="/app/*" element={<Navigate to="/dashboard" replace />} />

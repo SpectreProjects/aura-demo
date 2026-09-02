@@ -1,18 +1,10 @@
-import {
-  AlertTriangle,
-  CheckCircle2,
-  MessageSquareText,
-  Search,
-  Sparkles,
-  Star,
-  UserPlus,
-} from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { Check, CheckCircle2, Clock3, Pencil, PowerOff, Search, Sparkles, Star, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { generateReply } from '../../utils/generateReply'
-import StaffModal from './components/StaffModal'
 import { useDashboard } from './useDashboard'
 
-const filters = ['All', 'Positive', 'Needs attention']
+const PAGE_LOAD_TIME = Date.now()
 
 function formatReviewDate(dateValue) {
   const date = new Date(dateValue)
@@ -30,280 +22,318 @@ function stars(rating) {
 }
 
 function getReply(review, businessName) {
-  return generateReply(
+  return review.aura_reply || generateReply(
     { author: review.customer_name || 'there', rating: Number(review.rating || 0) },
     businessName || 'our team',
   )
 }
 
-export default function Reviews() {
-  const { account, actions, categories, nameApprovals, reviews } = useDashboard()
-  const [activeFilter, setActiveFilter] = useState('All')
-  const [query, setQuery] = useState('')
-  const [selectedApproval, setSelectedApproval] = useState(null)
-  const [selectedReviewId, setSelectedReviewId] = useState(reviews[0]?.id || null)
+function delayInMilliseconds(settings) {
+  const multipliers = { minutes: 60_000, hours: 3_600_000, days: 86_400_000 }
+  return Math.max(0, Number(settings.delayValue || 0)) * (multipliers[settings.delayUnit] || multipliers.hours)
+}
 
-  const businessName = account?.businessProfile?.business_name || 'your business'
-  const visibleReviews = useMemo(() => {
-    const cleanQuery = query.trim().toLowerCase()
+function formatTimeRemaining(milliseconds) {
+  const minutes = Math.max(1, Math.ceil(milliseconds / 60_000))
+  if (minutes < 60) return `${minutes} ${minutes === 1 ? 'min' : 'mins'}`
 
-    return reviews.filter((review) => {
-      const matchesFilter =
-        activeFilter === 'All' ||
-        (activeFilter === 'Positive' && Number(review.rating) >= 4) ||
-        (activeFilter === 'Needs attention' && Number(review.rating) <= 3)
-      const matchesQuery =
-        !cleanQuery ||
-        review.customer_name?.toLowerCase().includes(cleanQuery) ||
-        review.text?.toLowerCase().includes(cleanQuery)
+  const hours = Math.ceil(minutes / 60)
+  if (hours < 24) return `${hours} ${hours === 1 ? 'hour' : 'hours'}`
 
-      return matchesFilter && matchesQuery
-    })
-  }, [activeFilter, query, reviews])
-  const selectedReview =
-    reviews.find((review) => review.id === selectedReviewId) || visibleReviews[0] || reviews[0]
-  const positiveCount = reviews.filter((review) => Number(review.rating) >= 4).length
-  const attentionCount = reviews.filter((review) => Number(review.rating) <= 3).length
+  const days = Math.ceil(hours / 24)
+  return `${days} ${days === 1 ? 'day' : 'days'}`
+}
 
-  async function handleApproveStaff(staffForm) {
-    if (!selectedApproval) return
-    await actions.approveName(selectedApproval, staffForm)
+function getReplyStatus(review, settings, now) {
+  if (!settings.enabled) {
+    return {
+      detail: 'Automatic replies are currently switched off in Settings.',
+      label: 'AURA auto replies off',
+      type: 'off',
+    }
+  }
+
+  const sendAt = new Date(review.created_at).getTime() + delayInMilliseconds(settings)
+  const remaining = sendAt - now
+  if (remaining > 0) {
+    return {
+      detail: 'You can edit the prepared reply before it goes out.',
+      label: `Reply being sent in ${formatTimeRemaining(remaining)}`,
+      type: 'scheduled',
+    }
+  }
+
+  return {
+    detail: 'The reply has been sent automatically in your business voice.',
+    label: 'AURA has auto replied',
+    type: 'sent',
+  }
+}
+
+const statusStyles = {
+  off: {
+    icon: PowerOff,
+    panel: 'border-[#73827e]/20 bg-white/25',
+    text: 'text-[#596964]',
+  },
+  scheduled: {
+    icon: Clock3,
+    panel: 'border-[#3867F4]/20 bg-[#3867F4]/[0.06]',
+    text: 'text-[#315bd8]',
+  },
+  sent: {
+    icon: CheckCircle2,
+    panel: 'border-[#2d8067]/20 bg-[#2d8067]/[0.07]',
+    text: 'text-[#236750]',
+  },
+}
+
+function TypewriterIntro({ text }) {
+  const [visibleText, setVisibleText] = useState('')
+
+  useEffect(() => {
+    let index = 0
+    let timeoutId
+
+    function typeNextCharacter() {
+      index += 1
+      setVisibleText(text.slice(0, index))
+
+      if (index < text.length) {
+        const character = text[index - 1]
+        const pause = character === ',' ? 125 : character === ' ' ? 42 : 28 + (index % 4) * 8
+        timeoutId = window.setTimeout(typeNextCharacter, pause)
+      }
+    }
+
+    timeoutId = window.setTimeout(typeNextCharacter, 220)
+    return () => window.clearTimeout(timeoutId)
+  }, [text])
+
+  return (
+    <h2 aria-label={text} className="max-w-5xl text-[2.7rem] font-medium leading-[1.04] tracking-[-0.052em] text-white sm:text-[3.5rem] lg:text-[4.2rem]">
+      <span aria-hidden="true">{visibleText}</span>
+      <span
+        aria-hidden="true"
+        className={`ml-1 inline-block h-[0.86em] w-[4px] translate-y-[0.08em] rounded-full bg-[#3867F4] ${visibleText.length < text.length ? 'animate-pulse' : 'opacity-0'}`}
+      />
+    </h2>
+  )
+}
+
+function ReplyWorkspace({ businessName, now, onSave, review, settings }) {
+  const [draft, setDraft] = useState(() => getReply(review, businessName))
+  const [isEditing, setIsEditing] = useState(false)
+  const [isSaved, setIsSaved] = useState(false)
+  const status = getReplyStatus(review, settings, now)
+  const style = statusStyles[status.type]
+  const StatusIcon = style.icon
+
+  async function saveReply() {
+    await onSave(review.id, draft)
+    setIsEditing(false)
+    setIsSaved(true)
+    window.setTimeout(() => setIsSaved(false), 1600)
   }
 
   return (
-    <div className="space-y-6 pb-12">
-      <section className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <div className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-violet-200">
-            <span className="h-2 w-2 rounded-full bg-violet-300 shadow-[0_0_16px_rgba(167,139,250,0.9)]" />
-            Review inbox
-          </div>
-          <h2 className="text-4xl font-medium leading-[1.08] tracking-[-0.045em] text-white lg:text-[3.35rem]">Customer feedback</h2>
-          <p className="mt-3 max-w-2xl text-base font-medium leading-7 text-slate-400">
-            Read every review, check AURA&apos;s response and keep track of feedback that needs attention.
-          </p>
-        </div>
-        <div className="inline-flex w-fit items-center gap-2 rounded-xl border border-violet-300/15 bg-violet-300/[0.07] px-3 py-2 text-xs font-black text-violet-200">
-          <Sparkles size={15} />
-          Preview workspace
-        </div>
-      </section>
-
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {[
-          ['All reviews', reviews.length, MessageSquareText],
-          ['Positive', positiveCount, CheckCircle2],
-          ['Needs attention', attentionCount, AlertTriangle],
-          ['Replies ready', reviews.length, Sparkles],
-        ].map(([label, value, Icon]) => (
-          <article className="rounded-2xl border border-white/[0.07] bg-[#0b0a0e]/90 p-4" key={label}>
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-500">{label}</p>
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-violet-300/15 bg-violet-300/[0.07] text-violet-200">
-                <Icon size={17} />
-              </span>
+    <aside className="xl:sticky xl:top-24 xl:self-start">
+      <div className="overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0b0a0e]/95">
+        <div className="border-b border-white/[0.07] p-5 sm:p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#697a75]">Selected review</p>
+              <h3 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-white">{review.customer_name}</h3>
             </div>
-            <p className="mt-3 text-3xl font-black tracking-tight text-white">{value}</p>
-          </article>
-        ))}
-      </section>
-
-      <section className="rounded-2xl border border-white/[0.07] bg-[#0b0a0e]/90 p-3">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-wrap gap-2">
-            {filters.map((filter) => (
-              <button
-                className={`rounded-xl px-4 py-2.5 text-sm font-black transition ${
-                  activeFilter === filter
-                    ? 'bg-violet-300 text-[#100722] shadow-[0_0_28px_rgba(167,139,250,0.15)]'
-                    : 'border border-white/[0.07] bg-white/[0.025] text-slate-400 hover:text-white'
-                }`}
-                key={filter}
-                onClick={() => setActiveFilter(filter)}
-                type="button"
-              >
-                {filter}
-              </button>
-            ))}
-          </div>
-          <label className="flex min-w-0 items-center gap-3 rounded-xl border border-white/[0.07] bg-[#060807] px-4 py-2.5 lg:w-80">
-            <Search className="shrink-0 text-slate-500" size={17} />
-            <input
-              className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-slate-600"
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search reviews"
-              value={query}
-            />
-          </label>
-        </div>
-      </section>
-
-      <section className="grid gap-5 xl:grid-cols-[1.08fr_0.92fr]">
-        <div className="space-y-3">
-          {visibleReviews.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-white/10 bg-[#0b0a0e]/80 p-10 text-center">
-              <MessageSquareText className="mx-auto text-violet-200" size={28} />
-              <p className="mt-4 font-black text-white">No reviews in this view</p>
-              <p className="mt-2 text-sm text-slate-500">Try another filter or search term.</p>
+            <div className="flex items-center gap-1 rounded-xl border border-black/[0.07] bg-white/35 px-3 py-2">
+              <Star className="fill-[#3867F4] text-[#3867F4]" size={15} />
+              <span className="text-sm font-black text-[#17201e]">{review.rating}.0</span>
             </div>
+          </div>
+          <p className="mt-5 text-base font-medium leading-7 text-slate-300">{review.text}</p>
+        </div>
+
+        <div className="p-5 sm:p-6">
+          <div className={`rounded-xl border p-4 ${style.panel}`}>
+            <div className={`flex items-center gap-2 text-sm font-black ${style.text}`}>
+              <StatusIcon size={17} />
+              {status.label}
+            </div>
+            <p className="mt-2 text-sm leading-6 text-[#61716d]">{status.detail}</p>
+          </div>
+
+          {status.type === 'off' ? (
+            <Link
+              className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-xl bg-[#3867F4] px-4 text-sm font-black text-white transition hover:bg-[#2f5be0]"
+              to="/dashboard/settings"
+            >
+              Turn on auto replies in Settings
+            </Link>
           ) : (
-            visibleReviews.map((review) => {
+            <div className="mt-5">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-[#61716d]">
+                  <Sparkles size={15} className="text-[#3867F4]" />
+                  {status.type === 'scheduled' ? 'Prepared reply' : 'AURA reply'}
+                </div>
+                {!isEditing && (
+                  <button
+                    className="inline-flex items-center gap-2 text-xs font-black text-[#315bd8] transition hover:text-[#234dc9]"
+                    onClick={() => setIsEditing(true)}
+                    type="button"
+                  >
+                    <Pencil size={14} />
+                    {status.type === 'scheduled' ? 'Edit before sending' : 'Edit reply'}
+                  </button>
+                )}
+              </div>
+
+              {isEditing ? (
+                <div className="mt-3">
+                  <textarea
+                    aria-label="Edit AURA reply"
+                    className="min-h-40 w-full resize-none rounded-xl border border-[#3867F4]/25 bg-white/45 p-4 text-sm font-medium leading-7 text-[#17201e] outline-none focus:border-[#3867F4] focus:ring-4 focus:ring-[#3867F4]/10"
+                    onChange={(event) => setDraft(event.target.value)}
+                    value={draft}
+                  />
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <button
+                      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#3867F4] px-4 text-sm font-black text-white"
+                      onClick={saveReply}
+                      type="button"
+                    >
+                      <Check size={16} /> Save reply
+                    </button>
+                    <button
+                      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-black/[0.08] bg-white/35 px-4 text-sm font-black text-[#4e5f5a]"
+                      onClick={() => {
+                        setDraft(getReply(review, businessName))
+                        setIsEditing(false)
+                      }}
+                      type="button"
+                    >
+                      <X size={16} /> Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-3 rounded-xl border border-black/[0.07] bg-white/35 p-4">
+                  <p className="text-sm font-medium leading-7 text-slate-200">{draft}</p>
+                </div>
+              )}
+
+              {isSaved && <p className="mt-3 text-xs font-black text-[#236750]">Reply updated.</p>}
+            </div>
+          )}
+        </div>
+      </div>
+    </aside>
+  )
+}
+
+export default function Reviews() {
+  const { account, actions, autoReplySettings, reviews } = useDashboard()
+  const [now, setNow] = useState(PAGE_LOAD_TIME)
+  const [query, setQuery] = useState('')
+  const [selectedReviewId, setSelectedReviewId] = useState(reviews[0]?.id || null)
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => setNow(Date.now()), 60_000)
+    return () => window.clearInterval(intervalId)
+  }, [])
+
+  const businessName = String(account?.businessProfile?.business_name || 'your business').replace(/\s+Demo$/i, '')
+  const intro = `Let's see what people are saying about ${businessName}.`
+  const cleanQuery = query.trim().toLowerCase()
+  const visibleReviews = reviews.filter((review) =>
+    !cleanQuery || review.customer_name?.toLowerCase().includes(cleanQuery) || review.text?.toLowerCase().includes(cleanQuery),
+  )
+  const selectedReview = reviews.find((review) => review.id === selectedReviewId) || visibleReviews[0] || reviews[0]
+
+  return (
+    <div className="space-y-9 pb-12">
+      <section className="border-b border-white/[0.055] pb-8 pt-2">
+        <TypewriterIntro key={intro} text={intro} />
+      </section>
+
+      <section className="grid gap-5 xl:grid-cols-[minmax(0,0.95fr)_minmax(390px,1.05fr)]">
+        <div className="overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0b0a0e]/90">
+          <div className="flex flex-col gap-4 border-b border-white/[0.07] p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xl font-semibold tracking-[-0.025em] text-white">Reviews</p>
+              <p className="mt-1 text-xs font-semibold text-[#72837e]">{visibleReviews.length} conversations</p>
+            </div>
+            <label className="flex h-11 items-center gap-2 rounded-xl border border-black/[0.07] bg-white/35 px-3 sm:w-64">
+              <Search size={16} className="text-[#71827d]" />
+              <input
+                aria-label="Search reviews"
+                className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#17201e] outline-none placeholder:text-[#81918d]"
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search reviews"
+                value={query}
+              />
+            </label>
+          </div>
+
+          <div className="divide-y divide-black/[0.06]">
+            {visibleReviews.map((review) => {
               const isSelected = selectedReview?.id === review.id
-              const needsAttention = Number(review.rating) <= 3
+              const status = getReplyStatus(review, autoReplySettings, now)
+              const style = statusStyles[status.type]
+              const StatusIcon = style.icon
 
               return (
                 <button
-                  className={`w-full rounded-2xl border p-5 text-left transition ${
-                    isSelected
-                      ? 'border-violet-300/35 bg-violet-300/[0.065] shadow-[0_0_44px_rgba(167,139,250,0.07)]'
-                      : 'border-white/[0.07] bg-[#0b0a0e]/90 hover:border-violet-300/20 hover:bg-[#111016]'
-                  }`}
+                  className={`w-full p-5 text-left transition ${isSelected ? 'bg-[#3867F4]/[0.07]' : 'hover:bg-white/25'}`}
                   key={review.id}
                   onClick={() => setSelectedReviewId(review.id)}
                   type="button"
                 >
                   <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-3">
-                        <p className="font-black text-white">{review.customer_name}</p>
-                        <span
-                          className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.12em] ${
-                            needsAttention
-                              ? 'border border-amber-300/20 bg-amber-300/10 text-amber-200'
-                              : 'border border-violet-300/15 bg-violet-300/[0.07] text-violet-200'
-                          }`}
-                        >
-                          {needsAttention ? 'Needs attention' : 'Reply ready'}
-                        </span>
-                      </div>
+                    <div>
+                      <p className="font-black text-white">{review.customer_name}</p>
                       <div className="mt-2 flex items-center gap-1">
                         {stars(review.rating).map((filled, index) => (
                           <Star
-                            className={filled ? 'fill-violet-300 text-violet-300' : 'text-white/10'}
+                            className={filled ? 'fill-[#3867F4] text-[#3867F4]' : 'text-black/10'}
                             key={index}
                             size={14}
                           />
                         ))}
-                        <span className="ml-2 text-xs font-bold text-slate-500">{formatReviewDate(review.created_at)}</span>
+                        <span className="ml-2 text-xs font-semibold text-[#71827d]">{formatReviewDate(review.created_at)}</span>
                       </div>
                     </div>
-                    <span className="rounded-xl border border-white/[0.07] bg-white/[0.03] px-3 py-2 text-xs font-black text-slate-300">
-                      Google
+                    <span className={`flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-black ${style.panel} ${style.text}`}>
+                      <StatusIcon size={12} />
+                      {status.type === 'sent' ? 'Replied' : status.type === 'scheduled' ? 'Scheduled' : 'Off'}
                     </span>
                   </div>
-                  <p className="mt-4 line-clamp-2 text-sm font-medium leading-6 text-slate-300">{review.text}</p>
-                  {review.mentioned_staff?.length > 0 && (
-                    <p className="mt-4 text-xs font-black text-violet-200">
-                      Mentions {review.mentioned_staff.join(', ')}
-                    </p>
-                  )}
+                  <p className="mt-3 line-clamp-2 text-sm font-medium leading-6 text-slate-300">{review.text}</p>
                 </button>
               )
-            })
-          )}
+            })}
+
+            {!visibleReviews.length && (
+              <div className="p-10 text-center text-sm font-semibold text-[#71827d]">No reviews match that search.</div>
+            )}
+          </div>
         </div>
 
-        <aside className="xl:sticky xl:top-24 xl:self-start">
-          {selectedReview ? (
-            <div className="overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0b0a0e]/95 shadow-[0_24px_90px_rgba(0,0,0,0.28)]">
-              <div className="border-b border-white/[0.07] p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-black uppercase tracking-[0.16em] text-violet-200">Selected review</p>
-                    <h3 className="mt-2 text-2xl font-black text-white">{selectedReview.customer_name}</h3>
-                  </div>
-                  <div className="flex items-center gap-1 rounded-xl border border-violet-300/15 bg-violet-300/[0.07] px-3 py-2">
-                    <Star className="fill-violet-300 text-violet-300" size={15} />
-                    <span className="text-sm font-black text-violet-100">{selectedReview.rating}.0</span>
-                  </div>
-                </div>
-                <p className="mt-5 text-sm font-medium leading-7 text-slate-300">{selectedReview.text}</p>
-              </div>
-
-              <div className="p-5">
-                <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-violet-200">
-                  <Sparkles size={15} />
-                  AURA reply
-                </div>
-                <div className="mt-4 rounded-xl border border-violet-300/15 bg-violet-300/[0.055] p-4">
-                  <p className="text-sm font-medium leading-7 text-slate-200">
-                    {getReply(selectedReview, businessName)}
-                  </p>
-                </div>
-                {Number(selectedReview.rating) <= 3 && (
-                  <div className="mt-4 flex items-start gap-3 rounded-xl border border-amber-300/15 bg-amber-300/[0.06] p-4 text-sm leading-6 text-amber-100">
-                    <AlertTriangle className="mt-0.5 shrink-0" size={17} />
-                    We recommend checking this reply before it is sent.
-                  </div>
-                )}
-                <button
-                  className="mt-4 inline-flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl border border-white/[0.07] bg-white/[0.035] px-4 py-3 text-sm font-black text-slate-500"
-                  disabled
-                  type="button"
-                >
-                  Google publishing comes later
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-dashed border-white/10 bg-[#0b0a0e]/80 p-10 text-center text-sm text-slate-500">
-              Select a review to see the response.
-            </div>
-          )}
-        </aside>
+        {selectedReview ? (
+          <ReplyWorkspace
+            businessName={businessName}
+            key={selectedReview.id}
+            now={now}
+            onSave={actions.updateReviewReply}
+            review={selectedReview}
+            settings={autoReplySettings}
+          />
+        ) : (
+          <div className="rounded-2xl border border-dashed border-black/10 bg-white/20 p-10 text-center text-sm text-[#71827d]">
+            Select a review to see AURA&apos;s reply.
+          </div>
+        )}
       </section>
-
-      {nameApprovals.length > 0 && (
-        <section className="rounded-2xl border border-white/[0.07] bg-[#0b0a0e]/90 p-5">
-          <div className="mb-5">
-            <p className="text-xs font-black uppercase tracking-[0.16em] text-violet-200">Names to confirm</p>
-            <h3 className="mt-2 text-2xl font-black tracking-tight text-white">Is this someone on your team?</h3>
-          </div>
-          <div className="grid gap-3 md:grid-cols-2">
-            {nameApprovals.map((approval) => (
-              <article className="rounded-xl border border-white/[0.07] bg-[#060807] p-4" key={approval.id}>
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xl font-black text-white">{approval.name}</p>
-                    <p className="mt-2 text-sm leading-6 text-slate-400">&ldquo;{approval.review_excerpt}&rdquo;</p>
-                  </div>
-                  <span className="rounded-lg bg-violet-300 px-2.5 py-1 text-xs font-black text-[#100722]">{approval.rating}★</span>
-                </div>
-                <div className="mt-4 grid grid-cols-2 gap-2">
-                  <button
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-300 px-4 py-3 text-sm font-black text-[#100722] transition hover:bg-violet-200"
-                    onClick={() => setSelectedApproval(approval)}
-                    type="button"
-                  >
-                    <UserPlus size={17} />
-                    Add to team
-                  </button>
-                  <button
-                    className="rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm font-bold text-slate-300 transition hover:text-white"
-                    onClick={() => actions.ignoreName(approval.id)}
-                    type="button"
-                  >
-                    Not staff
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {selectedApproval && (
-        <StaffModal
-          allowAddAnother={false}
-          categories={categories}
-          initialName={selectedApproval.name}
-          key={selectedApproval.id}
-          onAddCategory={actions.addCategory}
-          onClose={() => setSelectedApproval(null)}
-          onSave={handleApproveStaff}
-          title="Add this person to your team"
-        />
-      )}
     </div>
   )
 }

@@ -4,6 +4,7 @@ import {
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
+  Settings2,
   Sparkles,
   Star,
   Trophy,
@@ -28,6 +29,7 @@ import {
 
 const STORAGE_KEY = 'aura-dashboard-state-v1'
 const DEV_ACCOUNT_EMAIL = 'info@spectreprojects.co.uk'
+const defaultAutoReplySettings = { delayUnit: 'hours', delayValue: 2, enabled: true }
 
 const navItems = [
   { end: true, href: '/dashboard', icon: BarChart3, label: 'Overview' },
@@ -35,6 +37,7 @@ const navItems = [
   { href: '/dashboard/staff', icon: Users, label: 'Team' },
   { href: '/dashboard/leaderboard', icon: Trophy, label: 'Leaderboard' },
   { href: '/dashboard/rewards', icon: Gift, label: 'Rewards' },
+  { href: '/dashboard/settings', icon: Settings2, label: 'Settings' },
 ]
 
 function createId(prefix) {
@@ -127,6 +130,18 @@ function normalizeReviews(reviews) {
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
 }
 
+function normalizeAutoReplySettings(settings) {
+  const delayUnit = ['minutes', 'hours', 'days'].includes(settings?.delayUnit)
+    ? settings.delayUnit
+    : defaultAutoReplySettings.delayUnit
+
+  return {
+    delayUnit,
+    delayValue: Math.max(0, Number(settings?.delayValue ?? defaultAutoReplySettings.delayValue)),
+    enabled: settings?.enabled !== false,
+  }
+}
+
 function normalizeNameApprovals(approvals) {
   return (approvals || [])
     .map((approval) => ({
@@ -209,6 +224,7 @@ function readLocalState() {
     if (!saved) throw new Error('No saved dashboard state')
 
     return {
+      autoReplySettings: normalizeAutoReplySettings(saved.autoReplySettings),
       categories: normalizeCategories(saved.categories),
       nameApprovals: normalizeNameApprovals(saved.nameApprovals),
       pointEvents: normalizePointEvents(saved.pointEvents),
@@ -220,6 +236,7 @@ function readLocalState() {
     }
   } catch {
     return {
+      autoReplySettings: defaultAutoReplySettings,
       categories: defaultCategories,
       nameApprovals: [],
       pointEvents: [],
@@ -377,7 +394,7 @@ function DesktopSidebar({ collapsed, isSigningOut, nameApprovalsCount, onCollaps
 
 function MobileNav({ nameApprovalsCount }) {
   return (
-    <nav className="dashboard-mobile-nav fixed inset-x-3 bottom-3 z-30 grid grid-cols-5 rounded-2xl border border-black/10 bg-[#d8e8e4]/95 p-2 text-[#53635f] shadow-[0_22px_65px_rgba(32,49,45,0.18)] backdrop-blur-xl lg:hidden">
+    <nav className="dashboard-mobile-nav fixed inset-x-3 bottom-3 z-30 grid grid-cols-6 rounded-2xl border border-black/10 bg-[#d8e8e4]/95 p-2 text-[#53635f] shadow-[0_22px_65px_rgba(32,49,45,0.18)] backdrop-blur-xl lg:hidden">
       {navItems.map((item) => (
         <NavLink
           className={({ isActive }) =>
@@ -412,6 +429,7 @@ export default function DashboardLayout() {
 
     const demoState = buildDemoDashboardState(defaultReviews)
     return {
+      autoReplySettings: defaultAutoReplySettings,
       categories: defaultCategories,
       nameApprovals: [],
       pointEvents: demoState.pointEvents,
@@ -427,6 +445,7 @@ export default function DashboardLayout() {
       ? { business_name: 'Hilton Glasgow Demo', public_slug: 'hilton-glasgow-demo-9663c5f4' }
       : null,
   )
+  const [autoReplySettings, setAutoReplySettings] = useState(initialState.autoReplySettings)
   const [categories, setCategories] = useState(initialState.categories)
   const [nameApprovals, setNameApprovals] = useState(initialState.nameApprovals)
   const [pointEvents, setPointEvents] = useState(initialState.pointEvents)
@@ -598,9 +617,9 @@ export default function DashboardLayout() {
   useEffect(() => {
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ categories, nameApprovals, pointEvents, pointsRules, redemptions, rewards, reviews, staff }),
+      JSON.stringify({ autoReplySettings, categories, nameApprovals, pointEvents, pointsRules, redemptions, rewards, reviews, staff }),
     )
-  }, [categories, nameApprovals, pointEvents, pointsRules, redemptions, rewards, reviews, staff])
+  }, [autoReplySettings, categories, nameApprovals, pointEvents, pointsRules, redemptions, rewards, reviews, staff])
 
   const overview = useMemo(() => {
     const reviewsThisMonth = reviews.filter((review) => isThisMonth(review.created_at))
@@ -873,6 +892,23 @@ export default function DashboardLayout() {
     setCategories((current) => [...current, cleanName])
   }
 
+  async function updateAutoReplySettings(settings) {
+    setAutoReplySettings(normalizeAutoReplySettings(settings))
+  }
+
+  async function updateReviewReply(reviewId, reply) {
+    const cleanReply = reply.trim()
+    if (!cleanReply) return
+
+    setReviews((current) =>
+      current.map((review) =>
+        review.id === reviewId
+          ? { ...review, aura_reply: cleanReply, aura_reply_updated_at: new Date().toISOString() }
+          : review,
+      ),
+    )
+  }
+
   async function saveReward(reward) {
     let nextReward = {
       ...reward,
@@ -960,13 +996,16 @@ export default function DashboardLayout() {
       saveReward,
       setLeaderboardPin,
       setStaffActive,
+      updateAutoReplySettings,
       updatePointsRule,
+      updateReviewReply,
     },
     account: {
       businessProfile,
       email: user?.email || '',
       user,
     },
+    autoReplySettings,
     categories,
     connectionStatus,
     leaderboard,
