@@ -50,7 +50,7 @@ function TypewriterQuestion({ text }) {
   )
 }
 
-export default function StaffModal({ categories, initialName = '', initialStaff, onAddCategory, onClose, onSave, title }) {
+export default function StaffModal({ allowAddAnother = true, categories, initialName = '', initialStaff, onAddCategory, onClose, onSave, title }) {
   const reduceMotion = useReducedMotion()
   const [direction, setDirection] = useState(1)
   const [form, setForm] = useState({
@@ -64,6 +64,8 @@ export default function StaffModal({ categories, initialName = '', initialStaff,
   const [isCreatingCategory, setIsCreatingCategory] = useState(false)
   const [newCategory, setNewCategory] = useState('')
   const [categoryError, setCategoryError] = useState('')
+  const [isComplete, setIsComplete] = useState(false)
+  const [savedFirstName, setSavedFirstName] = useState('')
   const [step, setStep] = useState(0)
   const inputRef = useRef(null)
   const newCategoryRef = useRef(null)
@@ -90,6 +92,20 @@ export default function StaffModal({ categories, initialName = '', initialStaff,
   function goBack() {
     setDirection(-1)
     setStep((current) => Math.max(0, current - 1))
+  }
+
+  function startAnotherStaffMember() {
+    setDirection(1)
+    setForm({
+      ...initialForm,
+      job_category: categories[0] || 'Front of House',
+    })
+    setStep(0)
+    setIsComplete(false)
+    setSavedFirstName('')
+    setIsCreatingCategory(false)
+    setNewCategory('')
+    setCategoryError('')
   }
 
   async function addCategory() {
@@ -127,7 +143,8 @@ export default function StaffModal({ categories, initialName = '', initialStaff,
     setIsSaving(true)
     try {
       await onSave(form)
-      onClose()
+      setSavedFirstName(firstName)
+      setIsComplete(true)
     } finally {
       setIsSaving(false)
     }
@@ -158,7 +175,51 @@ export default function StaffModal({ categories, initialName = '', initialStaff,
           </button>
         </div>
 
-        <div className="flex gap-2 px-6 pt-6 sm:px-8" role="progressbar" aria-label="Team setup progress" aria-valuemax={steps.length} aria-valuemin="1" aria-valuenow={step + 1}>
+        {isComplete ? (
+          <motion.div
+            animate={{ opacity: 1, y: 0 }}
+            className="flex min-h-[430px] flex-col justify-center px-6 py-10 sm:px-8"
+            initial={reduceMotion ? false : { opacity: 0, y: 18 }}
+            transition={{ duration: reduceMotion ? 0 : 0.45, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div aria-live="polite">
+              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#3867F4] text-white shadow-[0_12px_34px_rgba(56,103,244,0.24)]">
+                <Check size={26} strokeWidth={2.5} />
+              </span>
+              <p className="mt-6 text-[11px] font-black uppercase tracking-[0.2em] text-[#61736e]">Team updated</p>
+              <h2 className="mt-3 max-w-xl text-3xl font-semibold leading-tight tracking-[-0.035em] text-[#17201e] sm:text-4xl">
+                {initialStaff
+                  ? `All set, ${savedFirstName}'s staff details have been updated.`
+                  : `All set, ${savedFirstName} has been added as a member of staff.`}
+              </h2>
+              <p className="mt-4 text-sm font-medium leading-6 text-[#61736e]">
+                {initialStaff ? 'Their existing performance history has been preserved.' : 'Their profile is ready and active.'}
+              </p>
+            </div>
+
+            <div className="mt-10 grid gap-3 sm:grid-cols-2">
+              {!initialStaff && allowAddAnother && (
+                <button
+                  className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl bg-[#3867F4] px-6 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-[#2f5be0]"
+                  onClick={startAnotherStaffMember}
+                  type="button"
+                >
+                  <Plus size={18} />
+                  Add another staff member
+                </button>
+              )}
+              <button
+                className={`h-14 rounded-2xl border border-[#17201e]/12 bg-white/45 px-6 text-sm font-black text-[#33433f] transition hover:bg-white/80 ${!initialStaff && allowAddAnother ? '' : 'sm:col-span-2'}`}
+                onClick={onClose}
+                type="button"
+              >
+                Close
+              </button>
+            </div>
+          </motion.div>
+        ) : (
+          <>
+            <div className="flex gap-2 px-6 pt-6 sm:px-8" role="progressbar" aria-label="Team setup progress" aria-valuemax={steps.length} aria-valuemin="1" aria-valuenow={step + 1}>
           {steps.map((item, index) => (
             <span
               className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${index <= step ? 'bg-[#3867F4]' : 'bg-[#cbd9d5]'}`}
@@ -304,7 +365,9 @@ export default function StaffModal({ categories, initialName = '', initialStaff,
             <span>Step {step + 1} of {steps.length}</span>
             <span>{initialStaff ? 'Performance history will be preserved' : 'They will be active when added'}</span>
           </div>
-        </div>
+            </div>
+          </>
+        )}
       </form>
     </div>
   )

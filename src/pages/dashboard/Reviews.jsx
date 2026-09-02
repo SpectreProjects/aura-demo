@@ -68,7 +68,6 @@ export default function Reviews() {
   async function handleApproveStaff(staffForm) {
     if (!selectedApproval) return
     await actions.approveName(selectedApproval, staffForm)
-    setSelectedApproval(null)
   }
 
   return (
@@ -295,6 +294,7 @@ export default function Reviews() {
 
       {selectedApproval && (
         <StaffModal
+          allowAddAnother={false}
           categories={categories}
           initialName={selectedApproval.name}
           key={selectedApproval.id}
