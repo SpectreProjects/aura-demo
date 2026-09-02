@@ -16,30 +16,31 @@ function scoreFor(person, period) {
 }
 
 function PodiumPlace({ person, period, rank }) {
-  if (!person) return <div aria-hidden="true" />
-
   const stageHeight = {
     1: 'h-28 sm:h-32',
     2: 'h-20 sm:h-24',
     3: 'h-16 sm:h-20',
   }[rank]
   const avatarSize = rank === 1 ? 'h-16 w-16 sm:h-[4.5rem] sm:w-[4.5rem]' : 'h-12 w-12 sm:h-14 sm:w-14'
+  const mentionCount = Number(person?.mentions ?? person?.total_mentions ?? 0)
 
   return (
-    <article className="relative z-10 min-w-0 text-center text-white">
+    <article className={`relative z-10 min-w-0 text-center text-white ${person ? '' : 'opacity-55'}`}>
       <span
         className={`mx-auto flex ${avatarSize} items-center justify-center rounded-full border-2 border-white/70 text-base font-black shadow-[0_12px_32px_rgba(22,40,98,0.2)] backdrop-blur sm:text-lg ${
-          rank === 1 ? 'bg-white text-[#315bd8]' : 'bg-white/[0.14] text-white'
+          rank === 1 && person ? 'bg-white text-[#315bd8]' : 'bg-white/[0.14] text-white'
         }`}
       >
-        {initials(person.name)}
+        {person ? initials(person.name) : '—'}
       </span>
-      <h3 className="mt-2 truncate text-sm font-black tracking-[-0.02em] sm:mt-3 sm:text-base">{person.name}</h3>
+      <h3 className="mt-2 truncate text-sm font-black tracking-[-0.02em] sm:mt-3 sm:text-base">
+        {person?.name || `Place ${rank} open`}
+      </h3>
       <p className="mt-1 truncate text-[10px] font-semibold text-white/70 sm:text-xs">
-        {person.job_title || person.job_category || 'Team member'}
+        {person?.job_title || person?.job_category || 'Awaiting recognition'}
       </p>
       <p className="mt-1.5 text-[10px] font-black text-white/90 sm:text-xs">
-        {scoreFor(person, period)} pts · {Number(person.mentions ?? person.total_mentions ?? 0)} {Number(person.mentions ?? person.total_mentions ?? 0) === 1 ? 'mention' : 'mentions'}
+        {person ? scoreFor(person, period) : 0} pts · {mentionCount} {mentionCount === 1 ? 'mention' : 'mentions'}
       </p>
       <div className={`mt-3 flex ${stageHeight} items-center justify-center rounded-t-2xl bg-gradient-to-b from-white/25 to-white/[0.11] shadow-[inset_0_1px_rgba(255,255,255,0.22)]`}>
         <span className="text-4xl font-medium tracking-[-0.06em] text-white sm:text-5xl">{rank}</span>
