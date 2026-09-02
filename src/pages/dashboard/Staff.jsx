@@ -353,6 +353,7 @@ export default function Staff() {
           categories={categories}
           initialStaff={editorState.id ? editorState : null}
           key={editorState.id || 'add-staff'}
+          onAddCategory={actions.addCategory}
           onClose={() => setEditorState(null)}
           onSave={actions.addStaff}
           title={editorState.id ? `Edit ${editorState.name}` : 'Add Staff'}

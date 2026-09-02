@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { ArrowRight, Check, ChevronLeft, X } from 'lucide-react'
+import { ArrowRight, Check, ChevronLeft, Plus, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 const initialForm = {
@@ -50,7 +50,7 @@ function TypewriterQuestion({ text }) {
   )
 }
 
-export default function StaffModal({ categories, initialName = '', initialStaff, onClose, onSave, title }) {
+export default function StaffModal({ categories, initialName = '', initialStaff, onAddCategory, onClose, onSave, title }) {
   const reduceMotion = useReducedMotion()
   const [direction, setDirection] = useState(1)
   const [form, setForm] = useState({
@@ -60,8 +60,13 @@ export default function StaffModal({ categories, initialName = '', initialStaff,
     job_category: initialStaff?.job_category || categories[0] || 'Front of House',
   })
   const [isSaving, setIsSaving] = useState(false)
+  const [isAddingCategory, setIsAddingCategory] = useState(false)
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false)
+  const [newCategory, setNewCategory] = useState('')
+  const [categoryError, setCategoryError] = useState('')
   const [step, setStep] = useState(0)
   const inputRef = useRef(null)
+  const newCategoryRef = useRef(null)
 
   const firstName = getFirstName(form.name)
   const steps = useMemo(
@@ -85,6 +90,29 @@ export default function StaffModal({ categories, initialName = '', initialStaff,
   function goBack() {
     setDirection(-1)
     setStep((current) => Math.max(0, current - 1))
+  }
+
+  async function addCategory() {
+    const cleanName = newCategory.trim()
+    if (!cleanName) {
+      setCategoryError('Enter a department name first.')
+      newCategoryRef.current?.focus()
+      return
+    }
+
+    const existingCategory = categories.find((category) => category.toLowerCase() === cleanName.toLowerCase())
+    const categoryName = existingCategory || cleanName
+
+    setIsAddingCategory(true)
+    setCategoryError('')
+    try {
+      if (!existingCategory) await onAddCategory(cleanName)
+      updateField('job_category', categoryName)
+      setNewCategory('')
+      setIsCreatingCategory(false)
+    } finally {
+      setIsAddingCategory(false)
+    }
   }
 
   async function handleSubmit(event) {
@@ -140,7 +168,7 @@ export default function StaffModal({ categories, initialName = '', initialStaff,
         </div>
 
         <div className="px-6 pb-7 pt-8 sm:px-8 sm:pb-8 sm:pt-10">
-          <div className="relative min-h-[245px] overflow-hidden sm:min-h-[270px]">
+          <div className={`relative overflow-hidden ${activeStep.field === 'job_category' ? 'min-h-[315px]' : 'min-h-[245px] sm:min-h-[270px]'}`}>
             <AnimatePresence initial={false} mode="wait" custom={direction}>
               <motion.div
                 animate={{ opacity: 1, x: 0 }}
@@ -154,17 +182,86 @@ export default function StaffModal({ categories, initialName = '', initialStaff,
 
                 <div className="mt-auto pt-8">
                   {activeStep.field === 'job_category' ? (
-                    <select
-                      aria-label="Department"
-                      className="h-16 w-full rounded-2xl border border-[#17201e]/12 bg-white/55 px-5 text-lg font-semibold text-[#17201e] outline-none transition focus:border-[#3867F4] focus:ring-4 focus:ring-[#3867F4]/10"
-                      onChange={(event) => updateField('job_category', event.target.value)}
-                      ref={inputRef}
-                      value={form.job_category}
-                    >
-                      {categories.map((category) => (
-                        <option key={category}>{category}</option>
-                      ))}
-                    </select>
+                    <div className="space-y-3">
+                      <select
+                        aria-label="Department"
+                        className="h-16 w-full rounded-2xl border border-[#17201e]/12 bg-white/55 px-5 text-lg font-semibold text-[#17201e] outline-none transition focus:border-[#3867F4] focus:ring-4 focus:ring-[#3867F4]/10"
+                        onChange={(event) => updateField('job_category', event.target.value)}
+                        ref={inputRef}
+                        value={form.job_category}
+                      >
+                        {categories.map((category) => (
+                          <option key={category}>{category}</option>
+                        ))}
+                      </select>
+
+                      <AnimatePresence initial={false} mode="wait">
+                        {!isCreatingCategory ? (
+                          <motion.button
+                            animate={{ opacity: 1, y: 0 }}
+                            className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-[#3867F4]/25 bg-[#3867F4]/5 text-sm font-black text-[#315bd8] transition hover:border-[#3867F4]/45 hover:bg-[#3867F4]/10"
+                            initial={{ opacity: 0, y: 6 }}
+                            key="add-category-button"
+                            onClick={() => {
+                              setIsCreatingCategory(true)
+                              window.setTimeout(() => newCategoryRef.current?.focus(), 80)
+                            }}
+                            type="button"
+                          >
+                            <Plus size={17} />
+                            Add a new department
+                          </motion.button>
+                        ) : (
+                          <motion.div
+                            animate={{ opacity: 1, y: 0 }}
+                            className="space-y-2"
+                            initial={{ opacity: 0, y: 6 }}
+                            key="add-category-field"
+                          >
+                              <div className="flex gap-2">
+                                <input
+                                  aria-label="New department name"
+                                  className="h-12 min-w-0 flex-1 rounded-2xl border border-[#17201e]/12 bg-white/55 px-4 text-sm font-semibold text-[#17201e] outline-none transition placeholder:text-[#80908b] focus:border-[#3867F4] focus:ring-4 focus:ring-[#3867F4]/10"
+                                  onChange={(event) => {
+                                    setNewCategory(event.target.value)
+                                    setCategoryError('')
+                                  }}
+                                  onKeyDown={(event) => {
+                                    if (event.key === 'Enter') {
+                                      event.preventDefault()
+                                      addCategory()
+                                    }
+                                  }}
+                                  placeholder="New department name"
+                                  ref={newCategoryRef}
+                                  value={newCategory.trimStart()}
+                                />
+                                <button
+                                  className="rounded-2xl bg-[#3867F4] px-5 text-sm font-black text-white transition hover:bg-[#2f5be0] disabled:cursor-wait disabled:opacity-60"
+                                  disabled={isAddingCategory}
+                                  onClick={addCategory}
+                                  type="button"
+                                >
+                                  {isAddingCategory ? 'Adding…' : 'Add'}
+                                </button>
+                                <button
+                                  aria-label="Cancel adding department"
+                                  className="flex w-12 shrink-0 items-center justify-center rounded-2xl border border-[#17201e]/12 bg-white/35 text-[#61736e] transition hover:bg-white/70"
+                                  onClick={() => {
+                                    setIsCreatingCategory(false)
+                                    setNewCategory('')
+                                    setCategoryError('')
+                                  }}
+                                  type="button"
+                                >
+                                  <X size={17} />
+                                </button>
+                              </div>
+                              {categoryError && <p className="px-1 text-xs font-bold text-[#b83e50]">{categoryError}</p>}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   ) : (
                     <input
                       aria-label={activeStep.field === 'name' ? 'Full name' : 'Job title'}
