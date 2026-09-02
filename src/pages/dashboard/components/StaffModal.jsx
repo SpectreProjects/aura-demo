@@ -50,14 +50,14 @@ function TypewriterQuestion({ text }) {
   )
 }
 
-export default function StaffModal({ allowAddAnother = true, categories, initialName = '', initialStaff, onAddCategory, onClose, onSave, title }) {
+export default function StaffModal({ allowAddAnother = true, categories, initialCategory = '', initialName = '', initialStaff, onAddCategory, onClose, onSave, title }) {
   const reduceMotion = useReducedMotion()
   const [direction, setDirection] = useState(1)
   const [form, setForm] = useState({
     ...initialForm,
     ...(initialStaff || {}),
     name: initialStaff?.name || initialName,
-    job_category: initialStaff?.job_category || categories[0] || 'Front of House',
+    job_category: initialStaff?.job_category || initialCategory || categories[0] || 'Front of House',
   })
   const [isSaving, setIsSaving] = useState(false)
   const [isAddingCategory, setIsAddingCategory] = useState(false)

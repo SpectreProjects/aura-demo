@@ -24,9 +24,11 @@ import { useAuth } from '../../lib/AuthContext'
 import { supabase } from '../../lib/supabaseClient'
 import {
   applyReviewToStaff,
+  createExcerpt,
   createStaffRecord,
   detectMentionedStaff,
-  detectUnresolvedStaffNames,
+  getReviewSentiment,
+  getReviewRecognitionSuggestions,
   getPointsForRating,
 } from '../../utils/mvpRecognition'
 
@@ -164,7 +166,7 @@ function normalizePointEvents(pointEvents) {
       id: event.id || createId('point'),
       staff_id: event.staff_id || toSlug(event.staff_name || 'staff'),
       staff_name: event.staff_name || 'Team member',
-      review_id: event.review_id || '',
+      review_id: event.review_id || getReviewIdFromSourceKey(event.source_key),
       points_delta: Number(event.points_delta ?? event.points_awarded ?? 0),
       points_awarded: Number(event.points_delta ?? event.points_awarded ?? 0),
       event_type: event.event_type || 'review_award',
@@ -176,6 +178,24 @@ function normalizePointEvents(pointEvents) {
       created_at: event.created_at || new Date().toISOString(),
     }))
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+}
+
+function getReviewIdFromSourceKey(sourceKey) {
+  const value = String(sourceKey || '')
+  const prefix = 'review:'
+  const staffMarker = ':staff:'
+  const markerIndex = value.lastIndexOf(staffMarker)
+  if (!value.startsWith(prefix) || markerIndex < prefix.length) return ''
+
+  try {
+    return decodeURIComponent(value.slice(prefix.length, markerIndex))
+  } catch {
+    return ''
+  }
+}
+
+function createReviewAwardSourceKey(reviewId, staffId) {
+  return `review:${encodeURIComponent(reviewId)}:staff:${staffId}`
 }
 
 function findStaffByName(staff, name) {
@@ -205,48 +225,75 @@ function createPointEventsForReview(review, staff, pointsRules) {
   })
 }
 
-function buildPlacesDashboardState(place, baseStaff, pointsRules) {
+function buildPlacesDashboardState(place, baseStaff, existingPointEvents = []) {
+  const staffById = new Map(baseStaff.map((person) => [person.id, person]))
   const placeReviews = normalizeReviews(
-    (place?.reviews || []).map((review) => ({
-      author_photo_url: review.authorPhotoUri,
-      author_profile_url: review.authorProfileUri,
-      created_at: review.publishTime || new Date().toISOString(),
-      customer_name: review.authorName,
-      google_maps_uri: review.googleMapsUri,
-      id: review.id,
-      mentioned_staff: detectMentionedStaff(review.text, baseStaff),
-      original_text: review.originalText,
-      rating: review.rating,
-      relative_publish_time: review.relativePublishTime,
-      source: 'google_places',
-      text: review.text,
-    })),
-  )
-  let liveStaff = normalizeStaff(baseStaff)
-  const livePointEvents = []
+    (place?.reviews || []).map((review) => {
+      const recognitions = getReviewRecognitionSuggestions(
+        review.text,
+        baseStaff,
+        baseStaff.map((person) => person.job_category),
+      )
+      const recognisedStaff = recognitions
+        .filter((recognition) => recognition.status === 'matched')
+        .flatMap((recognition) => recognition.matched_staff_names)
+      const assignedStaff = existingPointEvents
+        .filter((event) => event.review_id === review.id && event.event_type === 'review_award')
+        .map((event) => staffById.get(event.staff_id)?.name || event.staff_name)
 
-  placeReviews
-    .slice()
-    .reverse()
-    .forEach((review) => {
-      liveStaff = normalizeStaff(applyReviewToStaff(liveStaff, review, pointsRules))
-      livePointEvents.push(...createPointEventsForReview(review, liveStaff, pointsRules))
-    })
-
-  const approvals = placeReviews.flatMap((review) =>
-    detectUnresolvedStaffNames(review.text, liveStaff).map((name) => ({
-      created_at: review.created_at,
-      id: `google-name-${review.id}-${toSlug(name)}`,
-      name,
-      rating: review.rating,
-      review_excerpt: review.text,
-      review_id: review.id,
-    })),
+      return {
+        author_photo_url: review.authorPhotoUri,
+        author_profile_url: review.authorProfileUri,
+        created_at: review.publishTime || new Date().toISOString(),
+        customer_name: review.authorName,
+        google_maps_uri: review.googleMapsUri,
+        id: review.id,
+        mentioned_staff: uniqueNames([
+          ...detectMentionedStaff(review.text, baseStaff),
+          ...recognisedStaff,
+          ...assignedStaff,
+        ]),
+        original_text: review.originalText,
+        rating: review.rating,
+        relative_publish_time: review.relativePublishTime,
+        source: 'google_places',
+        text: review.text,
+      }
+    }),
   )
+  const liveStaff = normalizeStaff(baseStaff)
+
+  const approvals = placeReviews.flatMap((review) => {
+    const assignedStaffIds = new Set(
+      existingPointEvents
+        .filter((event) => event.review_id === review.id && event.event_type === 'review_award')
+        .map((event) => event.staff_id),
+    )
+
+    return getReviewRecognitionSuggestions(
+      review.text,
+      liveStaff,
+      liveStaff.map((person) => person.job_category),
+    )
+      .filter(
+        (recognition) =>
+          recognition.status !== 'matched' &&
+          !recognition.matched_staff_ids.some((staffId) => assignedStaffIds.has(staffId)),
+      )
+      .map((recognition) => ({
+        created_at: review.created_at,
+        id: `google-name-${review.id}-${toSlug(recognition.name)}`,
+        name: recognition.name,
+        rating: review.rating,
+        review_excerpt: review.text,
+        review_id: review.id,
+        suggested_category: recognition.suggested_category,
+      }))
+  })
 
   return {
     nameApprovals: normalizeNameApprovals(approvals),
-    pointEvents: normalizePointEvents(livePointEvents),
+    pointEvents: [],
     reviews: placeReviews,
     staff: liveStaff,
   }
@@ -653,7 +700,7 @@ export default function DashboardLayout() {
             const { place } = await callAuraApi('/api/places-details', {
               placeId: profile.google_place_id,
             })
-            const placesState = buildPlacesDashboardState(place, staffRows, defaultPointsRules)
+            const placesState = buildPlacesDashboardState(place, staffRows, eventRows)
             profile = {
               ...profile,
               business_name: place.name || profile.business_name,
@@ -826,7 +873,7 @@ export default function DashboardLayout() {
     if (profileError) throw profileError
 
     const baseStaff = normalizeStaff(staffResult.data || [])
-    const placesState = buildPlacesDashboardState(place, baseStaff, pointsRules)
+    const placesState = buildPlacesDashboardState(place, baseStaff, pointEvents)
     setBusinessProfile({
       ...savedProfile,
       business_name: place.name || savedProfile.business_name,
@@ -905,6 +952,137 @@ export default function DashboardLayout() {
     }
 
     setPointEvents((current) => normalizePointEvents([nextEvent, ...current]))
+  }
+
+  async function assignReviewPoints({ amount, reviewId, staffIds }) {
+    const review = reviews.find((item) => item.id === reviewId)
+    const pointsDelta = Math.min(100, Math.max(1, Math.trunc(Number(amount))))
+    const requestedStaffIds = Array.from(new Set(staffIds || []))
+    const alreadyAssignedIds = new Set(
+      pointEvents
+        .filter((event) => event.review_id === reviewId && event.event_type === 'review_award')
+        .map((event) => event.staff_id),
+    )
+    const recipients = staff.filter(
+      (person) => requestedStaffIds.includes(person.id) && !alreadyAssignedIds.has(person.id),
+    )
+
+    if (!review || !recipients.length || !Number.isFinite(pointsDelta)) {
+      return { assignedCount: 0, names: [] }
+    }
+
+    const awardedAt = new Date().toISOString()
+    const reason = `${review.rating}-star review recognition from ${review.customer_name || 'a guest'}`
+    let savedEvents = recipients.map((person) => ({
+      created_at: awardedAt,
+      event_type: 'review_award',
+      id: createId('point'),
+      include_in_balance: true,
+      include_in_lifetime: true,
+      include_in_monthly: true,
+      points_delta: pointsDelta,
+      reason,
+      review_id: review.id,
+      source_key: createReviewAwardSourceKey(review.id, person.id),
+      staff_id: person.id,
+      staff_name: person.name,
+    }))
+
+    if (supabase && businessProfile) {
+      const persistentEvents = savedEvents.filter((event) => isUuid(event.staff_id))
+      if (persistentEvents.length) {
+        const { data, error } = await supabase
+          .from('aura_point_events')
+          .insert(
+            persistentEvents.map((event) => ({
+              business_profile_id: businessProfile.id,
+              created_at: event.created_at,
+              created_by: user?.id || null,
+              event_type: event.event_type,
+              include_in_balance: event.include_in_balance,
+              include_in_lifetime: event.include_in_lifetime,
+              include_in_monthly: event.include_in_monthly,
+              points_delta: event.points_delta,
+              reason: event.reason,
+              source_key: event.source_key,
+              staff_id: event.staff_id,
+            })),
+          )
+          .select('*')
+
+        if (error) throw error
+
+        const savedByStaffId = new Map((data || []).map((event) => [event.staff_id, event]))
+        savedEvents = savedEvents.map((event) => {
+          const saved = savedByStaffId.get(event.staff_id)
+          return saved
+            ? normalizePointEvents([{ ...saved, review_id: review.id, staff_name: event.staff_name }])[0]
+            : event
+        })
+      }
+    }
+
+    const sentiment = getReviewSentiment(review.rating)
+    const excerpt = createExcerpt(review.text)
+    const nextStaff = normalizeStaff(
+      staff.map((person) => {
+        if (!recipients.some((recipient) => recipient.id === person.id)) return person
+
+        return {
+          ...person,
+          latest_excerpt: excerpt,
+          negative_mentions: Number(person.negative_mentions || 0) + (sentiment === 'negative' ? 1 : 0),
+          neutral_mentions: Number(person.neutral_mentions || 0) + (sentiment === 'neutral' ? 1 : 0),
+          positive_mentions: Number(person.positive_mentions || 0) + (sentiment === 'positive' ? 1 : 0),
+          total_mentions: Number(person.total_mentions || 0) + 1,
+        }
+      }),
+    )
+
+    if (supabase && businessProfile) {
+      const updates = recipients
+        .filter((person) => isUuid(person.id))
+        .map((person) => {
+          const updated = nextStaff.find((item) => item.id === person.id)
+          return supabase
+            .from('aura_staff')
+            .update({
+              latest_excerpt: updated.latest_excerpt,
+              negative_mentions: updated.negative_mentions,
+              neutral_mentions: updated.neutral_mentions,
+              positive_mentions: updated.positive_mentions,
+              total_mentions: updated.total_mentions,
+              updated_at: awardedAt,
+            })
+            .eq('id', person.id)
+            .eq('business_profile_id', businessProfile.id)
+        })
+      const updateResults = await Promise.all(updates)
+      const updateError = updateResults.find((result) => result.error)?.error
+      if (updateError) throw updateError
+    }
+
+    const recipientNames = recipients.map((person) => person.name)
+    const recipientKeys = new Set(
+      recipients.flatMap((person) => [person.name, person.name.split(/\s+/)[0]]).map((name) => name.toLowerCase()),
+    )
+    setStaff(nextStaff)
+    setPointEvents((current) => normalizePointEvents([...savedEvents, ...current]))
+    setReviews((current) =>
+      current.map((item) =>
+        item.id === review.id
+          ? { ...item, mentioned_staff: uniqueNames([...item.mentioned_staff, ...recipientNames]) }
+          : item,
+      ),
+    )
+    setNameApprovals((current) =>
+      current.filter(
+        (approval) =>
+          approval.review_id !== review.id || !recipientKeys.has(approval.name.toLowerCase()),
+      ),
+    )
+
+    return { assignedCount: recipients.length, names: recipientNames }
   }
 
   async function redeemReward({ note = '', rewardId, staffId }) {
@@ -1147,6 +1325,7 @@ export default function DashboardLayout() {
       addCategory,
       addStaff,
       adjustPoints,
+      assignReviewPoints,
       approveName,
       connectGoogleBusiness,
       deleteReward,

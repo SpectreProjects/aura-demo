@@ -56,7 +56,41 @@ const nameStopWords = new Set([
   'this',
   'very',
   'we',
+  'was',
+  'were',
+  'who',
 ])
+
+const departmentSignals = [
+  {
+    category: 'Housekeeping',
+    terms: ['housekeeper', 'housekeeping', 'room attendant', 'cleaner', 'cleaning team'],
+  },
+  {
+    category: 'Reception',
+    terms: ['front desk', 'front office', 'reception', 'receptionist', 'check-in', 'checked us in'],
+  },
+  {
+    category: 'Waiting Staff',
+    terms: ['waiter', 'waitress', 'server', 'waiting staff', 'table service'],
+  },
+  {
+    category: 'Bar',
+    terms: ['bartender', 'barman', 'barmaid', 'bar staff'],
+  },
+  {
+    category: 'Kitchen',
+    terms: ['chef', 'cook', 'kitchen team'],
+  },
+  {
+    category: 'Management',
+    terms: ['duty manager', 'general manager', 'manager', 'supervisor'],
+  },
+  {
+    category: 'Front of House',
+    terms: ['front of house', 'hostess', 'host', 'guest services', 'concierge'],
+  },
+]
 
 function titleCaseName(name) {
   return name
@@ -73,24 +107,91 @@ function isPossibleName(name, knownNames) {
   return normalised.length > 1 && !nameStopWords.has(key) && !knownNames.has(key)
 }
 
-export function detectUnresolvedStaffNames(reviewText, staff) {
-  const knownNames = new Set(staff.map((person) => person.name.toLowerCase()))
+function escapeRegExp(value) {
+  return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function extractExplicitNames(reviewText) {
   const candidates = new Map()
   const text = String(reviewText || '')
   const patterns = [
-    /\b(?:[Tt]hanks to|[Tt]hank you(?: to)?|[Ss]houtout to|[Ss]hout out to|[Ss]erved by|[Hh]elped by|[Ll]ooked after by|[Cc]hecked in by|[Ww]elcomed by)\s+([A-Z][a-zA-Z'-]{1,24})\b/g,
-    /\b(?:[Ss]erver|[Ww]aiter|[Ww]aitress|[Hh]ost|[Hh]ostess|[Mm]anager|[Bb]artender|[Cc]hef|[Bb]arista|[Rr]eceptionist)\s+(?:called|named)\s+([A-Z][a-zA-Z'-]{1,24})\b/g,
-    /\b([A-Z][a-zA-Z'-]{1,24})\s+(?:was|is)\s+(?:amazing|attentive|brilliant|excellent|fantastic|friendly|great|helpful|kind|lovely|outstanding|professional|welcoming|wonderful)\b/g,
+    /\b(?:shout\s*out(?:\s+to)?|special\s+thank\s+you\s+to|thanks\s+to|thank\s+you(?:\s+to)?|served\s+by|helped\s+by|looked\s+after\s+by|checked\s+in\s+by|welcomed\s+by)\s+([a-z][a-z'-]{1,24})\b/gi,
+    /\b(?:housekeeper|room\s+attendant|cleaner|front\s+desk(?:\s+worker)?|receptionist|waiter|waitress|server|host|hostess|manager|supervisor|bartender|barman|barmaid|chef|cook|concierge)\s+(?:(?:called|named)\s+)?([a-z][a-z'-]{1,24})\b/gi,
   ]
 
   patterns.forEach((pattern) => {
     for (const match of text.matchAll(pattern)) {
       const name = titleCaseName(match[1])
-      if (isPossibleName(name, knownNames)) candidates.set(name.toLowerCase(), name)
+      if (isPossibleName(name, new Set())) candidates.set(name.toLowerCase(), name)
     }
   })
 
   return Array.from(candidates.values())
+}
+
+export function inferReviewDepartment(reviewText, categories = []) {
+  const text = String(reviewText || '').toLowerCase()
+  const signal = departmentSignals.find((item) => item.terms.some((term) => text.includes(term)))
+  if (!signal) return ''
+
+  return (
+    categories.find((category) => category.toLowerCase() === signal.category.toLowerCase()) ||
+    signal.category
+  )
+}
+
+export function getReviewRecognitionSuggestions(reviewText, staff = [], categories = []) {
+  const text = String(reviewText || '')
+  const inferredCategory = inferReviewDepartment(text, categories)
+  const candidates = new Map(
+    extractExplicitNames(text).map((name) => [name.toLowerCase(), name]),
+  )
+
+  staff.forEach((person) => {
+    if (!person?.name) return
+    const firstName = person.name.trim().split(/\s+/)[0]
+    const fullNamePattern = new RegExp(`(^|[^a-z0-9])${escapeRegExp(person.name)}([^a-z0-9]|$)`, 'i')
+    if (fullNamePattern.test(text)) {
+      candidates.delete(firstName.toLowerCase())
+      candidates.set(person.name.toLowerCase(), person.name)
+      return
+    }
+
+    const firstNamePattern = new RegExp(`(^|[^A-Za-z])${escapeRegExp(firstName)}([^A-Za-z]|$)`)
+    if (firstNamePattern.test(text)) candidates.set(firstName.toLowerCase(), titleCaseName(firstName))
+  })
+
+  return Array.from(candidates.values()).map((candidateName) => {
+    const candidateKey = candidateName.toLowerCase()
+    const exactMatches = staff.filter((person) => person.name.toLowerCase() === candidateKey)
+    const firstNameMatches = staff.filter(
+      (person) => person.name.trim().split(/\s+/)[0]?.toLowerCase() === candidateKey,
+    )
+    let matches = exactMatches.length ? exactMatches : firstNameMatches
+
+    if (matches.length > 1 && inferredCategory) {
+      const departmentMatches = matches.filter(
+        (person) => person.job_category?.toLowerCase() === inferredCategory.toLowerCase(),
+      )
+      if (departmentMatches.length) matches = departmentMatches
+    }
+
+    const status = matches.length === 1 ? 'matched' : matches.length > 1 ? 'ambiguous' : 'new'
+
+    return {
+      confidence: status === 'matched' ? (exactMatches.length ? 'high' : inferredCategory ? 'high' : 'medium') : 'medium',
+      matched_staff_ids: matches.map((person) => person.id),
+      matched_staff_names: matches.map((person) => person.name),
+      name: candidateName,
+      status,
+      suggested_category: inferredCategory,
+    }
+  })
+}
+
+export function detectUnresolvedStaffNames(reviewText, staff) {
+  const knownNames = new Set(staff.map((person) => person.name.toLowerCase()))
+  return extractExplicitNames(reviewText).filter((name) => isPossibleName(name, knownNames))
 }
 
 export function createExcerpt(text, maxLength = 118) {

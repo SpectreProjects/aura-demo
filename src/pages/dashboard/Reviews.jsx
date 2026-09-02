@@ -1,7 +1,9 @@
-import { Check, CheckCircle2, Clock3, ExternalLink, MapPin, Pencil, PowerOff, Search, Sparkles, Star, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Check, CheckCircle2, Clock3, ExternalLink, MapPin, Pencil, Plus, PowerOff, Search, Sparkles, Star, UserPlus, Users, X } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { getReviewRecognitionSuggestions } from '../../utils/mvpRecognition'
 import { generateReply } from '../../utils/generateReply'
+import StaffModal from './components/StaffModal'
 import { useDashboard } from './useDashboard'
 
 const PAGE_LOAD_TIME = Date.now()
@@ -134,7 +136,217 @@ function TypewriterIntro({ text }) {
   )
 }
 
-function ReplyWorkspace({ businessName, now, onSave, review, settings }) {
+function RecognitionWorkspace({ categories, onAddCategory, onAddStaff, onAssignPoints, pointEvents, pointsRules, review, staff }) {
+  const suggestions = useMemo(
+    () => getReviewRecognitionSuggestions(review.text, staff, categories),
+    [categories, review.text, staff],
+  )
+  const assignedEvents = useMemo(
+    () => pointEvents.filter(
+      (event) => event.review_id === review.id && event.event_type === 'review_award',
+    ),
+    [pointEvents, review.id],
+  )
+  const assignedStaffIds = useMemo(
+    () => new Set(assignedEvents.map((event) => event.staff_id)),
+    [assignedEvents],
+  )
+  const suggestedStaffIds = useMemo(
+    () => Array.from(new Set(
+      suggestions
+        .filter((suggestion) => suggestion.status === 'matched')
+        .flatMap((suggestion) => suggestion.matched_staff_ids)
+        .filter((staffId) => !assignedStaffIds.has(staffId)),
+    )),
+    [assignedStaffIds, suggestions],
+  )
+  const activeStaff = useMemo(() => staff.filter((person) => person.is_active), [staff])
+  const defaultPoints = Math.max(1, Number(pointsRules?.[review.rating] || 1))
+  const [amount, setAmount] = useState(defaultPoints)
+  const [selectedStaffIds, setSelectedStaffIds] = useState(suggestedStaffIds)
+  const [staffSuggestion, setStaffSuggestion] = useState(null)
+  const [isAwarding, setIsAwarding] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
+
+  function toggleStaff(staffId) {
+    if (assignedStaffIds.has(staffId)) return
+    setErrorMessage('')
+    setSuccessMessage('')
+    setSelectedStaffIds((current) =>
+      current.includes(staffId)
+        ? current.filter((id) => id !== staffId)
+        : [...current, staffId],
+    )
+  }
+
+  async function assignPoints() {
+    if (!selectedStaffIds.length) return
+    setIsAwarding(true)
+    setErrorMessage('')
+    setSuccessMessage('')
+    try {
+      const result = await onAssignPoints({ amount, reviewId: review.id, staffIds: selectedStaffIds })
+      if (result.assignedCount) {
+        setSuccessMessage(
+          `${amount} ${Number(amount) === 1 ? 'point' : 'points'} awarded to ${result.names.join(' and ')}.`,
+        )
+        setSelectedStaffIds([])
+      }
+    } catch (error) {
+      setErrorMessage(error.message || 'AURA could not award those points. Please try again.')
+    } finally {
+      setIsAwarding(false)
+    }
+  }
+
+  async function addSuggestedStaff(form) {
+    const record = await onAddStaff(form)
+    if (record?.id) setSelectedStaffIds((current) => [...new Set([...current, record.id])])
+    return record
+  }
+
+  return (
+    <div className="rounded-xl border border-[#3867F4]/20 bg-[#3867F4]/[0.055] p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.15em] text-[#315bd8]">
+            <Sparkles size={15} /> Review recognition
+          </div>
+          <p className="mt-2 text-sm font-semibold leading-6 text-[#4e625c]">
+            AURA suggests the match. You stay in control of who receives points.
+          </p>
+        </div>
+        {assignedEvents.length > 0 && (
+          <span className="shrink-0 rounded-full bg-[#2d8067]/10 px-2.5 py-1 text-[10px] font-black text-[#236750]">
+            {assignedEvents.length} awarded
+          </span>
+        )}
+      </div>
+
+      <div className="mt-4 space-y-2">
+        {suggestions.map((suggestion) => (
+          <div className="rounded-xl border border-black/[0.07] bg-white/45 p-3" key={`${suggestion.name}-${suggestion.status}`}>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-black text-[#17201e]">AURA spotted {suggestion.name}</p>
+                <p className="mt-1 text-xs font-semibold leading-5 text-[#667873]">
+                  {suggestion.status === 'matched'
+                    ? `Matched to ${suggestion.matched_staff_names.join(', ')}${suggestion.suggested_category ? ` in ${suggestion.suggested_category}` : ''}.`
+                    : suggestion.status === 'ambiguous'
+                      ? `There is more than one possible match. Choose the right person below${suggestion.suggested_category ? ` — the review sounds like ${suggestion.suggested_category}` : ''}.`
+                      : `${suggestion.name} is not in your team yet${suggestion.suggested_category ? `. The review suggests ${suggestion.suggested_category}` : ''}.`}
+                </p>
+              </div>
+              {suggestion.status === 'new' && (
+                <button
+                  className="inline-flex h-9 shrink-0 items-center gap-2 rounded-lg bg-[#3867F4] px-3 text-xs font-black text-white transition hover:bg-[#2f5be0]"
+                  onClick={() => setStaffSuggestion(suggestion)}
+                  type="button"
+                >
+                  <UserPlus size={14} /> Add {suggestion.name}
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+
+        {!suggestions.length && (
+          <div className="rounded-xl border border-dashed border-black/10 bg-white/30 p-3 text-xs font-semibold leading-5 text-[#667873]">
+            No named team member was spotted. You can still allocate the review manually.
+          </div>
+        )}
+      </div>
+
+      <div className="mt-4 border-t border-[#3867F4]/15 pt-4">
+        <div className="flex items-center gap-2 text-sm font-black text-[#17201e]">
+          <Users size={16} className="text-[#315bd8]" /> Who should receive points?
+        </div>
+        <div className="mt-3 flex max-h-40 flex-wrap gap-2 overflow-y-auto pr-1">
+          {activeStaff.map((person) => {
+            const isAssigned = assignedStaffIds.has(person.id)
+            const isSelected = selectedStaffIds.includes(person.id)
+            return (
+              <button
+                aria-checked={isAssigned || isSelected}
+                className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-black transition ${
+                  isAssigned
+                    ? 'cursor-default border-[#2d8067]/15 bg-[#2d8067]/10 text-[#236750]'
+                    : isSelected
+                      ? 'border-[#3867F4] bg-[#3867F4] text-white'
+                      : 'border-black/[0.08] bg-white/45 text-[#52645f] hover:border-[#3867F4]/35'
+                }`}
+                disabled={isAssigned}
+                key={person.id}
+                onClick={() => toggleStaff(person.id)}
+                role="checkbox"
+                type="button"
+              >
+                {isAssigned || isSelected ? <Check size={13} /> : <Plus size={13} />}
+                {person.name}
+                {isAssigned && <span className="font-semibold">· awarded</span>}
+              </button>
+            )
+          })}
+        </div>
+
+        {activeStaff.length ? (
+          <div className="mt-3 grid gap-2 sm:grid-cols-[7rem_1fr]">
+            <label className="rounded-xl border border-black/[0.08] bg-white/45 px-3 py-2">
+              <span className="block text-[9px] font-black uppercase tracking-[0.12em] text-[#71827d]">Points each</span>
+              <input
+                aria-label="Points for each selected person"
+                className="mt-0.5 w-full bg-transparent text-base font-black text-[#17201e] outline-none"
+                max="100"
+                min="1"
+                onChange={(event) => setAmount(Math.min(100, Math.max(1, Number(event.target.value) || 1)))}
+                type="number"
+                value={amount}
+              />
+            </label>
+            <button
+              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl bg-[#3867F4] px-4 text-sm font-black text-white transition hover:bg-[#2f5be0] disabled:cursor-not-allowed disabled:opacity-45"
+              disabled={!selectedStaffIds.length || isAwarding || Number(amount) < 1}
+              onClick={assignPoints}
+              type="button"
+            >
+              <Star className="fill-white" size={15} />
+              {isAwarding
+                ? 'Awarding…'
+                : `Award ${amount || 0} ${Number(amount) === 1 ? 'point' : 'points'}${selectedStaffIds.length > 1 ? ` to ${selectedStaffIds.length} people` : ''}`}
+            </button>
+          </div>
+        ) : (
+          <p className="mt-3 text-xs font-semibold text-[#667873]">Add a team member before assigning points.</p>
+        )}
+
+        {successMessage && (
+          <p aria-live="polite" className="mt-3 flex items-center gap-2 text-xs font-black text-[#236750]">
+            <CheckCircle2 size={15} /> {successMessage}
+          </p>
+        )}
+        {errorMessage && (
+          <p aria-live="polite" className="mt-3 text-xs font-black text-[#b83e50]">{errorMessage}</p>
+        )}
+      </div>
+
+      {staffSuggestion && (
+        <StaffModal
+          allowAddAnother={false}
+          categories={categories}
+          initialCategory={staffSuggestion.suggested_category}
+          initialName={staffSuggestion.name}
+          onAddCategory={onAddCategory}
+          onClose={() => setStaffSuggestion(null)}
+          onSave={addSuggestedStaff}
+          title={`Add ${staffSuggestion.name}`}
+        />
+      )}
+    </div>
+  )
+}
+
+function ReplyWorkspace({ businessName, categories, now, onAddCategory, onAddStaff, onAssignPoints, onSave, pointEvents, pointsRules, review, settings, staff }) {
   const [draft, setDraft] = useState(() => review.source === 'google_places' ? '' : getReply(review, businessName))
   const [isEditing, setIsEditing] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
@@ -190,7 +402,18 @@ function ReplyWorkspace({ businessName, now, onSave, review, settings }) {
         </div>
 
         <div className="p-5 sm:p-6">
-          <div className={`rounded-xl border p-4 ${style.panel}`}>
+          <RecognitionWorkspace
+            categories={categories}
+            onAddCategory={onAddCategory}
+            onAddStaff={onAddStaff}
+            onAssignPoints={onAssignPoints}
+            pointEvents={pointEvents}
+            pointsRules={pointsRules}
+            review={review}
+            staff={staff}
+          />
+
+          <div className={`mt-5 rounded-xl border p-4 ${style.panel}`}>
             <div className={`flex items-center gap-2 text-sm font-black ${style.text}`}>
               <StatusIcon size={17} />
               {status.label}
@@ -272,7 +495,7 @@ function ReplyWorkspace({ businessName, now, onSave, review, settings }) {
 }
 
 export default function Reviews() {
-  const { account, actions, autoReplySettings, reviews } = useDashboard()
+  const { account, actions, autoReplySettings, categories, pointEvents, pointsRules, reviews, staff } = useDashboard()
   const [now, setNow] = useState(PAGE_LOAD_TIME)
   const [query, setQuery] = useState('')
   const [selectedReviewId, setSelectedReviewId] = useState(reviews[0]?.id || null)
@@ -391,11 +614,18 @@ export default function Reviews() {
         {selectedReview ? (
           <ReplyWorkspace
             businessName={businessName}
+            categories={categories}
             key={selectedReview.id}
             now={now}
+            onAddCategory={actions.addCategory}
+            onAddStaff={actions.addStaff}
+            onAssignPoints={actions.assignReviewPoints}
             onSave={actions.updateReviewReply}
+            pointEvents={pointEvents}
+            pointsRules={pointsRules}
             review={selectedReview}
             settings={autoReplySettings}
+            staff={staff}
           />
         ) : (
           <div className="rounded-2xl border border-dashed border-black/10 bg-white/20 p-10 text-center text-sm text-[#71827d]">
