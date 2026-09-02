@@ -308,7 +308,7 @@ function DesktopSidebar({ collapsed, isSigningOut, nameApprovalsCount, onCollaps
     >
       <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between px-2'}`}>
         <Link to="/" aria-label="AURA home" className="flex items-center gap-3 rounded-xl">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.9rem] bg-[#efff36] text-[#17201e]">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.9rem] bg-[#3867F4] text-white">
             <Sparkles size={19} strokeWidth={2.2} />
           </span>
           {!collapsed && <span className="text-base font-black tracking-[0.12em] text-[#17201e]">AURA</span>}
@@ -354,7 +354,7 @@ function DesktopSidebar({ collapsed, isSigningOut, nameApprovalsCount, onCollaps
             <item.icon size={17} />
             {!collapsed && item.label}
             {item.href === '/dashboard/reviews' && nameApprovalsCount > 0 && (
-              <span className={`${collapsed ? 'absolute right-1.5 top-1.5 h-2 w-2' : 'ml-auto flex h-5 min-w-5 items-center justify-center px-1 text-[10px]'} rounded-full bg-[#efff36] font-black text-[#17201e]`}>
+              <span className={`${collapsed ? 'absolute right-1.5 top-1.5 h-2 w-2' : 'ml-auto flex h-5 min-w-5 items-center justify-center px-1 text-[10px]'} rounded-full bg-[#3867F4] font-black text-white`}>
                 {!collapsed && nameApprovalsCount}
               </span>
             )}
@@ -382,7 +382,7 @@ function MobileNav({ nameApprovalsCount }) {
         <NavLink
           className={({ isActive }) =>
             `relative flex flex-col items-center justify-center gap-1 rounded-xl py-2 text-[10px] font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-[#17201e]/20 ${
-              isActive ? 'bg-[#efff36] text-[#17201e]' : 'text-[#53635f]'
+              isActive ? 'bg-[#3867F4] text-white' : 'text-[#53635f]'
             }`
           }
           end={item.end}
@@ -392,7 +392,7 @@ function MobileNav({ nameApprovalsCount }) {
           <item.icon size={17} />
           {item.label}
           {item.href === '/dashboard/reviews' && nameApprovalsCount > 0 && (
-            <span className="absolute right-2 top-1 h-2 w-2 rounded-full bg-[#efff36]" />
+            <span className="absolute right-2 top-1 h-2 w-2 rounded-full bg-[#3867F4]" />
           )}
         </NavLink>
       ))}

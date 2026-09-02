@@ -29,14 +29,14 @@ body {
   --aura-muted: #61716d;
   --aura-mist: #d8e8e4;
   --aura-mist-deep: #cadeda;
-  --aura-acid: #efff36;
+  --aura-accent: #3867f4;
   --aura-line: rgba(34, 55, 50, 0.105);
   color-scheme: light;
 }
 
 .dashboard-frame {
   background:
-    radial-gradient(circle at 68% 12%, rgba(239, 255, 54, 0.11), transparent 22rem),
+    radial-gradient(circle at 68% 12%, rgba(56, 103, 244, 0.08), transparent 22rem),
     radial-gradient(circle at 10% 88%, rgba(255, 255, 255, 0.24), transparent 28rem),
     var(--aura-mist);
 }
@@ -72,7 +72,7 @@ body {
 }
 
 .dashboard-shell [class*="fill-violet"] {
-  fill: #7e8d20 !important;
+  fill: var(--aura-accent) !important;
 }
 
 .dashboard-shell .accent-violet-300 {
@@ -83,7 +83,7 @@ body {
 .dashboard-shell [class~="bg-emerald-300"],
 .dashboard-shell [class~="bg-amber-300"],
 .dashboard-shell [class~="bg-yellow-300"] {
-  background-color: var(--aura-acid) !important;
+  background-color: var(--aura-accent) !important;
 }
 
 .dashboard-shell [class*="bg-violet-300/"],
@@ -161,8 +161,12 @@ body {
 .dashboard-shell .bg-violet-300.text-slate-950,
 .dashboard-shell .bg-violet-300.text-\[\#100722\],
 .dashboard-shell .bg-emerald-300.text-slate-950,
-.dashboard-shell [class~="bg-[#efff36]"] {
-  color: var(--aura-ink) !important;
+.dashboard-shell [class~="bg-[#3867F4]"] {
+  color: #fff !important;
+}
+
+.dashboard-shell .hover\:bg-violet-200:hover {
+  background-color: #2f5be0 !important;
 }
 
 .dashboard-desktop-sidebar,

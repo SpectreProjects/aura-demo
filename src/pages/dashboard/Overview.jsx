@@ -28,25 +28,25 @@ const accentStyles = {
     glow: '',
     icon: 'border-black/[0.06] bg-white/35 text-[#24332f]',
     text: 'text-[#273733]',
-    stroke: '#efff36',
+    stroke: '#3867F4',
   },
   emerald: {
     glow: '',
     icon: 'border-black/[0.06] bg-white/35 text-[#24332f]',
     text: 'text-[#273733]',
-    stroke: '#efff36',
+    stroke: '#3867F4',
   },
   violet: {
     glow: '',
     icon: 'border-black/[0.06] bg-white/35 text-[#24332f]',
     text: 'text-[#273733]',
-    stroke: '#f4ff76',
+    stroke: '#5D7FF6',
   },
   amber: {
     glow: '',
     icon: 'border-black/[0.06] bg-white/35 text-[#24332f]',
     text: 'text-[#273733]',
-    stroke: '#dced2f',
+    stroke: '#2F5BE0',
   },
 }
 
@@ -275,7 +275,7 @@ function DonutChart({ counts }) {
   const safeTotal = total || 1
   const positivePercent = Math.round((counts.positive / safeTotal) * 100)
   const segments = [
-    { color: '#efff36', value: counts.positive },
+    { color: '#3867F4', value: counts.positive },
     { color: '#ffffff', value: counts.neutral },
     { color: '#8ba09a', value: counts.negative },
   ]
@@ -317,7 +317,7 @@ function DonutChart({ counts }) {
 
       <div className="space-y-5">
         {[
-          ['Positive', counts.positive, positivePercent, 'bg-[#efff36]'],
+          ['Positive', counts.positive, positivePercent, 'bg-[#3867F4]'],
           ['Neutral', counts.neutral, Math.round((counts.neutral / safeTotal) * 100), 'bg-white'],
           ['Negative', counts.negative, Math.round((counts.negative / safeTotal) * 100), 'bg-rose-400'],
         ].map(([label, count, percent, dotClass]) => (
