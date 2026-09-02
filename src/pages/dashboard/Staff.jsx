@@ -11,6 +11,7 @@ import {
   X,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import PointsModal from './components/PointsModal'
 import StaffModal from './components/StaffModal'
 import { useDashboard } from './useDashboard'
 
@@ -35,90 +36,6 @@ function ModalShell({ children, onClose, title }) {
         {children}
       </section>
     </div>
-  )
-}
-
-function PointsModal({ onClose, onSave, person }) {
-  const [operation, setOperation] = useState('add')
-  const [amount, setAmount] = useState(5)
-  const [reason, setReason] = useState('Manager recognition award')
-  const [error, setError] = useState('')
-  const [isSaving, setIsSaving] = useState(false)
-
-  async function handleSubmit(event) {
-    event.preventDefault()
-    setError('')
-    setIsSaving(true)
-
-    try {
-      await onSave({
-        amount: operation === 'deduct' ? -Math.abs(Number(amount)) : Math.abs(Number(amount)),
-        reason,
-        staffId: person.id,
-      })
-      onClose()
-    } catch {
-      setError('The points could not be updated. Please try again.')
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
-  return (
-    <ModalShell onClose={onClose} title={`Manage ${person.name}'s points`}>
-      <div className="grid grid-cols-3 gap-3">
-        {[
-          ['This month', person.monthly_points],
-          ['Lifetime', person.lifetime_points],
-          ['Private balance', person.redeemable_points],
-        ].map(([label, value]) => (
-          <div className="rounded-xl border border-white/[0.07] bg-[#060607] p-3" key={label}>
-            <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-500">{label}</p>
-            <p className="mt-2 text-2xl font-black text-white">{value}</p>
-          </div>
-        ))}
-      </div>
-
-      <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
-        <div className="grid grid-cols-2 gap-2 rounded-xl border border-white/[0.07] bg-[#060607] p-1.5">
-          {['add', 'deduct'].map((value) => (
-            <button
-              className={`rounded-lg px-4 py-2.5 text-sm font-black capitalize transition ${
-                operation === value ? 'bg-violet-300 text-[#100722]' : 'text-slate-400 hover:text-white'
-              }`}
-              key={value}
-              onClick={() => setOperation(value)}
-              type="button"
-            >
-              {value}
-            </button>
-          ))}
-        </div>
-        <input
-          className="aura-field"
-          min="1"
-          onChange={(event) => setAmount(event.target.value)}
-          required
-          type="number"
-          value={amount}
-        />
-        <input
-          className="aura-field"
-          onChange={(event) => setReason(event.target.value)}
-          placeholder="Reason for this adjustment"
-          required
-          value={reason}
-        />
-        {error && <p className="text-sm font-bold text-rose-300">{error}</p>}
-        <button
-          className="w-full rounded-xl bg-violet-300 px-5 py-3.5 text-sm font-black text-[#100722] transition hover:bg-violet-200 disabled:opacity-60"
-          disabled={isSaving}
-          type="submit"
-        >
-          {isSaving ? 'Saving...' : `${operation === 'add' ? 'Add' : 'Deduct'} points`}
-        </button>
-      </form>
-    </ModalShell>
   )
 }
 
