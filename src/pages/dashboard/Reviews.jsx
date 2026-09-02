@@ -1,4 +1,4 @@
-import { Check, CheckCircle2, Clock3, ExternalLink, MapPin, Pencil, Plus, PowerOff, Search, Sparkles, Star, UserPlus, Users, X } from 'lucide-react'
+import { Check, CheckCircle2, Clock3, ExternalLink, MapPin, Pencil, Plus, PowerOff, RotateCcw, Search, Sparkles, Star, UserPlus, Users, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import TypewriterIntro from '../../components/TypewriterIntro'
@@ -104,20 +104,29 @@ const statusStyles = {
   },
 }
 
-function RecognitionWorkspace({ categories, onAddCategory, onAddStaff, onAssignPoints, pointEvents, pointsRules, review, staff }) {
+function isReviewAwardUndo(event) {
+  return event.event_type === 'manual_adjustment' && String(event.source_key || '').includes(':undo:')
+}
+
+function RecognitionWorkspace({ categories, onAddCategory, onAddStaff, onAssignPoints, onUndoPoints, pointEvents, pointsRules, review, staff }) {
   const suggestions = useMemo(
     () => getReviewRecognitionSuggestions(review.text, staff, categories),
     [categories, review.text, staff],
   )
-  const assignedEvents = useMemo(
-    () => pointEvents.filter(
-      (event) => event.review_id === review.id && event.event_type === 'review_award',
-    ),
-    [pointEvents, review.id],
-  )
   const assignedStaffIds = useMemo(
-    () => new Set(assignedEvents.map((event) => event.staff_id)),
-    [assignedEvents],
+    () => {
+      const pointsByStaff = new Map()
+      pointEvents.forEach((event) => {
+        if (event.review_id !== review.id || (event.event_type !== 'review_award' && !isReviewAwardUndo(event))) return
+        pointsByStaff.set(event.staff_id, (pointsByStaff.get(event.staff_id) || 0) + Number(event.points_delta || 0))
+      })
+      return new Set(
+        Array.from(pointsByStaff.entries())
+          .filter(([, points]) => points > 0)
+          .map(([staffId]) => staffId),
+      )
+    },
+    [pointEvents, review.id],
   )
   const suggestedStaffIds = useMemo(
     () => Array.from(new Set(
@@ -134,6 +143,7 @@ function RecognitionWorkspace({ categories, onAddCategory, onAddStaff, onAssignP
   const [selectedStaffIds, setSelectedStaffIds] = useState(suggestedStaffIds)
   const [staffSuggestion, setStaffSuggestion] = useState(null)
   const [isAwarding, setIsAwarding] = useState(false)
+  const [undoingStaffId, setUndoingStaffId] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
 
@@ -174,6 +184,20 @@ function RecognitionWorkspace({ categories, onAddCategory, onAddStaff, onAssignP
     return record
   }
 
+  async function undoPoints(staffId) {
+    setUndoingStaffId(staffId)
+    setErrorMessage('')
+    setSuccessMessage('')
+    try {
+      const result = await onUndoPoints({ reviewId: review.id, staffId })
+      if (result.undoneCount) setSuccessMessage(`Recognition for ${result.name} has been undone.`)
+    } catch (error) {
+      setErrorMessage(error.message || 'AURA could not undo that recognition. Please try again.')
+    } finally {
+      setUndoingStaffId('')
+    }
+  }
+
   return (
     <div className="rounded-xl border border-[#3867F4]/20 bg-[#3867F4]/[0.055] p-4">
       <div className="flex items-start justify-between gap-3">
@@ -185,9 +209,9 @@ function RecognitionWorkspace({ categories, onAddCategory, onAddStaff, onAssignP
             AURA suggests the match. You stay in control of who receives points.
           </p>
         </div>
-        {assignedEvents.length > 0 && (
+        {assignedStaffIds.size > 0 && (
           <span className="shrink-0 rounded-full bg-[#2d8067]/10 px-2.5 py-1 text-[10px] font-black text-[#236750]">
-            {assignedEvents.length} awarded
+            {assignedStaffIds.size} awarded
           </span>
         )}
       </div>
@@ -234,25 +258,40 @@ function RecognitionWorkspace({ categories, onAddCategory, onAddStaff, onAssignP
           {activeStaff.map((person) => {
             const isAssigned = assignedStaffIds.has(person.id)
             const isSelected = selectedStaffIds.includes(person.id)
+            if (isAssigned) {
+              return (
+                <div className="inline-flex items-center overflow-hidden rounded-xl border border-[#2d8067]/15 bg-[#2d8067]/10 text-xs font-black text-[#236750]" key={person.id}>
+                  <span className="inline-flex items-center gap-2 px-3 py-2">
+                    <Check size={13} /> {person.name} <span className="font-semibold">· awarded</span>
+                  </span>
+                  <button
+                    aria-label={`Undo recognition for ${person.name}`}
+                    className="inline-flex items-center gap-1.5 border-l border-[#2d8067]/15 px-3 py-2 transition hover:bg-[#2d8067]/10 disabled:opacity-50"
+                    disabled={undoingStaffId === person.id}
+                    onClick={() => undoPoints(person.id)}
+                    type="button"
+                  >
+                    <RotateCcw size={12} /> {undoingStaffId === person.id ? 'Undoing…' : 'Undo'}
+                  </button>
+                </div>
+              )
+            }
+
             return (
               <button
-                aria-checked={isAssigned || isSelected}
+                aria-checked={isSelected}
                 className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-black transition ${
-                  isAssigned
-                    ? 'cursor-default border-[#2d8067]/15 bg-[#2d8067]/10 text-[#236750]'
-                    : isSelected
+                  isSelected
                       ? 'border-[#3867F4] bg-[#3867F4] text-white'
                       : 'border-black/[0.08] bg-white/45 text-[#52645f] hover:border-[#3867F4]/35'
                 }`}
-                disabled={isAssigned}
                 key={person.id}
                 onClick={() => toggleStaff(person.id)}
                 role="checkbox"
                 type="button"
               >
-                {isAssigned || isSelected ? <Check size={13} /> : <Plus size={13} />}
+                {isSelected ? <Check size={13} /> : <Plus size={13} />}
                 {person.name}
-                {isAssigned && <span className="font-semibold">· awarded</span>}
               </button>
             )
           })}
@@ -314,7 +353,7 @@ function RecognitionWorkspace({ categories, onAddCategory, onAddStaff, onAssignP
   )
 }
 
-function ReplyWorkspace({ businessName, categories, now, onAddCategory, onAddStaff, onAssignPoints, onSave, pointEvents, pointsRules, review, settings, staff }) {
+function ReplyWorkspace({ businessName, categories, now, onAddCategory, onAddStaff, onAssignPoints, onSave, onUndoPoints, pointEvents, pointsRules, review, settings, staff }) {
   const [draft, setDraft] = useState(() => review.source === 'google_places' ? '' : getReply(review, businessName))
   const [isEditing, setIsEditing] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
@@ -375,6 +414,7 @@ function ReplyWorkspace({ businessName, categories, now, onAddCategory, onAddSta
             onAddCategory={onAddCategory}
             onAddStaff={onAddStaff}
             onAssignPoints={onAssignPoints}
+            onUndoPoints={onUndoPoints}
             pointEvents={pointEvents}
             pointsRules={pointsRules}
             review={review}
@@ -589,6 +629,7 @@ export default function Reviews() {
             onAddStaff={actions.addStaff}
             onAssignPoints={actions.assignReviewPoints}
             onSave={actions.updateReviewReply}
+            onUndoPoints={actions.undoReviewPoints}
             pointEvents={pointEvents}
             pointsRules={pointsRules}
             review={selectedReview}

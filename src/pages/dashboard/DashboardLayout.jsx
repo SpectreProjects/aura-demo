@@ -194,8 +194,27 @@ function getReviewIdFromSourceKey(sourceKey) {
   }
 }
 
-function createReviewAwardSourceKey(reviewId, staffId) {
-  return `review:${encodeURIComponent(reviewId)}:staff:${staffId}`
+function createReviewAwardSourceKey(reviewId, staffId, suffix = '') {
+  return `review:${encodeURIComponent(reviewId)}:staff:${staffId}${suffix ? `:${suffix}` : ''}`
+}
+
+function isReviewAwardUndo(event) {
+  return event.event_type === 'manual_adjustment' && String(event.source_key || '').includes(':undo:')
+}
+
+function getActiveReviewAwardStaffIds(pointEvents, reviewId) {
+  const pointsByStaff = new Map()
+
+  pointEvents.forEach((event) => {
+    if (event.review_id !== reviewId || (event.event_type !== 'review_award' && !isReviewAwardUndo(event))) return
+    pointsByStaff.set(event.staff_id, (pointsByStaff.get(event.staff_id) || 0) + Number(event.points_delta || 0))
+  })
+
+  return new Set(
+    Array.from(pointsByStaff.entries())
+      .filter(([, points]) => points > 0)
+      .map(([staffId]) => staffId),
+  )
 }
 
 function findStaffByName(staff, name) {
@@ -958,11 +977,7 @@ export default function DashboardLayout() {
     const review = reviews.find((item) => item.id === reviewId)
     const pointsDelta = Math.min(100, Math.max(1, Math.trunc(Number(amount))))
     const requestedStaffIds = Array.from(new Set(staffIds || []))
-    const alreadyAssignedIds = new Set(
-      pointEvents
-        .filter((event) => event.review_id === reviewId && event.event_type === 'review_award')
-        .map((event) => event.staff_id),
-    )
+    const alreadyAssignedIds = getActiveReviewAwardStaffIds(pointEvents, reviewId)
     const recipients = staff.filter(
       (person) => requestedStaffIds.includes(person.id) && !alreadyAssignedIds.has(person.id),
     )
@@ -983,7 +998,7 @@ export default function DashboardLayout() {
       points_delta: pointsDelta,
       reason,
       review_id: review.id,
-      source_key: createReviewAwardSourceKey(review.id, person.id),
+      source_key: createReviewAwardSourceKey(review.id, person.id, `award:${createId('event')}`),
       staff_id: person.id,
       staff_name: person.name,
     }))
@@ -1083,6 +1098,110 @@ export default function DashboardLayout() {
     )
 
     return { assignedCount: recipients.length, names: recipientNames }
+  }
+
+  async function undoReviewPoints({ reviewId, staffId }) {
+    const review = reviews.find((item) => item.id === reviewId)
+    const person = staff.find((item) => item.id === staffId)
+    const relatedEvents = pointEvents.filter(
+      (event) =>
+        event.review_id === reviewId &&
+        event.staff_id === staffId &&
+        (event.event_type === 'review_award' || isReviewAwardUndo(event)),
+    )
+    const pointsToReverse = relatedEvents.reduce(
+      (total, event) => total + Number(event.points_delta || 0),
+      0,
+    )
+
+    if (!review || !person || pointsToReverse <= 0) return { undoneCount: 0, name: '' }
+
+    const undoneAt = new Date().toISOString()
+    const sentiment = getReviewSentiment(review.rating)
+    let undoEvent = normalizePointEvents([
+      {
+        created_at: undoneAt,
+        event_type: 'manual_adjustment',
+        id: createId('point'),
+        include_in_balance: true,
+        include_in_lifetime: true,
+        include_in_monthly: true,
+        points_delta: -pointsToReverse,
+        reason: `Undo review recognition from ${review.customer_name || 'a guest'}`,
+        review_id: review.id,
+        source_key: createReviewAwardSourceKey(review.id, person.id, `undo:${createId('event')}`),
+        staff_id: person.id,
+        staff_name: person.name,
+      },
+    ])[0]
+
+    const nextStaff = normalizeStaff(
+      staff.map((item) => {
+        if (item.id !== person.id) return item
+        return {
+          ...item,
+          negative_mentions: Math.max(0, Number(item.negative_mentions || 0) - (sentiment === 'negative' ? 1 : 0)),
+          neutral_mentions: Math.max(0, Number(item.neutral_mentions || 0) - (sentiment === 'neutral' ? 1 : 0)),
+          positive_mentions: Math.max(0, Number(item.positive_mentions || 0) - (sentiment === 'positive' ? 1 : 0)),
+          total_mentions: Math.max(0, Number(item.total_mentions || 0) - 1),
+        }
+      }),
+    )
+    const updatedPerson = nextStaff.find((item) => item.id === person.id)
+
+    if (supabase && businessProfile && isUuid(person.id)) {
+      const { data, error } = await supabase
+        .from('aura_point_events')
+        .insert({
+          business_profile_id: businessProfile.id,
+          created_at: undoEvent.created_at,
+          created_by: user?.id || null,
+          event_type: undoEvent.event_type,
+          include_in_balance: undoEvent.include_in_balance,
+          include_in_lifetime: undoEvent.include_in_lifetime,
+          include_in_monthly: undoEvent.include_in_monthly,
+          points_delta: undoEvent.points_delta,
+          reason: undoEvent.reason,
+          source_key: undoEvent.source_key,
+          staff_id: undoEvent.staff_id,
+        })
+        .select('*')
+        .single()
+
+      if (error) throw error
+      undoEvent = normalizePointEvents([{ ...data, staff_name: person.name }])[0]
+
+      const { error: staffError } = await supabase
+        .from('aura_staff')
+        .update({
+          negative_mentions: updatedPerson.negative_mentions,
+          neutral_mentions: updatedPerson.neutral_mentions,
+          positive_mentions: updatedPerson.positive_mentions,
+          total_mentions: updatedPerson.total_mentions,
+          updated_at: undoneAt,
+        })
+        .eq('id', person.id)
+        .eq('business_profile_id', businessProfile.id)
+
+      if (staffError) throw staffError
+    }
+
+    setStaff(nextStaff)
+    setPointEvents((current) => normalizePointEvents([undoEvent, ...current]))
+    setReviews((current) =>
+      current.map((item) =>
+        item.id === review.id
+          ? {
+              ...item,
+              mentioned_staff: item.mentioned_staff.filter(
+                (name) => name.toLowerCase() !== person.name.toLowerCase(),
+              ),
+            }
+          : item,
+      ),
+    )
+
+    return { undoneCount: 1, name: person.name }
   }
 
   async function redeemReward({ note = '', rewardId, staffId }) {
@@ -1339,6 +1458,7 @@ export default function DashboardLayout() {
       updateAutoReplySettings,
       updatePointsRule,
       updateReviewReply,
+      undoReviewPoints,
     },
     account: {
       businessProfile,
