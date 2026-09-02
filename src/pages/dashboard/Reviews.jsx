@@ -1,4 +1,4 @@
-import { Check, CheckCircle2, Clock3, Pencil, PowerOff, Search, Sparkles, Star, X } from 'lucide-react'
+import { Check, CheckCircle2, Clock3, ExternalLink, MapPin, Pencil, PowerOff, Search, Sparkles, Star, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { generateReply } from '../../utils/generateReply'
@@ -45,6 +45,14 @@ function formatTimeRemaining(milliseconds) {
 }
 
 function getReplyStatus(review, settings, now) {
+  if (review.source === 'google_places') {
+    return {
+      detail: 'This is a live public-review sample. Reply status and publishing will switch on with the full Google Business Profile connection.',
+      label: 'Google review preview',
+      type: 'preview',
+    }
+  }
+
   if (!settings.enabled) {
     return {
       detail: 'Automatic replies are currently switched off in Settings.',
@@ -75,6 +83,11 @@ const statusStyles = {
     icon: PowerOff,
     panel: 'border-[#73827e]/20 bg-white/25',
     text: 'text-[#596964]',
+  },
+  preview: {
+    icon: MapPin,
+    panel: 'border-[#3867F4]/20 bg-[#3867F4]/[0.06]',
+    text: 'text-[#315bd8]',
   },
   scheduled: {
     icon: Clock3,
@@ -122,7 +135,7 @@ function TypewriterIntro({ text }) {
 }
 
 function ReplyWorkspace({ businessName, now, onSave, review, settings }) {
-  const [draft, setDraft] = useState(() => getReply(review, businessName))
+  const [draft, setDraft] = useState(() => review.source === 'google_places' ? '' : getReply(review, businessName))
   const [isEditing, setIsEditing] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
   const status = getReplyStatus(review, settings, now)
@@ -143,7 +156,25 @@ function ReplyWorkspace({ businessName, now, onSave, review, settings }) {
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#697a75]">Selected review</p>
-              <h3 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-white">{review.customer_name}</h3>
+              <div className="mt-3 flex items-center gap-3">
+                {review.author_photo_url ? (
+                  <img alt="" className="h-10 w-10 rounded-full object-cover" referrerPolicy="no-referrer" src={review.author_photo_url} />
+                ) : (
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] text-sm font-black text-slate-300">
+                    {review.customer_name?.slice(0, 1) || 'G'}
+                  </span>
+                )}
+                <div>
+                  {review.author_profile_url ? (
+                    <a className="inline-flex items-center gap-1.5 text-2xl font-semibold tracking-[-0.03em] text-white hover:text-[#8aa5ff]" href={review.author_profile_url} rel="noreferrer" target="_blank">
+                      {review.customer_name} <ExternalLink size={14} />
+                    </a>
+                  ) : (
+                    <h3 className="text-2xl font-semibold tracking-[-0.03em] text-white">{review.customer_name}</h3>
+                  )}
+                  {review.relative_publish_time && <p className="mt-1 text-xs font-semibold text-slate-500">{review.relative_publish_time}</p>}
+                </div>
+              </div>
             </div>
             <div className="flex items-center gap-1 rounded-xl border border-black/[0.07] bg-white/35 px-3 py-2">
               <Star className="fill-[#3867F4] text-[#3867F4]" size={15} />
@@ -151,6 +182,11 @@ function ReplyWorkspace({ businessName, now, onSave, review, settings }) {
             </div>
           </div>
           <p className="mt-5 text-base font-medium leading-7 text-slate-300">{review.text}</p>
+          {review.google_maps_uri && (
+            <a className="mt-4 inline-flex items-center gap-2 text-xs font-black text-[#7f9cff] hover:text-white" href={review.google_maps_uri} rel="noreferrer" target="_blank">
+              Read this review on Google Maps <ExternalLink size={13} />
+            </a>
+          )}
         </div>
 
         <div className="p-5 sm:p-6">
@@ -162,7 +198,11 @@ function ReplyWorkspace({ businessName, now, onSave, review, settings }) {
             <p className="mt-2 text-sm leading-6 text-[#61716d]">{status.detail}</p>
           </div>
 
-          {status.type === 'off' ? (
+          {status.type === 'preview' ? (
+            <div className="mt-4 rounded-xl border border-dashed border-[#3867F4]/25 bg-white/25 p-4 text-sm font-semibold leading-6 text-[#5b6c67]">
+              AURA can use this sample to preview staff mentions and rewards. It does not claim a reply was sent.
+            </div>
+          ) : status.type === 'off' ? (
             <Link
               className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-xl bg-[#3867F4] px-4 text-sm font-black text-white transition hover:bg-[#2f5be0]"
               to="/dashboard/settings"
@@ -249,6 +289,8 @@ export default function Reviews() {
     !cleanQuery || review.customer_name?.toLowerCase().includes(cleanQuery) || review.text?.toLowerCase().includes(cleanQuery),
   )
   const selectedReview = reviews.find((review) => review.id === selectedReviewId) || visibleReviews[0] || reviews[0]
+  const hasGooglePlace = Boolean(account?.businessProfile?.google_place_id)
+  const hasGoogleReviews = reviews.some((review) => review.source === 'google_places')
 
   return (
     <div className="space-y-9 pb-12">
@@ -261,18 +303,26 @@ export default function Reviews() {
           <div className="flex flex-col gap-4 border-b border-white/[0.07] p-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-xl font-semibold tracking-[-0.025em] text-white">Reviews</p>
-              <p className="mt-1 text-xs font-semibold text-[#72837e]">{visibleReviews.length} conversations</p>
+              <p className="mt-1 text-xs font-semibold text-[#72837e]">
+                {visibleReviews.length} conversations{hasGoogleReviews ? ' · relevance-ranked by Google' : ''}
+              </p>
             </div>
-            <label className="flex h-11 items-center gap-2 rounded-xl border border-black/[0.07] bg-white/35 px-3 sm:w-64">
-              <Search size={16} className="text-[#71827d]" />
-              <input
-                aria-label="Search reviews"
-                className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#17201e] outline-none placeholder:text-[#81918d]"
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search reviews"
-                value={query}
-              />
-            </label>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <label className="flex h-11 items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.045] px-3 sm:w-56">
+                <Search size={16} className="text-[#71827d]" />
+                <input
+                  aria-label="Search reviews"
+                  className="min-w-0 flex-1 bg-transparent text-sm font-medium text-white outline-none placeholder:text-[#81918d]"
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Search reviews"
+                  value={query}
+                />
+              </label>
+              <button className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.045] px-4 text-xs font-black text-slate-300 transition hover:border-[#3867F4]/40 hover:text-white" onClick={actions.openBusinessSetup} type="button">
+                <MapPin size={15} />
+                {hasGooglePlace ? 'Change business' : 'Connect Google'}
+              </button>
+            </div>
           </div>
 
           <div className="divide-y divide-black/[0.06]">
@@ -290,8 +340,14 @@ export default function Reviews() {
                   type="button"
                 >
                   <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="font-black text-white">{review.customer_name}</p>
+                    <div className="flex min-w-0 items-start gap-3">
+                      {review.author_photo_url ? (
+                        <img alt="" className="h-9 w-9 shrink-0 rounded-full object-cover" referrerPolicy="no-referrer" src={review.author_photo_url} />
+                      ) : (
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.08] text-xs font-black text-slate-300">{review.customer_name?.slice(0, 1) || 'G'}</span>
+                      )}
+                      <div className="min-w-0">
+                      <p className="truncate font-black text-white">{review.customer_name}</p>
                       <div className="mt-2 flex items-center gap-1">
                         {stars(review.rating).map((filled, index) => (
                           <Star
@@ -302,10 +358,11 @@ export default function Reviews() {
                         ))}
                         <span className="ml-2 text-xs font-semibold text-[#71827d]">{formatReviewDate(review.created_at)}</span>
                       </div>
+                      </div>
                     </div>
                     <span className={`flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-black ${style.panel} ${style.text}`}>
                       <StatusIcon size={12} />
-                      {status.type === 'sent' ? 'Replied' : status.type === 'scheduled' ? 'Scheduled' : 'Off'}
+                      {status.type === 'sent' ? 'Replied' : status.type === 'scheduled' ? 'Scheduled' : status.type === 'preview' ? 'Preview' : 'Off'}
                     </span>
                   </div>
                   <p className="mt-3 line-clamp-2 text-sm font-medium leading-6 text-slate-300">{review.text}</p>
@@ -314,9 +371,21 @@ export default function Reviews() {
             })}
 
             {!visibleReviews.length && (
-              <div className="p-10 text-center text-sm font-semibold text-[#71827d]">No reviews match that search.</div>
+              <div className="p-10 text-center">
+                <p className="text-sm font-semibold text-[#71827d]">{query ? 'No reviews match that search.' : 'Connect the business to see its available Google reviews.'}</p>
+                {!query && (
+                  <button className="mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#3867F4] px-5 text-sm font-black text-white" onClick={actions.openBusinessSetup} type="button">
+                    <MapPin size={16} /> Connect Google reviews
+                  </button>
+                )}
+              </div>
             )}
           </div>
+          {hasGoogleReviews && (
+            <div className="border-t border-white/[0.07] px-5 py-4 text-xs leading-5 text-slate-500">
+              Google supplies a relevance-ranked sample of up to five reviews. Review text and author details are loaded live and are not saved by AURA.
+            </div>
+          )}
         </div>
 
         {selectedReview ? (

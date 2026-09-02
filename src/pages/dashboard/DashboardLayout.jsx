@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import BusinessSetupModal from '../../components/BusinessSetupModal'
 import {
   defaultCategories,
   defaultPointsRules,
@@ -24,12 +25,15 @@ import { supabase } from '../../lib/supabaseClient'
 import {
   applyReviewToStaff,
   createStaffRecord,
+  detectMentionedStaff,
+  detectUnresolvedStaffNames,
   getPointsForRating,
 } from '../../utils/mvpRecognition'
 
 const STORAGE_KEY = 'aura-dashboard-state-v1'
 const DEV_ACCOUNT_EMAIL = 'info@spectreprojects.co.uk'
 const defaultAutoReplySettings = { delayUnit: 'hours', delayValue: 2, enabled: true }
+const BUSINESS_PROFILE_FIELDS = 'id,user_id,business_name,public_slug,leaderboard_public,google_place_id,google_place_connected_at,created_at'
 
 const navItems = [
   { end: true, href: '/dashboard', icon: BarChart3, label: 'Overview' },
@@ -187,16 +191,84 @@ function createPointEventsForReview(review, staff, pointsRules) {
     const staffName = person?.name || name
 
     return {
-      id: createId('point'),
+      id: review.source === 'google_places'
+        ? `google-point-${review.id}-${person?.id || toSlug(staffName)}`
+        : createId('point'),
       staff_id: person?.id || toSlug(staffName),
       staff_name: staffName,
       review_id: review.id,
       points_awarded: pointsAwarded,
       rating: Number(review.rating),
       reason: `${review.rating} star review mention`,
-      created_at: new Date().toISOString(),
+      created_at: review.created_at || new Date().toISOString(),
     }
   })
+}
+
+function buildPlacesDashboardState(place, baseStaff, pointsRules) {
+  const placeReviews = normalizeReviews(
+    (place?.reviews || []).map((review) => ({
+      author_photo_url: review.authorPhotoUri,
+      author_profile_url: review.authorProfileUri,
+      created_at: review.publishTime || new Date().toISOString(),
+      customer_name: review.authorName,
+      google_maps_uri: review.googleMapsUri,
+      id: review.id,
+      mentioned_staff: detectMentionedStaff(review.text, baseStaff),
+      original_text: review.originalText,
+      rating: review.rating,
+      relative_publish_time: review.relativePublishTime,
+      source: 'google_places',
+      text: review.text,
+    })),
+  )
+  let liveStaff = normalizeStaff(baseStaff)
+  const livePointEvents = []
+
+  placeReviews
+    .slice()
+    .reverse()
+    .forEach((review) => {
+      liveStaff = normalizeStaff(applyReviewToStaff(liveStaff, review, pointsRules))
+      livePointEvents.push(...createPointEventsForReview(review, liveStaff, pointsRules))
+    })
+
+  const approvals = placeReviews.flatMap((review) =>
+    detectUnresolvedStaffNames(review.text, liveStaff).map((name) => ({
+      created_at: review.created_at,
+      id: `google-name-${review.id}-${toSlug(name)}`,
+      name,
+      rating: review.rating,
+      review_excerpt: review.text,
+      review_id: review.id,
+    })),
+  )
+
+  return {
+    nameApprovals: normalizeNameApprovals(approvals),
+    pointEvents: normalizePointEvents(livePointEvents),
+    reviews: placeReviews,
+    staff: liveStaff,
+  }
+}
+
+async function callAuraApi(path, body) {
+  if (!supabase) throw new Error('Google business search is available on the live AURA dashboard.')
+  const { data } = await supabase.auth.getSession()
+  const accessToken = data.session?.access_token
+  if (!accessToken) throw new Error('Please sign in again to connect Google reviews.')
+
+  const response = await fetch(path, {
+    body: JSON.stringify(body),
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    method: 'POST',
+  })
+  const payload = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(payload.error || 'AURA could not complete that request.')
+  return payload
 }
 
 function buildDemoDashboardState(reviews) {
@@ -462,6 +534,7 @@ export default function DashboardLayout() {
   )
   const [isSigningOut, setIsSigningOut] = useState(false)
   const [leaderboardPinEnabled, setLeaderboardPinEnabled] = useState(false)
+  const [isBusinessSetupOpen, setIsBusinessSetupOpen] = useState(false)
 
   useEffect(() => {
     if (!supabase || !user) return undefined
@@ -478,7 +551,7 @@ export default function DashboardLayout() {
           : user.user_metadata?.business_name || 'My Business'
         const { data: existingProfile, error: profileLoadError } = await supabase
           .from('business_profiles')
-          .select('id,user_id,business_name,public_slug,leaderboard_public,created_at')
+          .select(BUSINESS_PROFILE_FIELDS)
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
           .limit(1)
@@ -495,7 +568,7 @@ export default function DashboardLayout() {
               business_name: fallbackBusinessName,
               user_id: user.id,
             })
-            .select('id,user_id,business_name,public_slug,leaderboard_public,created_at')
+            .select(BUSINESS_PROFILE_FIELDS)
             .single()
 
           if (profileCreateError) throw profileCreateError
@@ -510,7 +583,7 @@ export default function DashboardLayout() {
             .from('business_profiles')
             .update({ leaderboard_public: true, public_slug: publicSlug })
             .eq('id', profile.id)
-            .select('id,user_id,business_name,public_slug,leaderboard_public,created_at')
+            .select(BUSINESS_PROFILE_FIELDS)
             .single()
 
           if (profileUpdateError) throw profileUpdateError
@@ -563,15 +636,41 @@ export default function DashboardLayout() {
           rewardRows = createdRewards || []
         }
 
-        const staffRows = normalizeStaff(staffResult.data || [])
+        let staffRows = normalizeStaff(staffResult.data || [])
         const staffNames = new Map(staffRows.map((person) => [person.id, person.name]))
-        const eventRows = normalizePointEvents(
+        let eventRows = normalizePointEvents(
           (pointEventsResult.data || []).map((event) => ({
             ...event,
             staff_name: staffNames.get(event.staff_id) || 'Team member',
           })),
         )
-        const visibleReviews = isDevAccount ? normalizeReviews(defaultReviews) : []
+        let visibleReviews = isDevAccount ? normalizeReviews(defaultReviews) : []
+        let visibleNameApprovals = []
+        let placeNotice = ''
+
+        if (!isDevAccount && profile.google_place_id) {
+          try {
+            const { place } = await callAuraApi('/api/places-details', {
+              placeId: profile.google_place_id,
+            })
+            const placesState = buildPlacesDashboardState(place, staffRows, defaultPointsRules)
+            profile = {
+              ...profile,
+              business_name: place.name || profile.business_name,
+              google_place_address: place.address,
+              google_place_google_maps_uri: place.googleMapsUri,
+              google_place_rating: place.rating,
+              google_place_review_count: place.reviewCount,
+            }
+            visibleReviews = placesState.reviews
+            visibleNameApprovals = placesState.nameApprovals
+            staffRows = placesState.staff
+            eventRows = normalizePointEvents([...placesState.pointEvents, ...eventRows])
+          } catch (placesError) {
+            console.error('[AURA Places] Review sample could not be loaded:', placesError)
+            placeNotice = placesError.message
+          }
+        }
         const { data: publicAccess } = await supabase.rpc('get_aura_public_leaderboard', {
           p_pin: null,
           p_slug: profile.public_slug,
@@ -579,16 +678,23 @@ export default function DashboardLayout() {
 
         if (!isMounted) return
         setBusinessProfile(profile)
+        if (
+          import.meta.env.VITE_GOOGLE_PLACES_ONBOARDING === 'true' &&
+          !profile.google_place_id &&
+          !isDevAccount
+        ) {
+          setIsBusinessSetupOpen(true)
+        }
         setReviews(visibleReviews)
         setConnectionStatus('connected')
-        setTechnicalNotice('')
+        setTechnicalNotice(placeNotice)
         setCategories(
           normalizeCategories([
             ...defaultCategories,
             ...staffRows.map((person) => person.job_category),
           ]),
         )
-        setNameApprovals([])
+        setNameApprovals(visibleNameApprovals)
         setPointEvents(eventRows)
         setPointsRules(defaultPointsRules)
         setRedemptions(redemptionsResult.data || [])
@@ -615,11 +721,12 @@ export default function DashboardLayout() {
   }, [user])
 
   useEffect(() => {
+    if (!isLocalPreview) return
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({ autoReplySettings, categories, nameApprovals, pointEvents, pointsRules, redemptions, rewards, reviews, staff }),
     )
-  }, [autoReplySettings, categories, nameApprovals, pointEvents, pointsRules, redemptions, rewards, reviews, staff])
+  }, [autoReplySettings, categories, isLocalPreview, nameApprovals, pointEvents, pointsRules, redemptions, rewards, reviews, staff])
 
   const overview = useMemo(() => {
     const reviewsThisMonth = reviews.filter((review) => isThisMonth(review.created_at))
@@ -687,6 +794,57 @@ export default function DashboardLayout() {
     if (!categories.includes(record.job_category)) setCategories((current) => [...current, record.job_category])
 
     return record
+  }
+
+  async function searchGoogleBusinesses(query) {
+    const payload = await callAuraApi('/api/places-search', { query })
+    return payload.places || []
+  }
+
+  async function connectGoogleBusiness(selectedPlace) {
+    if (!supabase || !businessProfile) throw new Error('Your AURA workspace is still loading.')
+
+    const [{ place }, staffResult] = await Promise.all([
+      callAuraApi('/api/places-details', { placeId: selectedPlace.id }),
+      supabase
+        .from('aura_staff')
+        .select('*')
+        .eq('business_profile_id', businessProfile.id)
+        .order('name'),
+    ])
+    if (staffResult.error) throw staffResult.error
+
+    const { data: savedProfile, error: profileError } = await supabase
+      .from('business_profiles')
+      .update({
+        google_place_connected_at: new Date().toISOString(),
+        google_place_id: selectedPlace.id,
+      })
+      .eq('id', businessProfile.id)
+      .select(BUSINESS_PROFILE_FIELDS)
+      .single()
+    if (profileError) throw profileError
+
+    const baseStaff = normalizeStaff(staffResult.data || [])
+    const placesState = buildPlacesDashboardState(place, baseStaff, pointsRules)
+    setBusinessProfile({
+      ...savedProfile,
+      business_name: place.name || savedProfile.business_name,
+      google_place_address: place.address,
+      google_place_google_maps_uri: place.googleMapsUri,
+      google_place_rating: place.rating,
+      google_place_review_count: place.reviewCount,
+    })
+    setReviews(placesState.reviews)
+    setNameApprovals(placesState.nameApprovals)
+    setStaff(placesState.staff)
+    setPointEvents((current) =>
+      normalizePointEvents([
+        ...placesState.pointEvents,
+        ...current.filter((event) => !String(event.id).startsWith('google-point-')),
+      ]),
+    )
+    setTechnicalNotice('')
   }
 
   async function setStaffActive(staffId, isActive) {
@@ -990,10 +1148,13 @@ export default function DashboardLayout() {
       addStaff,
       adjustPoints,
       approveName,
+      connectGoogleBusiness,
       deleteReward,
       ignoreName,
+      openBusinessSetup: () => setIsBusinessSetupOpen(true),
       redeemReward,
       saveReward,
+      searchGoogleBusinesses,
       setLeaderboardPin,
       setStaffActive,
       updateAutoReplySettings,
@@ -1067,6 +1228,14 @@ export default function DashboardLayout() {
         </div>
       </div>
       <MobileNav nameApprovalsCount={nameApprovals.length} />
+      <BusinessSetupModal
+        isOpen={isBusinessSetupOpen}
+        onClose={() => setIsBusinessSetupOpen(false)}
+        onConnect={{
+          search: searchGoogleBusinesses,
+          select: connectGoogleBusiness,
+        }}
+      />
     </main>
   )
 }
