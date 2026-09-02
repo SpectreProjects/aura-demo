@@ -1,4 +1,5 @@
 import {
+  consumePlacesQuota,
   handleApiError,
   readJsonBody,
   requestGooglePlaces,
@@ -31,6 +32,8 @@ export default async function handler(request, response) {
       sendJson(response, 400, { error: 'Enter a business name and town or postcode.' })
       return
     }
+
+    await consumePlacesQuota(request, 'search')
 
     const data = await requestGooglePlaces('/places:searchText', {
       body: {

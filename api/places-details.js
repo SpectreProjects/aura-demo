@@ -1,4 +1,5 @@
 import {
+  consumePlacesQuota,
   handleApiError,
   readJsonBody,
   requestGooglePlaces,
@@ -50,6 +51,8 @@ export default async function handler(request, response) {
       sendJson(response, 400, { error: 'Choose a valid Google business.' })
       return
     }
+
+    await consumePlacesQuota(request, 'details')
 
     const place = await requestGooglePlaces(`/places/${encodeURIComponent(placeId)}`, {
       fieldMask: DETAILS_FIELD_MASK,

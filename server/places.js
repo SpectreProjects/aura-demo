@@ -55,6 +55,45 @@ export async function requireAuraUser(request) {
   return authResponse.json()
 }
 
+export async function consumePlacesQuota(request, operation) {
+  const authorization = request.headers.authorization || ''
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
+  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY
+
+  let quotaResponse
+  try {
+    quotaResponse = await fetch(
+      `${supabaseUrl.replace(/\/$/, '')}/rest/v1/rpc/consume_places_quota`,
+      {
+        body: JSON.stringify({ p_operation: operation }),
+        headers: {
+          apikey: supabaseAnonKey,
+          authorization,
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
+        signal: AbortSignal.timeout(8_000),
+      },
+    )
+  } catch {
+    throw httpError(503, 'AURA could not check Google usage safely. Please try again.', 'QUOTA_UNAVAILABLE')
+  }
+
+  if (!quotaResponse.ok) {
+    console.error('[AURA Places] Quota check failed:', quotaResponse.status)
+    throw httpError(503, 'AURA could not check Google usage safely. Please try again.', 'QUOTA_UNAVAILABLE')
+  }
+
+  const allowed = await quotaResponse.json()
+  if (!allowed) {
+    throw httpError(
+      429,
+      'AURA has reached today\'s Google preview limit. Please try again tomorrow.',
+      'PLACES_DAILY_LIMIT',
+    )
+  }
+}
+
 export async function requestGooglePlaces(path, { body, fieldMask, method = 'GET' } = {}) {
   const apiKey = process.env.GOOGLE_PLACES_API_KEY
   if (!apiKey) {
