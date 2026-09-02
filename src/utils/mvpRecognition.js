@@ -77,8 +77,9 @@ export function detectUnresolvedStaffNames(reviewText, staff) {
   const candidates = new Map()
   const text = String(reviewText || '')
   const patterns = [
-    /\b(?:thanks to|thank you|shoutout to|shout out to|served by|helped by|looked after by|checked in by|welcomed by|from|with|by)\s+([a-z][a-z'-]{1,24})\b/gi,
-    /\b([a-z][a-z'-]{1,24})\s+(?:was|is|were|helped|served|welcomed|greeted|made|handled|resolved|recommended|checked|took)\b/gi,
+    /\b(?:thanks to|thank you(?: to)?|shoutout to|shout out to|served by|helped by|looked after by|checked in by|welcomed by)\s+([A-Z][a-zA-Z'-]{1,24})\b/g,
+    /\b(?:server|waiter|waitress|host|hostess|manager|bartender|chef|barista|receptionist)\s+(?:called|named)\s+([A-Z][a-zA-Z'-]{1,24})\b/g,
+    /\b([A-Z][a-zA-Z'-]{1,24})\s+(?:was|is)\s+(?:amazing|attentive|brilliant|excellent|fantastic|friendly|great|helpful|kind|lovely|outstanding|professional|welcoming|wonderful)\b/g,
   ]
 
   patterns.forEach((pattern) => {
