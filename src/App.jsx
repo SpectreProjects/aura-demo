@@ -7,6 +7,7 @@ import Rewards from './pages/dashboard/Rewards'
 import Settings from './pages/dashboard/Settings'
 import Staff from './pages/dashboard/Staff'
 import Landing from './pages/Landing'
+import LegalPage from './pages/LegalPage'
 import Login from './pages/Login'
 import PublicLeaderboard from './pages/PublicLeaderboard'
 import Signup from './pages/Signup'
@@ -40,6 +41,8 @@ export default function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/privacy" element={<LegalPage type="privacy" />} />
+        <Route path="/terms" element={<LegalPage type="terms" />} />
         <Route path="/leaderboard/:slug" element={<PublicLeaderboard />} />
         <Route
           path="/dashboard"

@@ -357,9 +357,16 @@ export default function Landing() {
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
             <Link
               className="rounded-lg px-2 py-1 transition hover:text-slate-300 focus:outline-none focus:ring-2 focus:ring-violet-300/50"
-              to="/"
+              to="/privacy"
             >
               Privacy Policy
+            </Link>
+            <span aria-hidden="true" className="text-slate-700">·</span>
+            <Link
+              className="rounded-lg px-2 py-1 transition hover:text-slate-300 focus:outline-none focus:ring-2 focus:ring-violet-300/50"
+              to="/terms"
+            >
+              Terms
             </Link>
             <span aria-hidden="true" className="text-slate-700">·</span>
             <button

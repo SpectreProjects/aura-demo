@@ -1,6 +1,7 @@
 import { ArrowRight, LockKeyhole, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
+import GoogleAuthButton from '../components/GoogleAuthButton'
 import { useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabaseClient'
 
@@ -62,7 +63,17 @@ export default function Login() {
           <h1 className="text-3xl font-black tracking-tight text-white">Welcome back</h1>
           <p className="mt-2 text-sm leading-6 text-slate-400">Log in to your AURA dashboard.</p>
 
-          <div className="mt-6 space-y-4">
+          <div className="mt-6">
+            <GoogleAuthButton label="Continue with Google" onError={setErrorMessage} />
+          </div>
+
+          <div className="my-6 flex items-center gap-3" aria-hidden="true">
+            <span className="h-px flex-1 bg-white/10" />
+            <span className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">or</span>
+            <span className="h-px flex-1 bg-white/10" />
+          </div>
+
+          <div className="space-y-4">
             <input
               className="aura-field"
               onChange={(event) => setEmail(event.target.value)}
