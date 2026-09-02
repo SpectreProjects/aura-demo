@@ -3,6 +3,7 @@ import {
   BadgeCheck,
   Edit3,
   Gift,
+  ListFilter,
   Plus,
   RotateCcw,
   Search,
@@ -11,6 +12,7 @@ import {
   X,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import TypewriterIntro from '../../components/TypewriterIntro'
 import PointsModal from './components/PointsModal'
 import StaffModal from './components/StaffModal'
 import { useDashboard } from './useDashboard'
@@ -93,20 +95,25 @@ function RewardModal({ onClose, onRedeem, person, rewards }) {
 }
 
 export default function Staff() {
-  const { actions, categories, rewards, staff } = useDashboard()
+  const { account, actions, categories, rewards, staff } = useDashboard()
   const [activeCategory, setActiveCategory] = useState('All')
-  const [categoryName, setCategoryName] = useState('')
   const [editorState, setEditorState] = useState(null)
+  const [filterOpen, setFilterOpen] = useState(false)
   const [pointsPerson, setPointsPerson] = useState(null)
   const [query, setQuery] = useState('')
   const [rewardPerson, setRewardPerson] = useState(null)
-  const [showArchived, setShowArchived] = useState(false)
+  const [statusFilter, setStatusFilter] = useState('current')
+
+  const businessName = String(account?.businessProfile?.business_name || 'your business').replace(/\s+Demo$/i, '')
+  const intro = `Here’s everyone making ${businessName} what it is.`
 
   const visibleStaff = useMemo(() => {
     const normalisedQuery = query.trim().toLowerCase()
     return staff.filter((person) => {
       const matchesCategory = activeCategory === 'All' || person.job_category === activeCategory
-      const matchesStatus = showArchived ? true : person.is_active
+      const matchesStatus =
+        statusFilter === 'all' ||
+        (statusFilter === 'current' ? person.is_active : !person.is_active)
       const matchesQuery =
         !normalisedQuery ||
         [person.name, person.job_title, person.job_category].some((value) =>
@@ -114,89 +121,81 @@ export default function Staff() {
         )
       return matchesCategory && matchesStatus && matchesQuery
     })
-  }, [activeCategory, query, showArchived, staff])
-
-  async function handleAddCategory(event) {
-    event.preventDefault()
-    await actions.addCategory(categoryName)
-    setCategoryName('')
-  }
+  }, [activeCategory, query, staff, statusFilter])
 
   return (
-    <div className="space-y-5">
-      <section className="flex flex-col justify-between gap-5 rounded-2xl border border-white/[0.07] bg-[#0b0a0e]/90 p-6 shadow-[0_30px_120px_rgba(0,0,0,0.22)] lg:flex-row lg:items-end">
-        <div>
-          <p className="mb-4 inline-flex rounded-full border border-violet-300/15 bg-violet-300/[0.07] px-3 py-1 text-xs font-black uppercase tracking-[0.16em] text-violet-200">
-            Team management
-          </p>
-          <h2 className="max-w-3xl text-4xl font-medium leading-[1.08] tracking-[-0.045em] text-white lg:text-[3.35rem]">Keep your team list organised.</h2>
-          <p className="mt-3 max-w-2xl text-base leading-7 text-slate-400">
-            Add, edit or archive staff. Private point adjustments and reward fulfilment live here too.
-          </p>
+    <div className="space-y-9 pb-12">
+      <section className="flex h-28 items-center overflow-hidden border-b border-white/[0.055]">
+        <TypewriterIntro key={intro} text={intro} />
+      </section>
+
+      <section className="flex flex-wrap items-center gap-3">
+        <label className="flex h-12 min-w-0 basis-full items-center gap-3 rounded-xl border border-white/[0.07] bg-[#0b0a0e]/90 px-4 sm:flex-1 sm:basis-auto">
+          <Search className="text-slate-500" size={17} />
+          <input
+            aria-label="Search staff, role or department"
+            className="h-12 min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-slate-600"
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search staff, role or department"
+            type="search"
+            value={query}
+          />
+        </label>
+        <div className="relative">
+          <button
+            aria-expanded={filterOpen}
+            aria-haspopup="menu"
+            aria-label="Filter team"
+            className={`relative inline-flex h-12 w-12 items-center justify-center rounded-xl border transition ${filterOpen || activeCategory !== 'All' || statusFilter !== 'current' ? 'border-[#3867F4]/40 bg-[#3867F4]/10 text-[#3867F4]' : 'border-white/[0.07] bg-[#0b0a0e]/90 text-slate-400 hover:text-white'}`}
+            onClick={() => setFilterOpen((current) => !current)}
+            type="button"
+          >
+            <ListFilter size={18} />
+            {(activeCategory !== 'All' || statusFilter !== 'current') && <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-[#3867F4]" />}
+          </button>
+          {filterOpen && (
+            <div className="absolute right-0 top-14 z-30 w-64 rounded-2xl border border-white/[0.1] bg-[#111315] p-3 text-white shadow-[0_24px_80px_rgba(0,0,0,0.35)]" role="menu">
+              <p className="px-2 pb-2 text-[10px] font-black uppercase tracking-[0.14em] text-slate-500">Department</p>
+              <div className="max-h-52 space-y-1 overflow-y-auto">
+                {['All', ...categories].map((category) => (
+                  <button
+                    className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-sm font-bold transition ${activeCategory === category ? 'bg-[#3867F4] text-white' : 'text-slate-300 hover:bg-white/[0.06]'}`}
+                    key={category}
+                    onClick={() => setActiveCategory(category)}
+                    role="menuitemradio"
+                    aria-checked={activeCategory === category}
+                    type="button"
+                  >
+                    {category}
+                    {activeCategory === category ? <BadgeCheck size={15} /> : null}
+                  </button>
+                ))}
+              </div>
+              <div className="my-3 border-t border-white/[0.08]" />
+              <p className="px-2 pb-2 text-[10px] font-black uppercase tracking-[0.14em] text-slate-500">Staff status</p>
+              <div className="grid grid-cols-3 gap-1">
+                {[['current', 'Current'], ['archived', 'Archived'], ['all', 'All']].map(([value, label]) => (
+                  <button
+                    className={`rounded-lg px-2 py-2 text-[11px] font-black transition ${statusFilter === value ? 'bg-[#3867F4] text-white' : 'bg-white/[0.04] text-slate-400 hover:text-white'}`}
+                    key={value}
+                    onClick={() => setStatusFilter(value)}
+                    type="button"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
         <button
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-300 px-5 py-3.5 text-sm font-black text-[#100722] shadow-[0_0_32px_rgba(167,139,250,0.12)] transition hover:-translate-y-0.5 hover:bg-violet-200"
+          className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-[#3867F4] px-5 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-[#2f5be0]"
           onClick={() => setEditorState({})}
           type="button"
         >
           Add Staff
           <Plus size={18} />
         </button>
-      </section>
-
-      <section className="rounded-2xl border border-white/[0.07] bg-[#0b0a0e]/90 p-4 shadow-[0_22px_90px_rgba(0,0,0,0.18)]">
-        <div className="grid gap-3 lg:grid-cols-[1fr_auto]">
-          <label className="flex items-center gap-3 rounded-xl border border-white/[0.07] bg-[#060607] px-4">
-            <Search className="text-slate-500" size={17} />
-            <input
-              className="h-12 min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-slate-600"
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search staff, role or department"
-              value={query}
-            />
-          </label>
-          <button
-            className={`inline-flex h-12 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-black transition ${
-              showArchived
-                ? 'border-violet-300/20 bg-violet-300/[0.08] text-violet-100'
-                : 'border-white/[0.07] bg-[#060607] text-slate-400 hover:text-white'
-            }`}
-            onClick={() => setShowArchived((current) => !current)}
-            type="button"
-          >
-            <Archive size={16} />
-            {showArchived ? 'Showing archived' : 'Show archived'}
-          </button>
-        </div>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          {['All', ...categories].map((category) => (
-            <button
-              className={`rounded-xl px-3 py-2 text-xs font-bold transition ${
-                activeCategory === category
-                  ? 'bg-violet-300 text-[#100722]'
-                  : 'border border-white/[0.07] bg-white/[0.025] text-slate-400 hover:text-white'
-              }`}
-              key={category}
-              onClick={() => setActiveCategory(category)}
-              type="button"
-            >
-              {category}
-            </button>
-          ))}
-        </div>
-
-        <form className="mt-4 flex max-w-md gap-2" onSubmit={handleAddCategory}>
-          <input
-            className="aura-field py-2.5"
-            onChange={(event) => setCategoryName(event.target.value)}
-            placeholder="Add a department"
-            value={categoryName}
-          />
-          <button className="shrink-0 rounded-xl border border-violet-300/15 bg-violet-300/[0.07] px-4 text-xs font-black text-violet-100" type="submit">
-            Add
-          </button>
-        </form>
       </section>
 
       <section className="overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0b0a0e]/90 shadow-[0_22px_90px_rgba(0,0,0,0.18)]">
