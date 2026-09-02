@@ -19,6 +19,7 @@ import {
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getNextReward } from '../../utils/mvpRecognition'
+import RewardModal from './components/RewardModal'
 import StaffModal from './components/StaffModal'
 import { useDashboard } from './useDashboard'
 
@@ -477,6 +478,7 @@ function RewardProgressRow({ accent, item }) {
 
 export default function Overview() {
   const [activePeriod, setActivePeriod] = useState('Month')
+  const [isRewardModalOpen, setIsRewardModalOpen] = useState(false)
   const [isStaffModalOpen, setIsStaffModalOpen] = useState(false)
   const [shareCopied, setShareCopied] = useState(false)
   const {
@@ -659,13 +661,14 @@ export default function Overview() {
               Add Staff
               <Plus size={14} />
             </button>
-            <Link
+            <button
               className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-violet-300 px-4 text-xs font-black text-slate-950 shadow-[0_0_24px_rgba(167,139,250,0.16)] transition hover:bg-violet-200"
-              to="/dashboard/rewards"
+              onClick={() => setIsRewardModalOpen(true)}
+              type="button"
             >
               Add reward
               <Plus size={14} />
-            </Link>
+            </button>
           </div>
         </div>
 
@@ -837,6 +840,12 @@ export default function Overview() {
           onClose={() => setIsStaffModalOpen(false)}
           onSave={actions.addStaff}
           title="Add Staff"
+        />
+      )}
+      {isRewardModalOpen && (
+        <RewardModal
+          onClose={() => setIsRewardModalOpen(false)}
+          onSave={actions.saveReward}
         />
       )}
     </div>

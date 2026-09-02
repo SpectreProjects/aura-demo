@@ -1,38 +1,18 @@
-import { Edit3, Gift, Plus, Trash2, X } from 'lucide-react'
+import { Edit3, Gift, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
+import RewardModal from './components/RewardModal'
 import { useDashboard } from './useDashboard'
-
-const emptyReward = {
-  title: '',
-  description: '',
-  points_required: 20,
-  is_active: true,
-}
 
 export default function Rewards() {
   const { actions, pointsRules, rewards } = useDashboard()
-  const [isFormOpen, setIsFormOpen] = useState(false)
-  const [form, setForm] = useState(emptyReward)
-
-  function updateField(field, value) {
-    setForm((current) => ({ ...current, [field]: value }))
-  }
+  const [editorReward, setEditorReward] = useState(null)
 
   function openEdit(reward) {
-    setForm(reward)
-    setIsFormOpen(true)
+    setEditorReward(reward)
   }
 
   function openAdd() {
-    setForm(emptyReward)
-    setIsFormOpen(true)
-  }
-
-  async function handleSubmit(event) {
-    event.preventDefault()
-    await actions.saveReward(form)
-    setForm(emptyReward)
-    setIsFormOpen(false)
+    setEditorReward({})
   }
 
   return (
@@ -93,68 +73,6 @@ export default function Rewards() {
         </div>
       </section>
 
-      {isFormOpen && (
-        <form
-          className="rounded-2xl border border-violet-300/20 bg-violet-300/[0.07] p-5 shadow-[0_22px_90px_rgba(0,0,0,0.18)] backdrop-blur-xl"
-          onSubmit={handleSubmit}
-        >
-          <div className="mb-5 flex items-center justify-between gap-3">
-            <div>
-              <p className="text-sm font-black uppercase tracking-[0.16em] text-violet-200">
-                {form.id ? 'Edit reward' : 'New reward'}
-              </p>
-              <h3 className="mt-1 text-2xl font-black tracking-tight text-white">
-                {form.id ? form.title : 'Create a reward'}
-              </h3>
-            </div>
-            <button
-              className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/8 text-white transition hover:bg-white/12"
-              onClick={() => setIsFormOpen(false)}
-              type="button"
-            >
-              <X size={18} />
-            </button>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-[1fr_10rem]">
-            <input
-              className="aura-field"
-              onChange={(event) => updateField('title', event.target.value)}
-              placeholder="Reward name"
-              required
-              value={form.title}
-            />
-            <input
-              className="aura-field"
-              min="1"
-              onChange={(event) => updateField('points_required', event.target.value)}
-              placeholder="Points"
-              required
-              type="number"
-              value={form.points_required}
-            />
-            <textarea
-              className="aura-textarea min-h-24 sm:col-span-2"
-              onChange={(event) => updateField('description', event.target.value)}
-              placeholder="Description"
-              required
-              value={form.description}
-            />
-          </div>
-          <label className="mt-4 flex w-fit items-center gap-3 text-sm font-bold text-slate-200">
-            <input
-              checked={form.is_active}
-              className="h-4 w-4 accent-violet-300"
-              onChange={(event) => updateField('is_active', event.target.checked)}
-              type="checkbox"
-            />
-            Active
-          </label>
-          <button className="mt-5 rounded-xl bg-violet-300 px-5 py-4 text-sm font-black text-[#100722] transition hover:-translate-y-0.5 hover:bg-violet-200" type="submit">
-            Save reward
-          </button>
-        </form>
-      )}
-
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {rewards.map((reward) => (
           <article
@@ -199,6 +117,15 @@ export default function Rewards() {
           </article>
         ))}
       </section>
+
+      {editorReward && (
+        <RewardModal
+          initialReward={editorReward.id ? editorReward : null}
+          key={editorReward.id || 'add-reward'}
+          onClose={() => setEditorReward(null)}
+          onSave={actions.saveReward}
+        />
+      )}
     </div>
   )
 }
