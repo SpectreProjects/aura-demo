@@ -29,11 +29,11 @@ const STORAGE_KEY = 'aura-dashboard-state-v1'
 const DEV_ACCOUNT_EMAIL = 'info@spectreprojects.co.uk'
 
 const navItems = [
-  { end: true, href: '/dashboard', icon: BarChart3, iconClass: 'text-violet-400', label: 'Dashboard' },
-  { href: '/dashboard/reviews', icon: Star, iconClass: 'text-yellow-300', label: 'Reviews' },
-  { href: '/dashboard/staff', icon: Users, iconClass: 'text-violet-400', label: 'Team' },
-  { href: '/dashboard/leaderboard', icon: Trophy, iconClass: 'text-amber-300', label: 'Leaderboard' },
-  { href: '/dashboard/rewards', icon: Gift, iconClass: 'text-yellow-600', label: 'Rewards' },
+  { end: true, href: '/dashboard', icon: BarChart3, iconClass: 'text-[#0b4d37]', label: 'Dashboard' },
+  { href: '/dashboard/reviews', icon: Star, iconClass: 'text-[#b68a2c]', label: 'Reviews' },
+  { href: '/dashboard/staff', icon: Users, iconClass: 'text-[#0b4d37]', label: 'Team' },
+  { href: '/dashboard/leaderboard', icon: Trophy, iconClass: 'text-[#b68a2c]', label: 'Leaderboard' },
+  { href: '/dashboard/rewards', icon: Gift, iconClass: 'text-[#0b4d37]', label: 'Rewards' },
 ]
 
 function createId(prefix) {
@@ -300,14 +300,14 @@ function addPointTotals(staff, pointEvents) {
 
 function Sidebar({ nameApprovalsCount }) {
   return (
-    <aside className="hidden h-full w-56 shrink-0 border-r border-white/[0.06] bg-[#111113] px-5 py-8 text-white lg:flex lg:flex-col">
-      <Link to="/" className="mb-16 flex items-center gap-3 rounded-xl px-2">
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-violet-300/25 bg-violet-300/10 text-violet-300">
+    <aside className="dashboard-sidebar hidden h-full w-64 shrink-0 border-r border-[#e6e8e3] bg-[#f7f8f5] px-6 py-8 text-[#17231d] lg:flex lg:flex-col">
+      <Link to="/" className="mb-14 flex items-center gap-3 rounded-xl px-2">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0b4d37] text-white">
           <Sparkles size={20} />
         </span>
         <span>
           <span className="block text-base font-black tracking-[0.12em]">AURA</span>
-          <span className="block text-[9px] font-bold uppercase tracking-[0.18em] text-slate-600">Review intelligence</span>
+          <span className="block text-[9px] font-bold uppercase tracking-[0.18em] text-[#7a827d]">Review assistant</span>
         </span>
       </Link>
 
@@ -315,10 +315,10 @@ function Sidebar({ nameApprovalsCount }) {
         {navItems.map((item) => (
           <NavLink
             className={({ isActive }) =>
-              `group flex items-center gap-3 rounded-xl border px-3 py-2.5 text-base font-bold outline-none transition-all duration-200 focus-visible:ring-2 focus-visible:ring-violet-300/45 ${
+              `group flex items-center gap-3 rounded-xl border px-3 py-2.5 text-[15px] font-semibold outline-none transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#0b4d37]/25 ${
                 isActive
-                  ? 'border-violet-300/20 bg-violet-300/[0.10] text-white shadow-[0_0_24px_rgba(139,92,246,0.16),inset_0_1px_0_rgba(255,255,255,0.05)]'
-                  : 'border-transparent text-slate-300 hover:border-white/[0.05] hover:bg-white/[0.035] hover:text-white'
+                  ? 'border-[#d7ddd8] bg-white text-[#0b4d37] shadow-[0_8px_24px_rgba(22,51,39,0.06)]'
+                  : 'border-transparent text-[#68736d] hover:border-[#e3e7e3] hover:bg-white hover:text-[#17231d]'
               }`
             }
             end={item.end}
@@ -330,7 +330,7 @@ function Sidebar({ nameApprovalsCount }) {
             </span>
             {item.label}
             {item.href === '/dashboard/reviews' && nameApprovalsCount > 0 && (
-              <span className="ml-auto rounded-full bg-violet-300 px-2 py-0.5 text-xs font-black text-[#100722]">
+              <span className="ml-auto rounded-full bg-[#c8a44d] px-2 py-0.5 text-xs font-black text-white">
                 {nameApprovalsCount}
               </span>
             )}
@@ -339,11 +339,11 @@ function Sidebar({ nameApprovalsCount }) {
       </nav>
 
       <button
-        className="mt-auto flex cursor-default items-center gap-3 rounded-xl border border-transparent px-3 py-2.5 text-base font-bold text-slate-500"
+        className="mt-auto flex cursor-default items-center gap-3 rounded-xl border border-transparent px-3 py-2.5 text-[15px] font-semibold text-[#9aa19d]"
         disabled
         type="button"
       >
-        <span className="flex h-8 w-8 items-center justify-center text-slate-600">
+        <span className="flex h-8 w-8 items-center justify-center text-[#9aa19d]">
           <Settings size={17} />
         </span>
         Settings
@@ -354,12 +354,12 @@ function Sidebar({ nameApprovalsCount }) {
 
 function MobileNav({ nameApprovalsCount }) {
   return (
-    <nav className="fixed inset-x-3 bottom-3 z-30 grid grid-cols-5 rounded-2xl border border-white/10 bg-[#070908]/95 p-2 text-white shadow-[0_24px_90px_rgba(0,0,0,0.5)] backdrop-blur-xl lg:hidden">
+    <nav className="dashboard-mobile-nav fixed inset-x-3 bottom-3 z-30 grid grid-cols-5 rounded-2xl border border-[#dfe4df] bg-white/95 p-2 text-[#526059] shadow-[0_18px_55px_rgba(22,51,39,0.16)] backdrop-blur-xl lg:hidden">
       {navItems.map((item) => (
         <NavLink
           className={({ isActive }) =>
-            `relative flex flex-col items-center justify-center gap-1 rounded-2xl py-2 text-[10px] font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-violet-300/45 ${
-              isActive ? 'bg-violet-300 text-[#100722]' : 'text-slate-400'
+            `relative flex flex-col items-center justify-center gap-1 rounded-2xl py-2 text-[10px] font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-[#0b4d37]/25 ${
+              isActive ? 'bg-[#0b4d37] text-white' : 'text-[#68736d]'
             }`
           }
           end={item.end}
@@ -369,7 +369,7 @@ function MobileNav({ nameApprovalsCount }) {
           <item.icon size={17} />
           {item.label}
           {item.href === '/dashboard/reviews' && nameApprovalsCount > 0 && (
-            <span className="absolute right-2 top-1 h-2 w-2 rounded-full bg-violet-300" />
+            <span className="absolute right-2 top-1 h-2 w-2 rounded-full bg-[#c8a44d]" />
           )}
         </NavLink>
       ))}
@@ -959,22 +959,22 @@ export default function DashboardLayout() {
   }
 
   return (
-    <main className="h-screen overflow-hidden bg-[#000000] text-white">
+    <main className="dashboard-shell h-screen overflow-hidden bg-[#f4f5f2] text-[#17231d]">
       <div className="relative flex h-full">
         <Sidebar nameApprovalsCount={nameApprovals.length} />
 
         <div className="h-full min-w-0 flex-1 overflow-y-auto overscroll-contain pb-28 lg:pb-0">
           {!isOverviewRoute && (
-            <header className="sticky top-0 z-20 border-b border-white/[0.07] bg-[#000000]/82 px-5 py-4 backdrop-blur-2xl sm:px-8 lg:px-10">
+            <header className="dashboard-topbar sticky top-0 z-20 border-b border-[#e1e5e1] bg-[#f4f5f2]/90 px-5 py-4 backdrop-blur-2xl sm:px-8 lg:px-10">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-violet-200">Recognition workspace</p>
-                  <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl">
-                    AURA Command Centre
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#b68a2c]">Your workspace</p>
+                  <h1 className="text-2xl font-semibold tracking-tight text-[#17231d] sm:text-3xl">
+                    AURA dashboard
                   </h1>
                 </div>
                 <button
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.08] px-4 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-white/[0.12] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#d7ddd8] bg-white px-4 text-sm font-semibold text-[#244036] transition hover:-translate-y-0.5 hover:border-[#0b4d37] disabled:cursor-not-allowed disabled:opacity-60"
                   disabled={isSigningOut}
                   onClick={handleSignOut}
                   type="button"

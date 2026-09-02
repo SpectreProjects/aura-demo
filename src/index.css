@@ -23,6 +23,186 @@ body {
   min-height: 100vh;
 }
 
+/* Dashboard palette: intentionally calm, editorial and hospitality-led. */
+.dashboard-shell {
+  --aura-ink: #17231d;
+  --aura-muted: #6f7973;
+  --aura-green: #0b4d37;
+  --aura-green-soft: #edf4f0;
+  --aura-gold: #b68a2c;
+  --aura-line: #e1e5e1;
+  color-scheme: light;
+  background:
+    radial-gradient(circle at 88% -10%, rgba(200, 164, 77, 0.08), transparent 28rem),
+    #f4f5f2;
+}
+
+.dashboard-shell input,
+.dashboard-shell textarea,
+.dashboard-shell select {
+  color-scheme: light;
+}
+
+.dashboard-shell .text-white,
+.dashboard-shell .text-slate-50,
+.dashboard-shell .text-slate-100,
+.dashboard-shell .text-slate-200 {
+  color: var(--aura-ink) !important;
+}
+
+.dashboard-shell .text-slate-300,
+.dashboard-shell .text-slate-400 {
+  color: #657169 !important;
+}
+
+.dashboard-shell .text-slate-500,
+.dashboard-shell .text-slate-600 {
+  color: #89918c !important;
+}
+
+.dashboard-shell [class*="text-violet"],
+.dashboard-shell [class*="text-emerald"] {
+  color: var(--aura-green) !important;
+}
+
+.dashboard-shell [class*="text-amber"],
+.dashboard-shell [class*="text-yellow"] {
+  color: var(--aura-gold) !important;
+}
+
+.dashboard-shell [class*="fill-violet"] {
+  fill: var(--aura-gold) !important;
+}
+
+.dashboard-shell .accent-violet-300 {
+  accent-color: var(--aura-green) !important;
+}
+
+.dashboard-shell [class~="bg-violet-300"],
+.dashboard-shell [class~="bg-emerald-300"] {
+  background-color: var(--aura-green) !important;
+}
+
+.dashboard-shell [class~="bg-amber-300"],
+.dashboard-shell [class~="bg-yellow-300"] {
+  background-color: var(--aura-gold) !important;
+}
+
+.dashboard-shell .bg-violet-400 {
+  background-color: var(--aura-green) !important;
+}
+
+.dashboard-shell [class*="bg-violet-100/"] {
+  background-color: #eadfbe !important;
+}
+
+.dashboard-shell [class*="bg-violet-300/"],
+.dashboard-shell [class*="bg-emerald-300/"] {
+  background-color: rgba(11, 77, 55, 0.08) !important;
+}
+
+.dashboard-shell [class*="bg-amber-300/"],
+.dashboard-shell [class*="bg-yellow-300/"] {
+  background-color: rgba(182, 138, 44, 0.1) !important;
+}
+
+.dashboard-shell [class*="border-violet"],
+.dashboard-shell [class*="border-emerald"] {
+  border-color: rgba(11, 77, 55, 0.22) !important;
+}
+
+.dashboard-shell [class*="border-amber"],
+.dashboard-shell [class*="border-yellow"] {
+  border-color: rgba(182, 138, 44, 0.28) !important;
+}
+
+.dashboard-shell [class*="bg-[#0b0a0e]"],
+.dashboard-shell [class*="bg-[#09090c]"],
+.dashboard-shell [class*="bg-[#060607]"],
+.dashboard-shell [class*="bg-[#060807]"],
+.dashboard-shell [class*="bg-[#07070a]"],
+.dashboard-shell [class*="bg-[#050816]"],
+.dashboard-shell [class*="bg-[#111016]"] {
+  background-color: #fff !important;
+}
+
+.dashboard-shell [class*="bg-white/[0.0"],
+.dashboard-shell [class*="bg-black/25"] {
+  background-color: #f7f8f5 !important;
+}
+
+.dashboard-shell [class*="border-white"] {
+  border-color: var(--aura-line) !important;
+}
+
+.dashboard-shell [class*="shadow-[0_0"],
+.dashboard-shell [class*="shadow-[0_22"],
+.dashboard-shell [class*="shadow-[0_24"],
+.dashboard-shell [class*="shadow-[0_30"],
+.dashboard-shell [class*="shadow-[0_34"] {
+  box-shadow: 0 12px 35px rgba(22, 51, 39, 0.055) !important;
+}
+
+.dashboard-shell .rounded-xl {
+  border-radius: 1rem;
+}
+
+.dashboard-shell .rounded-2xl {
+  border-radius: 1.25rem;
+}
+
+.dashboard-shell .aura-input,
+.dashboard-shell .aura-field,
+.dashboard-shell .aura-textarea,
+.dashboard-shell .aura-select {
+  border-color: #dfe4df;
+  background: #fafbf9;
+  color: var(--aura-ink);
+}
+
+.dashboard-shell .manager-action {
+  border-color: #dfe4df;
+  background: #f7f8f5;
+  color: #44534b;
+}
+
+.dashboard-metric-card,
+.dashboard-panel {
+  background: #fff !important;
+  border-color: var(--aura-line) !important;
+  box-shadow: 0 10px 30px rgba(22, 51, 39, 0.045) !important;
+}
+
+.dashboard-metric-card--featured {
+  background: linear-gradient(145deg, #073f2d, #116244) !important;
+  border-color: #073f2d !important;
+}
+
+.dashboard-metric-card--featured .text-white,
+.dashboard-metric-card--featured .text-slate-300,
+.dashboard-metric-card--featured [class*="text-[#"] {
+  color: #fff !important;
+}
+
+.dashboard-metric-card--featured [class*="bg-[#edf4f0]"] {
+  background-color: rgba(255, 255, 255, 0.13) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  color: #fff !important;
+}
+
+.dashboard-shell .bg-violet-300.text-slate-950,
+.dashboard-shell .bg-violet-300.text-\[\#100722\],
+.dashboard-shell .bg-emerald-300.text-slate-950,
+.dashboard-shell [class~="bg-[#0b4d37]"] {
+  color: #fff !important;
+}
+
+.dashboard-sidebar,
+.dashboard-topbar,
+.dashboard-mobile-nav {
+  color-scheme: light;
+}
+
 button,
 input,
 textarea,
