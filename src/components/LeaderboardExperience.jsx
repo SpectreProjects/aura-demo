@@ -275,7 +275,7 @@ export default function LeaderboardExperience({ people = [] }) {
           <p className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-violet-200">
             <Sparkles size={14} /> Live recognition
           </p>
-          <h2 className="mt-1.5 text-xl font-black tracking-tight text-white">This month&apos;s standings</h2>
+          <h2 className="mt-2 text-4xl font-medium leading-[1.08] tracking-[-0.045em] text-white lg:text-[3.35rem]">This month&apos;s standings</h2>
         </div>
       </div>
 

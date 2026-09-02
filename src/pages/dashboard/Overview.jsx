@@ -19,6 +19,7 @@ import {
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getNextReward } from '../../utils/mvpRecognition'
+import StaffModal from './components/StaffModal'
 import { useDashboard } from './useDashboard'
 
 const periodOptions = ['Day', 'Week', 'Month', 'Quarter', 'Year']
@@ -476,9 +477,12 @@ function RewardProgressRow({ accent, item }) {
 
 export default function Overview() {
   const [activePeriod, setActivePeriod] = useState('Month')
+  const [isStaffModalOpen, setIsStaffModalOpen] = useState(false)
   const [shareCopied, setShareCopied] = useState(false)
   const {
     account,
+    actions,
+    categories = [],
     leaderboard = [],
     nameApprovals = [],
     pointEvents = [],
@@ -647,13 +651,14 @@ export default function Overview() {
               {shareCopied ? <Check size={14} /> : <Share2 size={14} />}
               {shareCopied ? 'Leaderboard link copied' : 'Share leaderboard screen'}
             </button>
-            <Link
+            <button
               className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-violet-300 px-4 text-xs font-black text-slate-950 shadow-[0_0_24px_rgba(167,139,250,0.16)] transition hover:bg-violet-200"
-              to="/dashboard/staff"
+              onClick={() => setIsStaffModalOpen(true)}
+              type="button"
             >
               Add Staff
               <Plus size={14} />
-            </Link>
+            </button>
             <Link
               className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-violet-300 px-4 text-xs font-black text-slate-950 shadow-[0_0_24px_rgba(167,139,250,0.16)] transition hover:bg-violet-200"
               to="/dashboard/rewards"
@@ -824,6 +829,16 @@ export default function Overview() {
           </div>
         </Panel>
       </section>
+
+      {isStaffModalOpen && (
+        <StaffModal
+          categories={categories}
+          onAddCategory={actions.addCategory}
+          onClose={() => setIsStaffModalOpen(false)}
+          onSave={actions.addStaff}
+          title="Add Staff"
+        />
+      )}
     </div>
   )
 }

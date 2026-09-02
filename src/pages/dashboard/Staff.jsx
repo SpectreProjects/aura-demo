@@ -212,7 +212,7 @@ export default function Staff() {
           <p className="mb-4 inline-flex rounded-full border border-violet-300/15 bg-violet-300/[0.07] px-3 py-1 text-xs font-black uppercase tracking-[0.16em] text-violet-200">
             Team management
           </p>
-          <h2 className="max-w-3xl text-4xl font-black tracking-tight text-white">Keep your team list organised.</h2>
+          <h2 className="max-w-3xl text-4xl font-medium leading-[1.08] tracking-[-0.045em] text-white lg:text-[3.35rem]">Keep your team list organised.</h2>
           <p className="mt-3 max-w-2xl text-base leading-7 text-slate-400">
             Add, edit or archive staff. Private point adjustments and reward fulfilment live here too.
           </p>

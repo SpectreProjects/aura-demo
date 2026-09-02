@@ -12,7 +12,7 @@ export default function Settings() {
         <p className="mb-4 inline-flex rounded-full border border-cyan-300/20 bg-cyan-400/10 px-3 py-1 text-xs font-black uppercase tracking-[0.16em] text-cyan-100">
           Settings
         </p>
-        <h2 className="max-w-3xl text-4xl font-black tracking-tight text-white">
+        <h2 className="max-w-3xl text-4xl font-medium leading-[1.08] tracking-[-0.045em] text-white lg:text-[3.35rem]">
           Workspace settings.
         </h2>
         <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">

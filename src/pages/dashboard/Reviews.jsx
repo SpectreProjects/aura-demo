@@ -79,7 +79,7 @@ export default function Reviews() {
             <span className="h-2 w-2 rounded-full bg-violet-300 shadow-[0_0_16px_rgba(167,139,250,0.9)]" />
             Review inbox
           </div>
-          <h2 className="text-4xl font-black tracking-tight text-white lg:text-5xl">Customer feedback</h2>
+          <h2 className="text-4xl font-medium leading-[1.08] tracking-[-0.045em] text-white lg:text-[3.35rem]">Customer feedback</h2>
           <p className="mt-3 max-w-2xl text-base font-medium leading-7 text-slate-400">
             Read every review, check AURA&apos;s response and keep track of feedback that needs attention.
           </p>
@@ -298,6 +298,7 @@ export default function Reviews() {
           categories={categories}
           initialName={selectedApproval.name}
           key={selectedApproval.id}
+          onAddCategory={actions.addCategory}
           onClose={() => setSelectedApproval(null)}
           onSave={handleApproveStaff}
           title="Add this person to your team"
