@@ -15,26 +15,6 @@ function scoreFor(person, period) {
   return Number(period === 'lifetime' ? person.lifetime_points : person.monthly_points) || 0
 }
 
-function rewardSummary(person) {
-  const earnedRewards = person.earned_rewards || []
-  if (earnedRewards.length) return `Earned: ${earnedRewards[0].title}`
-  if (person.next_reward?.title) return `Next: ${person.next_reward.title}`
-  return 'No active reward'
-}
-
-function Progress({ value = 0 }) {
-  const progress = Math.max(0, Math.min(100, Number(value) || 0))
-
-  return (
-    <div className="mt-2 flex items-center gap-2">
-      <div className="h-1.5 min-w-14 flex-1 overflow-hidden rounded-full bg-[#dce6e3]">
-        <div className="h-full rounded-full bg-[#3867F4]" style={{ width: `${progress}%` }} />
-      </div>
-      <span className="text-[10px] font-black text-[#60736e]">{progress}%</span>
-    </div>
-  )
-}
-
 function PodiumPlace({ person, period, rank }) {
   if (!person) return <div aria-hidden="true" />
 
@@ -76,7 +56,7 @@ function Podium({ people, period }) {
   ]
 
   return (
-    <section className="relative grid min-h-[310px] grid-cols-3 items-end gap-2 overflow-hidden bg-[radial-gradient(circle_at_50%_10%,rgba(255,255,255,0.18),transparent_30%),linear-gradient(135deg,#3867F4_0%,#4B61ED_54%,#304FCF_100%)] px-3 pt-7 sm:min-h-[350px] sm:gap-5 sm:px-7 sm:pt-8">
+    <section className="relative grid min-h-[310px] grid-cols-3 items-end gap-3 overflow-hidden bg-[radial-gradient(circle_at_50%_10%,rgba(255,255,255,0.18),transparent_30%),linear-gradient(135deg,#3867F4_0%,#4B61ED_54%,#304FCF_100%)] px-5 pt-7 sm:gap-5 sm:px-7 sm:pt-8">
       <div className="pointer-events-none absolute inset-0 opacity-[0.15] [background-image:radial-gradient(rgba(255,255,255,0.35)_0.7px,transparent_0.7px)] [background-size:10px_10px]" />
       {places.map(({ person, rank }) => (
         <PodiumPlace key={person?.id || rank} period={period} person={person} rank={rank} />
@@ -94,12 +74,9 @@ function RankingsList({ people, period, query, setQuery }) {
 
   return (
     <div>
-      <div className="flex flex-col gap-3 border-b border-[#17201e]/10 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-        <div>
-          <h3 className="text-lg font-black tracking-tight text-[#1e2d29]">Full team ranking</h3>
-          <p className="mt-1 text-xs font-semibold text-[#71827e]">Approved recognition from guest reviews.</p>
-        </div>
-        <label className="flex h-11 w-full items-center gap-2.5 rounded-xl border border-[#17201e]/12 bg-white px-3.5 text-[#748580] transition focus-within:border-[#3867F4] focus-within:ring-4 focus-within:ring-[#3867F4]/10 sm:w-72">
+      <div className="flex flex-col gap-3 border-b border-[#17201e]/10 px-4 py-4 min-[520px]:flex-row min-[520px]:items-center min-[520px]:justify-between sm:px-5">
+        <h3 className="text-lg font-medium tracking-[-0.025em] text-[#1e2d29]">Full team ranking</h3>
+        <label className="flex h-11 w-full items-center gap-2.5 rounded-xl border border-[#17201e]/12 bg-white px-3.5 text-[#748580] transition focus-within:border-[#3867F4] focus-within:ring-4 focus-within:ring-[#3867F4]/10 min-[520px]:w-[235px]">
           <Search aria-hidden="true" size={16} />
           <input
             aria-label="Search staff or department"
@@ -114,19 +91,11 @@ function RankingsList({ people, period, query, setQuery }) {
 
       {visiblePeople.length ? (
         <div>
-          <div className="hidden grid-cols-[2.5rem_minmax(180px,1.2fr)_0.65fr_0.7fr_1fr] gap-4 border-b border-[#17201e]/10 bg-[#eaf2ef] px-5 py-3 text-[10px] font-black uppercase tracking-[0.12em] text-[#748580] md:grid">
-            <span>Rank</span>
-            <span>Team member</span>
-            <span>Mentions</span>
-            <span>{period === 'lifetime' ? 'Lifetime' : 'This month'}</span>
-            <span>Reward progress</span>
-          </div>
-
           {visiblePeople.map((person) => {
             const mentions = Number(person.mentions ?? person.total_mentions ?? 0)
             return (
               <article
-                className="grid min-h-[78px] grid-cols-[2.5rem_minmax(0,1fr)_auto] items-center gap-3 border-b border-[#17201e]/8 px-4 py-3 last:border-b-0 md:grid-cols-[2.5rem_minmax(180px,1.2fr)_0.65fr_0.7fr_1fr] md:gap-4 md:px-5"
+                className="grid min-h-[80px] grid-cols-[2.5rem_minmax(0,1fr)_auto] items-center gap-3 border-b border-[#17201e]/8 px-4 py-3 last:border-b-0 min-[520px]:grid-cols-[2.5rem_minmax(0,1fr)_5.8rem_5.6rem] min-[520px]:gap-3 sm:px-5"
                 key={person.id}
               >
                 <span className={`flex h-9 w-9 items-center justify-center rounded-xl text-xs font-black ${person.rank === 1 ? 'bg-[#e6ecff] text-[#315bd8]' : 'bg-[#edf3f1] text-[#526762]'}`}>
@@ -143,17 +112,15 @@ function RankingsList({ people, period, query, setQuery }) {
                     </p>
                   </div>
                 </div>
-                <div className="hidden md:block">
+                <div className="hidden min-[520px]:block">
                   <p className="text-sm font-black text-[#40534e]">{mentions} {mentions === 1 ? 'mention' : 'mentions'}</p>
                   <p className="mt-1 text-[10px] font-semibold text-[#82918d]">Guest reviews</p>
                 </div>
-                <div>
+                <div className="text-right min-[520px]:text-left">
                   <p className="whitespace-nowrap text-sm font-black text-[#315bd8]">{scoreFor(person, period)} points</p>
-                  <p className="mt-1 hidden text-[10px] font-semibold text-[#82918d] md:block">{period === 'lifetime' ? 'All time' : 'Current month'}</p>
-                </div>
-                <div className="hidden md:block">
-                  <p className="truncate text-xs font-black text-[#40534e]">{rewardSummary(person)}</p>
-                  {person.next_reward ? <Progress value={person.next_reward.progress_percent} /> : <p className="mt-2 text-[10px] font-semibold text-[#82918d]">Nothing to unlock yet</p>}
+                  <p className="mt-1 text-[10px] font-semibold text-[#82918d]">
+                    {period === 'lifetime' ? `+${scoreFor(person, 'month')} this month` : 'This month'}
+                  </p>
                 </div>
               </article>
             )
@@ -216,7 +183,7 @@ export default function LeaderboardExperience({ businessName = 'your team', lead
   }
 
   return (
-    <div>
+    <div className="mx-auto w-full max-w-[600px]">
       <div className="mb-5 flex flex-col items-start justify-between gap-5 xl:flex-row xl:items-end">
         <div>
           <p className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-[#526863]">
