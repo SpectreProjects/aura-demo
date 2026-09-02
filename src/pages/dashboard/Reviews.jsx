@@ -111,7 +111,7 @@ function TypewriterIntro({ text }) {
   }, [text])
 
   return (
-    <h2 aria-label={text} className="max-w-5xl text-[2.7rem] font-medium leading-[1.04] tracking-[-0.052em] text-white sm:text-[3.5rem] lg:text-[4.2rem]">
+    <h2 aria-label={text} className="whitespace-nowrap text-[clamp(0.88rem,3vw,2.9rem)] font-medium leading-none tracking-[-0.052em] text-white">
       <span aria-hidden="true">{visibleText}</span>
       <span
         aria-hidden="true"
@@ -252,7 +252,7 @@ export default function Reviews() {
 
   return (
     <div className="space-y-9 pb-12">
-      <section className="border-b border-white/[0.055] pb-8 pt-2">
+      <section className="flex h-28 items-center overflow-hidden border-b border-white/[0.055]">
         <TypewriterIntro key={intro} text={intro} />
       </section>
 
