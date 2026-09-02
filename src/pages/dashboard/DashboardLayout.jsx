@@ -644,11 +644,11 @@ export default function DashboardLayout() {
             staff_name: staffNames.get(event.staff_id) || 'Team member',
           })),
         )
-        let visibleReviews = isDevAccount ? normalizeReviews(defaultReviews) : []
+        let visibleReviews = isDevAccount && !profile.google_place_id ? normalizeReviews(defaultReviews) : []
         let visibleNameApprovals = []
         let placeNotice = ''
 
-        if (!isDevAccount && profile.google_place_id) {
+        if (profile.google_place_id) {
           try {
             const { place } = await callAuraApi('/api/places-details', {
               placeId: profile.google_place_id,
