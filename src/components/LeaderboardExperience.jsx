@@ -184,7 +184,7 @@ export default function LeaderboardExperience({ businessName = 'your team', lead
   }
 
   return (
-    <div className="mx-auto w-full max-w-[600px]">
+    <div className="w-full">
       <div className="mb-5 flex flex-col items-start justify-between gap-5 xl:flex-row xl:items-end">
         <div>
           <p className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-[#526863]">

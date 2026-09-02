@@ -88,7 +88,7 @@ export default function Leaderboard() {
     <div className="space-y-6">
       <LeaderboardExperience businessName={businessName} leaderboardUrl={leaderboardUrl} people={people} />
 
-      <section className="mx-auto grid w-full max-w-[600px] gap-5 rounded-[1.75rem] border border-[#17201e]/10 bg-[#edf5f2] p-5 text-[#17201e] shadow-[0_22px_70px_rgba(31,53,47,0.08)]">
+      <section className="grid w-full gap-5 rounded-[1.75rem] border border-[#17201e]/10 bg-[#edf5f2] p-5 text-[#17201e] shadow-[0_22px_70px_rgba(31,53,47,0.08)] lg:grid-cols-[1fr_1.1fr] lg:items-center">
         <div>
           <p className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-[#315bd8]">
             <Eye size={15} /> Share access
