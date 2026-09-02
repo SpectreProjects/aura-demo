@@ -165,7 +165,7 @@ body {
   color: var(--aura-ink) !important;
 }
 
-.dashboard-desktop-nav,
+.dashboard-desktop-sidebar,
 .dashboard-topbar,
 .dashboard-mobile-nav {
   color-scheme: light;

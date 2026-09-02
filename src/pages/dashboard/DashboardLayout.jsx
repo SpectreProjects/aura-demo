@@ -2,6 +2,8 @@ import {
   BarChart3,
   Gift,
   LogOut,
+  PanelLeftClose,
+  PanelLeftOpen,
   Sparkles,
   Star,
   Trophy,
@@ -297,23 +299,51 @@ function addPointTotals(staff, pointEvents) {
   })
 }
 
-function DesktopNav({ isSigningOut, nameApprovalsCount, onSignOut }) {
+function DesktopSidebar({ collapsed, isSigningOut, nameApprovalsCount, onCollapse, onSignOut }) {
   return (
-    <header className="dashboard-desktop-nav hidden h-24 shrink-0 items-center border-b border-black/[0.07] px-9 lg:flex">
-      <Link to="/" className="flex items-center gap-3 rounded-xl">
-        <span className="flex h-10 w-10 items-center justify-center rounded-[0.9rem] bg-[#efff36] text-[#17201e]">
-          <Sparkles size={19} strokeWidth={2.2} />
-        </span>
-        <span className="text-base font-black tracking-[0.12em] text-[#17201e]">AURA</span>
-      </Link>
+    <aside
+      className={`dashboard-desktop-sidebar hidden h-full shrink-0 flex-col border-r border-black/[0.07] bg-white/10 px-3 py-5 transition-[width] duration-300 lg:flex ${
+        collapsed ? 'w-20' : 'w-64'
+      }`}
+    >
+      <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between px-2'}`}>
+        <Link to="/" aria-label="AURA home" className="flex items-center gap-3 rounded-xl">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.9rem] bg-[#efff36] text-[#17201e]">
+            <Sparkles size={19} strokeWidth={2.2} />
+          </span>
+          {!collapsed && <span className="text-base font-black tracking-[0.12em] text-[#17201e]">AURA</span>}
+        </Link>
+        {!collapsed && (
+          <button
+            aria-label="Collapse sidebar"
+            className="flex h-9 w-9 items-center justify-center rounded-xl text-[#5e706b] transition hover:bg-white/45 hover:text-[#17201e]"
+            onClick={onCollapse}
+            type="button"
+          >
+            <PanelLeftClose size={17} />
+          </button>
+        )}
+      </div>
 
-      <nav className="mx-auto flex items-center gap-1 rounded-2xl border border-black/[0.04] bg-white/25 p-1.5">
+      {collapsed && (
+        <button
+          aria-label="Expand sidebar"
+          className="mx-auto mt-4 flex h-9 w-9 items-center justify-center rounded-xl text-[#5e706b] transition hover:bg-white/45 hover:text-[#17201e]"
+          onClick={onCollapse}
+          type="button"
+        >
+          <PanelLeftOpen size={17} />
+        </button>
+      )}
+
+      <nav className="mt-12 space-y-2">
         {navItems.map((item) => (
           <NavLink
+            aria-label={collapsed ? item.label : undefined}
             className={({ isActive }) =>
-              `relative flex h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold outline-none transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#17201e]/20 ${
+              `relative flex h-12 items-center rounded-xl text-sm font-semibold outline-none transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#17201e]/20 ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} ${
                 isActive
-                  ? 'bg-white/80 text-[#17201e] shadow-[0_8px_24px_rgba(59,82,77,0.07)]'
+                  ? 'bg-white/65 text-[#17201e] shadow-[0_8px_24px_rgba(59,82,77,0.06)]'
                   : 'text-[#60716d] hover:bg-white/35 hover:text-[#17201e]'
               }`
             }
@@ -321,26 +351,27 @@ function DesktopNav({ isSigningOut, nameApprovalsCount, onSignOut }) {
             key={item.href}
             to={item.href}
           >
-            <item.icon size={15} />
-            {item.label}
+            <item.icon size={17} />
+            {!collapsed && item.label}
             {item.href === '/dashboard/reviews' && nameApprovalsCount > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#efff36] px-1 text-[10px] font-black text-[#17201e]">
-                {nameApprovalsCount}
+              <span className={`${collapsed ? 'absolute right-1.5 top-1.5 h-2 w-2' : 'ml-auto flex h-5 min-w-5 items-center justify-center px-1 text-[10px]'} rounded-full bg-[#efff36] font-black text-[#17201e]`}>
+                {!collapsed && nameApprovalsCount}
               </span>
             )}
           </NavLink>
         ))}
       </nav>
       <button
-        aria-label="Log out"
-        className="flex h-11 w-11 items-center justify-center rounded-xl border border-black/[0.07] bg-white/45 text-[#40514d] transition hover:bg-white/80 disabled:opacity-50"
+        aria-label={collapsed ? 'Log out' : undefined}
+        className={`mt-auto flex h-12 items-center rounded-xl border border-black/[0.07] bg-white/25 text-sm font-semibold text-[#52645f] transition hover:bg-white/55 hover:text-[#17201e] disabled:opacity-50 ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'}`}
         disabled={isSigningOut}
         onClick={onSignOut}
         type="button"
       >
         <LogOut size={17} />
+        {!collapsed && <span>{isSigningOut ? 'Logging out…' : 'Log out'}</span>}
       </button>
-    </header>
+    </aside>
   )
 }
 
@@ -375,6 +406,7 @@ export default function DashboardLayout() {
   const { user } = useAuth()
   const isOverviewRoute = location.pathname === '/dashboard'
   const isLocalPreview = import.meta.env.DEV
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const initialState = useMemo(() => {
     if (!isLocalPreview) return readLocalState()
 
@@ -951,11 +983,13 @@ export default function DashboardLayout() {
   }
 
   return (
-    <main className="dashboard-shell h-screen overflow-hidden bg-[#8d9895] text-[#17201e] lg:p-5">
-      <div className="dashboard-frame relative flex h-full flex-col overflow-hidden bg-[#d8e8e4] lg:rounded-[2.25rem] lg:border lg:border-white/25 lg:shadow-[0_30px_90px_rgba(29,42,39,0.22)]">
-        <DesktopNav
+    <main className="dashboard-shell h-screen overflow-hidden bg-[#d8e8e4] text-[#17201e]">
+      <div className="dashboard-frame relative flex h-full overflow-hidden bg-[#d8e8e4]">
+        <DesktopSidebar
+          collapsed={isSidebarCollapsed}
           isSigningOut={isSigningOut}
           nameApprovalsCount={nameApprovals.length}
+          onCollapse={() => setIsSidebarCollapsed((value) => !value)}
           onSignOut={handleSignOut}
         />
 
