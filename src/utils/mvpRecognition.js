@@ -30,6 +30,7 @@ const nameStopWords = new Set([
   'cafe',
   'check',
   'dinner',
+  'food',
   'front',
   'great',
   'guest',
@@ -77,8 +78,8 @@ export function detectUnresolvedStaffNames(reviewText, staff) {
   const candidates = new Map()
   const text = String(reviewText || '')
   const patterns = [
-    /\b(?:thanks to|thank you(?: to)?|shoutout to|shout out to|served by|helped by|looked after by|checked in by|welcomed by)\s+([A-Z][a-zA-Z'-]{1,24})\b/g,
-    /\b(?:server|waiter|waitress|host|hostess|manager|bartender|chef|barista|receptionist)\s+(?:called|named)\s+([A-Z][a-zA-Z'-]{1,24})\b/g,
+    /\b(?:[Tt]hanks to|[Tt]hank you(?: to)?|[Ss]houtout to|[Ss]hout out to|[Ss]erved by|[Hh]elped by|[Ll]ooked after by|[Cc]hecked in by|[Ww]elcomed by)\s+([A-Z][a-zA-Z'-]{1,24})\b/g,
+    /\b(?:[Ss]erver|[Ww]aiter|[Ww]aitress|[Hh]ost|[Hh]ostess|[Mm]anager|[Bb]artender|[Cc]hef|[Bb]arista|[Rr]eceptionist)\s+(?:called|named)\s+([A-Z][a-zA-Z'-]{1,24})\b/g,
     /\b([A-Z][a-zA-Z'-]{1,24})\s+(?:was|is)\s+(?:amazing|attentive|brilliant|excellent|fantastic|friendly|great|helpful|kind|lovely|outstanding|professional|welcoming|wonderful)\b/g,
   ]
 
