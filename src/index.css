@@ -23,6 +23,154 @@ body {
   min-height: 100vh;
 }
 
+/* Mist + chartreuse dashboard concept. Scoped so public pages remain untouched. */
+.dashboard-shell {
+  --aura-ink: #17201e;
+  --aura-muted: #61716d;
+  --aura-mist: #d8e8e4;
+  --aura-mist-deep: #cadeda;
+  --aura-acid: #efff36;
+  --aura-line: rgba(34, 55, 50, 0.105);
+  color-scheme: light;
+}
+
+.dashboard-frame {
+  background:
+    radial-gradient(circle at 68% 12%, rgba(239, 255, 54, 0.11), transparent 22rem),
+    radial-gradient(circle at 10% 88%, rgba(255, 255, 255, 0.24), transparent 28rem),
+    var(--aura-mist);
+}
+
+.dashboard-shell input,
+.dashboard-shell textarea,
+.dashboard-shell select {
+  color-scheme: light;
+}
+
+.dashboard-shell .text-white,
+.dashboard-shell .text-slate-50,
+.dashboard-shell .text-slate-100,
+.dashboard-shell .text-slate-200 {
+  color: var(--aura-ink) !important;
+}
+
+.dashboard-shell .text-slate-300,
+.dashboard-shell .text-slate-400 {
+  color: #586a65 !important;
+}
+
+.dashboard-shell .text-slate-500,
+.dashboard-shell .text-slate-600 {
+  color: #788b86 !important;
+}
+
+.dashboard-shell [class*="text-violet"],
+.dashboard-shell [class*="text-emerald"],
+.dashboard-shell [class*="text-amber"],
+.dashboard-shell [class*="text-yellow"] {
+  color: #35443f !important;
+}
+
+.dashboard-shell [class*="fill-violet"] {
+  fill: #7e8d20 !important;
+}
+
+.dashboard-shell .accent-violet-300 {
+  accent-color: #17201e !important;
+}
+
+.dashboard-shell [class~="bg-violet-300"],
+.dashboard-shell [class~="bg-emerald-300"],
+.dashboard-shell [class~="bg-amber-300"],
+.dashboard-shell [class~="bg-yellow-300"] {
+  background-color: var(--aura-acid) !important;
+}
+
+.dashboard-shell [class*="bg-violet-300/"],
+.dashboard-shell [class*="bg-emerald-300/"],
+.dashboard-shell [class*="bg-amber-300/"],
+.dashboard-shell [class*="bg-yellow-300/"] {
+  background-color: rgba(255, 255, 255, 0.32) !important;
+}
+
+.dashboard-shell [class*="border-violet"],
+.dashboard-shell [class*="border-emerald"],
+.dashboard-shell [class*="border-amber"],
+.dashboard-shell [class*="border-yellow"] {
+  border-color: rgba(34, 55, 50, 0.13) !important;
+}
+
+.dashboard-shell [class*="bg-[#0b0a0e]"],
+.dashboard-shell [class*="bg-[#09090c]"],
+.dashboard-shell [class*="bg-[#060607]"],
+.dashboard-shell [class*="bg-[#060807]"],
+.dashboard-shell [class*="bg-[#07070a]"],
+.dashboard-shell [class*="bg-[#050816]"],
+.dashboard-shell [class*="bg-[#111016]"] {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.dashboard-shell [class*="bg-white/[0.0"],
+.dashboard-shell [class*="bg-black/25"] {
+  background-color: rgba(255, 255, 255, 0.22) !important;
+}
+
+.dashboard-shell [class*="border-white"] {
+  border-color: var(--aura-line) !important;
+}
+
+.dashboard-shell [class*="shadow-[0_0"],
+.dashboard-shell [class*="shadow-[0_22"],
+.dashboard-shell [class*="shadow-[0_24"],
+.dashboard-shell [class*="shadow-[0_30"],
+.dashboard-shell [class*="shadow-[0_34"] {
+  box-shadow: none !important;
+}
+
+.dashboard-shell .rounded-xl {
+  border-radius: 1rem;
+}
+
+.dashboard-shell .rounded-2xl {
+  border-radius: 1.25rem;
+}
+
+.dashboard-shell .aura-input,
+.dashboard-shell .aura-field,
+.dashboard-shell .aura-textarea,
+.dashboard-shell .aura-select {
+  border-color: var(--aura-line);
+  background: rgba(255, 255, 255, 0.32);
+  color: var(--aura-ink);
+}
+
+.dashboard-shell .manager-action {
+  border-color: var(--aura-line);
+  background: rgba(255, 255, 255, 0.25);
+  color: #40524d;
+}
+
+.dashboard-metric-card,
+.dashboard-panel {
+  background: rgba(255, 255, 255, 0.17) !important;
+  border-color: var(--aura-line) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(16px);
+}
+
+.dashboard-shell .bg-violet-300.text-slate-950,
+.dashboard-shell .bg-violet-300.text-\[\#100722\],
+.dashboard-shell .bg-emerald-300.text-slate-950,
+.dashboard-shell [class~="bg-[#efff36]"] {
+  color: var(--aura-ink) !important;
+}
+
+.dashboard-desktop-nav,
+.dashboard-topbar,
+.dashboard-mobile-nav {
+  color-scheme: light;
+}
+
 button,
 input,
 textarea,

@@ -25,28 +25,28 @@ const periodOptions = ['Day', 'Week', 'Month', 'Quarter', 'Year']
 
 const accentStyles = {
   cyan: {
-    glow: 'shadow-[0_0_52px_rgba(167,139,250,0.10)]',
-    icon: 'border-violet-300/15 bg-violet-300/[0.07] text-violet-200',
-    text: 'text-violet-200',
-    stroke: '#c4b5fd',
+    glow: '',
+    icon: 'border-black/[0.06] bg-white/35 text-[#24332f]',
+    text: 'text-[#273733]',
+    stroke: '#efff36',
   },
   emerald: {
-    glow: 'shadow-[0_0_52px_rgba(167,139,250,0.10)]',
-    icon: 'border-violet-300/15 bg-violet-300/[0.07] text-violet-200',
-    text: 'text-violet-200',
-    stroke: '#a78bfa',
+    glow: '',
+    icon: 'border-black/[0.06] bg-white/35 text-[#24332f]',
+    text: 'text-[#273733]',
+    stroke: '#efff36',
   },
   violet: {
-    glow: 'shadow-[0_0_52px_rgba(167,139,250,0.08)]',
-    icon: 'border-violet-300/15 bg-violet-300/[0.07] text-violet-200',
-    text: 'text-violet-200',
-    stroke: '#8b5cf6',
+    glow: '',
+    icon: 'border-black/[0.06] bg-white/35 text-[#24332f]',
+    text: 'text-[#273733]',
+    stroke: '#f4ff76',
   },
   amber: {
-    glow: 'shadow-[0_0_52px_rgba(167,139,250,0.08)]',
-    icon: 'border-violet-300/15 bg-violet-300/[0.07] text-violet-200',
-    text: 'text-violet-200',
-    stroke: '#7c3aed',
+    glow: '',
+    icon: 'border-black/[0.06] bg-white/35 text-[#24332f]',
+    text: 'text-[#273733]',
+    stroke: '#dced2f',
   },
 }
 
@@ -191,20 +191,16 @@ function MetricCard({ accent, comparison, icon: Icon, label, sparkline, value })
   const style = accentStyles[accent]
 
   return (
-    <article className={`relative h-full overflow-hidden rounded-xl border border-white/[0.07] bg-[#0b0a0e] p-4 ${style.glow}`}>
-      <div
-        className="pointer-events-none absolute -right-10 top-4 h-28 w-28 rounded-full opacity-30 blur-3xl"
-        style={{ backgroundColor: style.stroke }}
-      />
+    <article className={`dashboard-metric-card relative h-full overflow-hidden rounded-xl border border-white/[0.07] bg-[#0b0a0e] p-5 ${style.glow}`}>
       <div className="relative flex items-center justify-between gap-4">
         <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border ${style.icon}`}>
           <Icon size={18} />
         </span>
         <Sparkline accent={accent} data={sparkline} />
       </div>
-      <div className="relative mt-4">
+      <div className="relative mt-6">
         <p className="text-xs font-bold text-slate-300">{label}</p>
-        <p className="mt-2 text-3xl font-black leading-none tracking-tight text-white">{value}</p>
+        <p className="mt-2 text-4xl font-medium leading-none tracking-[-0.045em] text-white">{value}</p>
         <p className={`mt-3 text-xs font-black ${style.text}`}>{comparison}</p>
       </div>
     </article>
@@ -216,10 +212,7 @@ function TopPerformersMetricCard({ people }) {
   const medalClasses = ['text-amber-300', 'text-slate-300', 'text-orange-400']
 
   return (
-    <article className={`relative h-full overflow-hidden rounded-xl border border-white/[0.07] bg-[#0b0a0e] p-4 ${style.glow}`}>
-      <div
-        className="pointer-events-none absolute -right-10 top-4 h-28 w-28 rounded-full bg-violet-500 opacity-20 blur-3xl"
-      />
+    <article className={`dashboard-metric-card relative h-full overflow-hidden rounded-xl border border-white/[0.07] bg-[#0b0a0e] p-5 ${style.glow}`}>
       <div className="relative flex items-center justify-between gap-4">
         <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border ${style.icon}`}>
           <Trophy size={18} />
@@ -257,7 +250,7 @@ function Panel({ action, children, icon: Icon, iconAccent = 'cyan', subtitle, ti
   const style = accentStyles[iconAccent]
 
   return (
-    <section className="rounded-xl border border-white/[0.07] bg-[#09090c] p-4 shadow-[0_24px_90px_rgba(0,0,0,0.24)]">
+    <section className="dashboard-panel rounded-xl border border-white/[0.07] bg-[#09090c] p-5 shadow-[0_24px_90px_rgba(0,0,0,0.24)]">
       <div className="mb-4 flex items-start justify-between gap-4">
         <div className="flex min-w-0 items-start gap-3">
           {Icon && (
@@ -282,9 +275,9 @@ function DonutChart({ counts }) {
   const safeTotal = total || 1
   const positivePercent = Math.round((counts.positive / safeTotal) * 100)
   const segments = [
-    { color: '#8b5cf6', value: counts.positive },
-    { color: '#f59e0b', value: counts.neutral },
-    { color: '#ef4444', value: counts.negative },
+    { color: '#efff36', value: counts.positive },
+    { color: '#ffffff', value: counts.neutral },
+    { color: '#8ba09a', value: counts.negative },
   ]
   const radius = 54
   const circumference = 2 * Math.PI * radius
@@ -324,8 +317,8 @@ function DonutChart({ counts }) {
 
       <div className="space-y-5">
         {[
-          ['Positive', counts.positive, positivePercent, 'bg-violet-400'],
-          ['Neutral', counts.neutral, Math.round((counts.neutral / safeTotal) * 100), 'bg-amber-400'],
+          ['Positive', counts.positive, positivePercent, 'bg-[#efff36]'],
+          ['Neutral', counts.neutral, Math.round((counts.neutral / safeTotal) * 100), 'bg-white'],
           ['Negative', counts.negative, Math.round((counts.negative / safeTotal) * 100), 'bg-rose-400'],
         ].map(([label, count, percent, dotClass]) => (
           <div className="flex items-center justify-between gap-4 text-sm" key={label}>
@@ -634,13 +627,14 @@ export default function Overview() {
 
   return (
     <div className="space-y-5 pb-12">
-      <section className="border-b border-white/[0.055] pb-5">
+      <section className="border-b border-white/[0.055] pb-7">
         <div className="flex flex-col gap-7 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-3xl">
-            <h2 className="text-4xl font-semibold leading-[1.08] tracking-[-0.04em] text-white lg:text-[3.35rem]">
+            <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-[#5c6d68]">Team pulse</p>
+            <h2 className="text-4xl font-medium leading-[1.08] tracking-[-0.045em] text-white lg:text-[3.35rem]">
               {greeting}, let&apos;s get you up to speed on {businessName}.
             </h2>
-            <p className="mt-5 text-lg font-normal text-slate-400">Your review recognition hub</p>
+            <p className="mt-4 text-lg font-normal text-slate-400">Explore what guests are saying and who they are recognising.</p>
           </div>
 
           <div className="flex shrink-0 flex-wrap gap-3 lg:pt-14">
