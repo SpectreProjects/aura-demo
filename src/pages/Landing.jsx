@@ -1,401 +1,638 @@
-import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
+import { motion, useInView, useReducedMotion } from 'framer-motion'
 import {
+  ArrowDown,
   ArrowRight,
-  Building2,
-  LoaderCircle,
-  Mail,
-  MessageSquareText,
-  Sparkles,
-  Trophy,
-  TrendingUp,
-  UsersRound,
+  Check,
+  Menu,
+  Pause,
+  Play,
+  RotateCcw,
+  Star,
+  X,
 } from 'lucide-react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../lib/AuthContext'
-import { supabase } from '../lib/supabaseClient'
+import { Link } from 'react-router-dom'
+import './Landing.css'
 
-const DEV_ACCOUNT_EMAIL = 'info@spectreprojects.co.uk'
-const DEV_REDIRECT_URL = 'https://aurareviewplatform.com/dashboard'
-const DEV_SIGN_IN_COOLDOWN_SECONDS = 60
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 22 },
-  visible: { opacity: 1, y: 0 },
-}
-
-const featureHighlights = [
-  {
-    icon: MessageSquareText,
-    title: 'Never miss a review',
-    detail: 'Every customer receives a thoughtful response automatically, keeping your business active online 24/7.',
-  },
-  {
-    icon: UsersRound,
-    title: 'Customers feel heard',
-    detail: 'Replies stay consistent with your brand voice and make every interaction feel acknowledged.',
-  },
-  {
-    icon: Trophy,
-    title: 'Recognise great staff',
-    detail: 'Reward employees when customers mention exceptional service.',
-  },
-  {
-    icon: TrendingUp,
-    title: 'Strengthen reputation',
-    detail: 'Build trust, visibility and customer confidence through a more active online presence.',
-  },
+const sectionLinks = [
+  ['Your business. Your voice.', '#voice'],
+  ['See Aura in action', '#in-action'],
+  ['Made for local businesses', '#businesses'],
+  ['A little less on your plate', '#benefits'],
 ]
 
-const initialWaitlistForm = {
-  email: '',
-  business_name: '',
-}
-
-function isMissingSourceColumnError(error) {
-  const errorText = [error?.code, error?.message, error?.details, error?.hint].filter(Boolean).join(' ').toLowerCase()
-
+function Photo({
+  name,
+  alt = '',
+  className = '',
+  hero = false,
+  sizes = '(max-width: 700px) 100vw, 45vw',
+}) {
+  const wide = name === 'coffee' || name === 'restaurant'
   return (
-    errorText.includes('source') &&
-    (error?.code === 'PGRST204' ||
-      error?.code === '42703' ||
-      errorText.includes('schema cache') ||
-      errorText.includes('column'))
+    <img
+      className={className}
+      src={`/landing/${name}-1200.webp`}
+      srcSet={`/landing/${name}-640.webp 640w, /landing/${name}-1200.webp 1200w${wide ? `, /landing/${name}-1920.webp 1920w` : ''}`}
+      sizes={sizes}
+      alt={alt}
+      width={1200}
+      height={800}
+      loading={hero ? 'eager' : 'lazy'}
+      fetchPriority={hero ? 'high' : 'auto'}
+      decoding="async"
+    />
   )
 }
 
-async function insertWaitlistSignup(payload) {
-  const withSource = {
-    ...payload,
-    source: 'landing_page',
-  }
+function SignupLink({ light = false, children = 'Create an account' }) {
+  return (
+    <Link
+      className={`al-button${light ? ' al-button-light' : ''}`}
+      to="/signup"
+    >
+      {children}
+      <ArrowRight size={17} aria-hidden="true" />
+    </Link>
+  )
+}
 
-  const result = await supabase.from('waitlist_signups').insert(withSource)
+function Reveal({ children, className = '' }) {
+  const reducedMotion = useReducedMotion()
+  return (
+    <motion.div
+      className={className}
+      initial={false}
+      whileInView={{ y: 0 }}
+      style={{ y: reducedMotion ? 0 : 25 }}
+      viewport={{ once: true, amount: 0.15 }}
+      transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {children}
+    </motion.div>
+  )
+}
 
-  if (result.error && isMissingSourceColumnError(result.error)) {
-    return supabase.from('waitlist_signups').insert(payload)
-  }
+function Stars() {
+  return (
+    <span className="al-stars" aria-label="5 out of 5 stars">
+      {Array.from({ length: 5 }, (_, i) => (
+        <Star key={i} size={13} fill="currentColor" aria-hidden="true" />
+      ))}
+    </span>
+  )
+}
 
-  return result
+function ReviewDemo() {
+  const reducedMotion = useReducedMotion()
+  const ref = useRef(null)
+  const inView = useInView(ref, { once: true, amount: 0.3 })
+  const [finished, setFinished] = useState(false)
+  const [replay, setReplay] = useState(0)
+  const showReply = !inView || reducedMotion || finished
+
+  useEffect(() => {
+    if (!inView || reducedMotion) return undefined
+    const timer = window.setTimeout(() => setFinished(true), 1800)
+    return () => window.clearTimeout(timer)
+  }, [inView, reducedMotion, replay])
+
+  return (
+    <div className="al-demo" ref={ref}>
+      <div className="al-demo-topline">
+        <span>AURA / IN ACTION</span>
+        <span>ILLUSTRATIVE EXAMPLE</span>
+      </div>
+      <div className="al-demo-content">
+        <article className="al-customer-review">
+          <div className="al-review-heading">
+            <span className="al-avatar">J</span>
+            <div>
+              <strong>Jamie</strong>
+              <span>A café customer</span>
+            </div>
+            <Stars />
+          </div>
+          <p>
+            “Lovely coffee and such a warm welcome. Sophie took the time to help
+            us choose, even on a busy morning. We’ll definitely be back.”
+          </p>
+          <span className="al-review-label">A NEW CUSTOMER REVIEW</span>
+        </article>
+        <div className="al-connection" aria-hidden="true">
+          <span />
+          <span
+            className={showReply ? 'al-process-done' : 'al-process-pending'}
+          >
+            {showReply ? (
+              <Check size={18} />
+            ) : (
+              <span className="al-process-dot" />
+            )}
+          </span>
+          <span />
+        </div>
+        <article
+          className={`al-aura-reply${showReply ? ' is-ready' : ' is-pending'}`}
+        >
+          <div className="al-reply-heading">
+            <span className="al-small-wordmark">AURA</span>
+            <span>
+              {showReply ? 'IN YOUR VOICE' : 'FINDING THE RIGHT WORDS'}
+            </span>
+          </div>
+          <div className="al-reply-body">
+            <p>
+              Thanks so much, Jamie! We’re really glad you enjoyed your coffee.
+              We’ll pass your lovely words on to Sophie — they’ll make her day.
+              See you again soon!
+            </p>
+            {!showReply && (
+              <div className="al-writing" aria-hidden="true">
+                <i />
+                <i />
+                <i />
+              </div>
+            )}
+          </div>
+          <div className="al-reply-footer">
+            <Check size={14} aria-hidden="true" /> A personal reply. One less
+            thing to do.
+          </div>
+        </article>
+      </div>
+      <div className="al-demo-bottom">
+        <p>An example of how Aura can reply in a café’s voice.</p>
+        {!reducedMotion && (
+          <button
+            type="button"
+            disabled={!finished}
+            onClick={() => {
+              setFinished(false)
+              setReplay((value) => value + 1)
+            }}
+          >
+            <RotateCcw size={14} aria-hidden="true" /> Replay example
+          </button>
+        )}
+      </div>
+    </div>
+  )
 }
 
 export default function Landing() {
-  const navigate = useNavigate()
-  const { session } = useAuth()
-  const [waitlistForm, setWaitlistForm] = useState(initialWaitlistForm)
-  const [waitlistStatus, setWaitlistStatus] = useState('idle')
-  const [waitlistMessage, setWaitlistMessage] = useState('')
-  const [devSignInStatus, setDevSignInStatus] = useState('idle')
-  const [devSignInMessage, setDevSignInMessage] = useState('')
-  const [devSignInCooldown, setDevSignInCooldown] = useState(0)
-
-  const isSubmittingWaitlist = waitlistStatus === 'loading'
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [paused, setPaused] = useState(false)
+  const reducedMotion = useReducedMotion()
+  const dialogRef = useRef(null)
+  const menuButtonRef = useRef(null)
 
   useEffect(() => {
-    if (devSignInCooldown <= 0) return undefined
-
-    const timer = window.setInterval(() => {
-      setDevSignInCooldown((seconds) => Math.max(0, seconds - 1))
-    }, 1000)
-
-    return () => window.clearInterval(timer)
-  }, [devSignInCooldown])
-
-  function handleWaitlistChange(event) {
-    const { name, value } = event.target
-
-    setWaitlistForm((currentForm) => ({
-      ...currentForm,
-      [name]: value,
-    }))
-
-    if (waitlistMessage) {
-      setWaitlistMessage('')
-      setWaitlistStatus('idle')
+    if (!menuOpen) return undefined
+    const dialog = dialogRef.current
+    const menuButton = menuButtonRef.current
+    const previousOverflow = document.body.style.overflow
+    dialog.showModal()
+    document.body.style.overflow = 'hidden'
+    return () => {
+      dialog.close()
+      document.body.style.overflow = previousOverflow
+      menuButton?.focus({ preventScroll: true })
     }
-  }
+  }, [menuOpen])
 
-  async function handleWaitlistSubmit(event) {
+  function followSection(event, href) {
     event.preventDefault()
-
-    if (isSubmittingWaitlist) return
-
-    const email = waitlistForm.email.trim()
-    const businessName = waitlistForm.business_name.trim()
-
-    if (!email) {
-      setWaitlistStatus('error')
-      setWaitlistMessage('Please enter your email to join the waitlist.')
-      return
-    }
-
-    if (!supabase) {
-      setWaitlistStatus('error')
-      setWaitlistMessage('Waitlist signups are not available right now. Please try again soon.')
-      return
-    }
-
-    setWaitlistStatus('loading')
-    setWaitlistMessage('')
-
-    const payload = {
-      email,
-      business_name: businessName || null,
-    }
-
-    try {
-      const { error } = await insertWaitlistSignup(payload)
-
-      if (error) throw error
-
-      setWaitlistForm(initialWaitlistForm)
-      setWaitlistStatus('success')
-      setWaitlistMessage("You're on the AURA waitlist. We'll be in touch soon.")
-    } catch (error) {
-      console.error('[Waitlist] Signup failed:', error)
-      setWaitlistStatus('error')
-      setWaitlistMessage("We couldn't add you to the waitlist just now. Please try again in a moment.")
-    }
-  }
-
-  async function handleDevSignIn() {
-    if (devSignInStatus === 'loading' || devSignInCooldown > 0) return
-
-    if (session?.user?.email?.toLowerCase() === DEV_ACCOUNT_EMAIL) {
-      navigate('/dashboard')
-      return
-    }
-
-    if (!supabase) {
-      setDevSignInStatus('error')
-      setDevSignInMessage('Dev sign in is unavailable right now.')
-      return
-    }
-
-    setDevSignInStatus('loading')
-    setDevSignInMessage('')
-
-    const { error } = await supabase.auth.signInWithOtp({
-      email: DEV_ACCOUNT_EMAIL,
-      options: {
-        emailRedirectTo: DEV_REDIRECT_URL,
-        shouldCreateUser: false,
-      },
+    setMenuOpen(false)
+    window.requestAnimationFrame(() => {
+      const section = document.querySelector(href)
+      section?.scrollIntoView({
+        behavior: reducedMotion ? 'instant' : 'smooth',
+      })
+      section?.focus({ preventScroll: true })
+      window.history.replaceState(null, '', href)
     })
-
-    if (error) {
-      console.error('[Supabase Auth] Dev sign in failed:', error)
-
-      const retryMatch = error.message?.match(/after\s+(\d+)\s+seconds?/i)
-      if (error.status === 429 || error.code === 'over_email_send_rate_limit' || retryMatch) {
-        const retrySeconds = Number(retryMatch?.[1]) || DEV_SIGN_IN_COOLDOWN_SECONDS
-        setDevSignInCooldown(retrySeconds)
-        setDevSignInStatus('success')
-        setDevSignInMessage(
-          `A secure sign-in link was already sent to ${DEV_ACCOUNT_EMAIL}. Check the inbox, or resend when the timer ends.`,
-        )
-        return
-      }
-
-      setDevSignInStatus('error')
-      setDevSignInMessage('Could not send the secure sign-in link. Please try again.')
-      return
-    }
-
-    setDevSignInCooldown(DEV_SIGN_IN_COOLDOWN_SECONDS)
-    setDevSignInStatus('success')
-    setDevSignInMessage(
-      `Secure sign-in link sent to ${DEV_ACCOUNT_EMAIL}. Open that email and click the link to enter the dashboard.`,
-    )
   }
 
   return (
-    <main className="relative flex min-h-screen overflow-hidden bg-[#020617] text-white">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_91%_72%,rgba(14,165,233,0.72),transparent_32%),radial-gradient(circle_at_52%_-12%,rgba(88,80,236,0.2),transparent_28%),radial-gradient(circle_at_11%_78%,rgba(67,56,202,0.26),transparent_28%),linear-gradient(135deg,#030414_0%,#050927_46%,#06185c_100%)]" />
-      <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.08),transparent_28%,rgba(255,255,255,0.04)_54%,transparent_76%)] opacity-50" />
-      <div className="pointer-events-none fixed inset-x-0 top-16 mx-auto h-72 max-w-5xl rounded-full bg-blue-500/20 blur-3xl" />
+    <div className="aura-landing">
+      <title>AURA — Thoughtful Google review replies, in your voice</title>
+      <meta
+        name="description"
+        content="AURA helps local businesses reply to Google reviews in their own voice. Thoughtful replies, less admin and recognition for the people behind great service."
+      />
+      <a className="al-skip" href="#main-content">
+        Skip to content
+      </a>
+      <header className="al-header">
+        <button
+          ref={menuButtonRef}
+          type="button"
+          className="al-menu-trigger"
+          aria-label="Open navigation"
+          aria-expanded={menuOpen}
+          aria-controls="aura-navigation"
+          onClick={() => setMenuOpen(true)}
+        >
+          <Menu size={22} strokeWidth={1.3} />
+          <span>Menu</span>
+        </button>
+        <Link to="/" className="al-wordmark" aria-label="AURA home">
+          AURA
+        </Link>
+        <Link to="/login" className="al-login">
+          Log in <ArrowRight size={15} aria-hidden="true" />
+        </Link>
+      </header>
 
-      <div className="relative z-10 flex min-h-screen w-full flex-col">
-        <header className="mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-5 sm:px-8 lg:py-6">
-          <Link aria-label="AURA home" to="/" className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-violet-500/20 text-white shadow-[0_0_42px_rgba(124,58,237,0.32)] backdrop-blur">
-              <Sparkles size={18} />
-            </span>
-            <span className="text-lg font-black">AURA</span>
-          </Link>
-
-          <Link
-            className="rounded-full border border-violet-400/60 bg-white/[0.045] px-7 py-3 text-sm font-black text-slate-100 shadow-[0_12px_40px_rgba(15,23,42,0.22)] backdrop-blur transition hover:-translate-y-0.5 hover:border-violet-300 hover:bg-white/[0.09] hover:text-white"
-            to="/login"
+      <dialog
+        className="al-menu"
+        ref={dialogRef}
+        id="aura-navigation"
+        aria-label="Main navigation"
+        onKeyDown={(event) => {
+          if (event.key !== 'Tab') return
+          const controls = event.currentTarget.querySelectorAll(
+            'a[href], button:not(:disabled)',
+          )
+          const first = controls[0]
+          const last = controls[controls.length - 1]
+          if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault()
+            last?.focus()
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault()
+            first?.focus()
+          }
+        }}
+        onCancel={(event) => {
+          event.preventDefault()
+          setMenuOpen(false)
+        }}
+      >
+        <div className="al-menu-top">
+          <span className="al-wordmark">AURA</span>
+          <button
+            type="button"
+            aria-label="Close navigation"
+            onClick={() => setMenuOpen(false)}
           >
-            Log in
-          </Link>
-        </header>
-
-        <section className="mx-auto flex w-full max-w-7xl flex-1 flex-col items-center px-5 pb-5 pt-0 text-center sm:px-8 lg:pb-4">
-          <motion.div
-            animate="visible"
-            className="flex w-full flex-col items-center"
-            initial="hidden"
-            transition={{ duration: 0.7, ease: 'easeOut' }}
-            variants={fadeUp}
-          >
-            <h1 className="w-full max-w-6xl text-[2.45rem] font-black leading-[1.07] text-white drop-shadow-[0_14px_36px_rgba(0,0,0,0.32)] sm:text-[3.45rem] lg:text-[4.15rem] xl:text-[4.75rem]">
-              <span className="block lg:whitespace-nowrap">
-                Every review,{' '}
-                <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-violet-500 bg-clip-text text-transparent">
-                  replied.
-                </span>
-              </span>
-              <span className="block lg:whitespace-nowrap">
-                Every customer,{' '}
-                <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-violet-500 bg-clip-text text-transparent">
-                  heard.
-                </span>
-              </span>
-              <span className="block lg:whitespace-nowrap">
-                Great employees,{' '}
-                <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-violet-500 bg-clip-text text-transparent">
-                  recognised.
-                </span>
-              </span>
-            </h1>
-
-            <p className="mt-5 max-w-5xl text-base leading-7 text-slate-300/85 sm:text-lg sm:leading-8">
-              AURA replies to every review in your brand&apos;s tone of voice, keeps your reputation active 24/7, and
-              rewards staff when guests recognise exceptional service.
-            </p>
-
-            <form
-              className="mt-7 w-full max-w-6xl rounded-[1.35rem] border border-white/75 bg-white/95 p-2 shadow-[0_28px_90px_rgba(7,11,43,0.42),0_0_70px_rgba(59,130,246,0.18)] backdrop-blur-2xl"
-              onSubmit={handleWaitlistSubmit}
+            <X size={26} strokeWidth={1.3} />
+          </button>
+        </div>
+        <nav aria-label="Main navigation">
+          {sectionLinks.map(([label, href]) => (
+            <a
+              key={href}
+              href={href}
+              onClick={(event) => followSection(event, href)}
             >
-              <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(390px,auto)]">
-                <label className="group flex min-w-0 items-center gap-3 rounded-2xl bg-slate-50 px-5 py-4 transition focus-within:ring-4 focus-within:ring-blue-500/[0.15]">
-                  <Mail className="shrink-0 text-slate-700" size={20} />
-                  <span className="min-w-0 flex-1">
-                    <span className="sr-only">Email</span>
-                    <input
-                      className="w-full bg-transparent text-base font-semibold text-slate-950 outline-none placeholder:text-slate-500"
-                      disabled={isSubmittingWaitlist}
-                      name="email"
-                      onChange={handleWaitlistChange}
-                      placeholder="Your work email"
-                      required
-                      type="email"
-                      value={waitlistForm.email}
-                    />
-                  </span>
-                </label>
+              {label}
+              <ArrowRight aria-hidden="true" />
+            </a>
+          ))}
+        </nav>
+        <div className="al-menu-bottom">
+          <SignupLink />
+          <Link to="/login" onClick={() => setMenuOpen(false)}>
+            Already with Aura? Log in{' '}
+            <ArrowRight size={16} aria-hidden="true" />
+          </Link>
+        </div>
+      </dialog>
 
-                <label className="group flex min-w-0 items-center gap-3 rounded-2xl bg-slate-50 px-5 py-4 transition focus-within:ring-4 focus-within:ring-blue-500/[0.15]">
-                  <Building2 className="shrink-0 text-slate-700" size={20} />
-                  <span className="min-w-0 flex-1">
-                    <span className="sr-only">Business name</span>
-                    <input
-                      className="w-full bg-transparent text-base font-semibold text-slate-950 outline-none placeholder:text-slate-500"
-                      disabled={isSubmittingWaitlist}
-                      name="business_name"
-                      onChange={handleWaitlistChange}
-                      placeholder="Your company name"
-                      type="text"
-                      value={waitlistForm.business_name}
-                    />
-                  </span>
-                </label>
-
-                <button
-                  className="inline-flex min-h-[60px] items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-sky-500 px-6 py-4 text-sm font-black text-white shadow-[0_18px_48px_rgba(37,99,235,0.45)] transition hover:-translate-y-0.5 hover:from-blue-500 hover:to-sky-400 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0 sm:text-base lg:whitespace-nowrap"
-                  disabled={isSubmittingWaitlist}
-                  type="submit"
-                >
-                  {isSubmittingWaitlist ? (
-                    <>
-                      <LoaderCircle className="animate-spin" size={18} />
-                      Joining
-                    </>
-                  ) : (
-                    <>
-                      Join the waitlist for a free month
-                      <ArrowRight size={18} />
-                    </>
-                  )}
-                </button>
-              </div>
-
-              {waitlistMessage && (
-                <p
-                  className={`mt-2 rounded-2xl border px-4 py-3 text-center text-sm font-bold ${
-                    waitlistStatus === 'success'
-                      ? 'border-emerald-300/40 bg-emerald-50 text-emerald-800'
-                      : 'border-rose-300/60 bg-rose-50 text-rose-800'
-                  }`}
-                  role={waitlistStatus === 'error' ? 'alert' : 'status'}
-                >
-                  {waitlistMessage}
-                </p>
-              )}
-            </form>
-
-            <div className="mt-7 grid w-full max-w-6xl gap-3 text-left sm:grid-cols-2 lg:grid-cols-4 lg:divide-x lg:divide-white/10">
-              {featureHighlights.map(({ icon: Icon, title, detail }) => (
-                <div key={title} className="flex gap-4 rounded-3xl border border-white/[0.08] bg-white/[0.035] p-4 backdrop-blur lg:border-0 lg:bg-transparent lg:px-6 lg:first:pl-0 lg:last:pr-0">
-                  <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-violet-300/20 bg-violet-500/[0.15] text-violet-200 shadow-[0_0_34px_rgba(124,58,237,0.18)]">
-                    <Icon size={27} />
-                  </span>
-                  <span>
-                    <span className="block text-base font-black text-white">{title}</span>
-                    <span className="mt-1 block text-sm leading-6 text-slate-300">{detail}</span>
-                  </span>
-                </div>
-              ))}
-            </div>
-          </motion.div>
+      <main id="main-content">
+        <section
+          className={`al-hero${paused ? ' is-paused' : ''}`}
+          aria-labelledby="hero-heading"
+        >
+          <div className="al-hero-media" aria-hidden="true">
+            <Photo
+              name="coffee"
+              hero
+              sizes="100vw"
+              className="al-hero-photo al-hero-photo-first"
+            />
+            {!reducedMotion && (
+              <Photo
+                name="restaurant"
+                sizes="100vw"
+                className="al-hero-photo al-hero-photo-second"
+              />
+            )}
+          </div>
+          <div className="al-hero-shade" />
+          <div className="al-hero-copy">
+            <p className="al-eyebrow">GOOD SERVICE DOESN’T END AT THE DOOR</p>
+            <h1 id="hero-heading">
+              Every review answered.
+              <br />
+              Great service rewarded.
+            </h1>
+            <p className="al-hero-description">
+              Aura replies in your business’s voice — with optional staff rewards
+              when customers recognise great service.
+            </p>
+            <SignupLink light />
+          </div>
+          <div className="al-hero-bottom">
+            <a href="#voice" className="al-scroll-link">
+              Discover Aura <ArrowDown size={15} aria-hidden="true" />
+            </a>
+            <span className="al-hero-caption">
+              FOR THE PEOPLE BEHIND THE BUSINESS
+            </span>
+            {!reducedMotion && (
+              <button
+                type="button"
+                className="al-motion-toggle"
+                onClick={() => setPaused(!paused)}
+                aria-label={
+                  paused
+                    ? 'Play background animation'
+                    : 'Pause background animation'
+                }
+              >
+                {paused ? (
+                  <Play size={14} aria-hidden="true" />
+                ) : (
+                  <Pause size={14} aria-hidden="true" />
+                )}
+              </button>
+            )}
+          </div>
         </section>
 
-        <footer className="mx-auto flex w-full max-w-7xl flex-col items-center justify-center gap-1 px-5 pb-5 sm:px-8">
-          <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-            <Link
-              className="rounded-lg px-2 py-1 transition hover:text-slate-300 focus:outline-none focus:ring-2 focus:ring-violet-300/50"
-              to="/privacy"
-            >
-              Privacy Policy
-            </Link>
-            <span aria-hidden="true" className="text-slate-700">·</span>
-            <Link
-              className="rounded-lg px-2 py-1 transition hover:text-slate-300 focus:outline-none focus:ring-2 focus:ring-violet-300/50"
-              to="/terms"
-            >
-              Terms
-            </Link>
-            <span aria-hidden="true" className="text-slate-700">·</span>
-            <button
-              className="rounded-lg px-2 py-1 transition hover:text-slate-300 focus:outline-none focus:ring-2 focus:ring-violet-300/50 disabled:cursor-wait disabled:opacity-60"
-              disabled={devSignInStatus === 'loading' || devSignInCooldown > 0}
-              onClick={handleDevSignIn}
-              type="button"
-            >
-              {devSignInStatus === 'loading'
-                ? 'Sending secure link…'
-                : devSignInCooldown > 0
-                  ? `Check inbox (${devSignInCooldown}s)`
-                  : devSignInStatus === 'success'
-                    ? 'Resend dev link'
-                    : 'Dev sign in'}
-            </button>
+        <section
+          id="voice"
+          tabIndex={-1}
+          className="al-voice al-section"
+          aria-labelledby="voice-heading"
+        >
+          <div className="al-editorial-grid">
+            <Reveal className="al-voice-intro">
+              <p className="al-eyebrow">PERSONAL BY NATURE</p>
+              <h2 id="voice-heading">
+                Your business.
+                <br />
+                Your voice.
+              </h2>
+              <p className="al-body-copy">
+                The warm welcome. The extra effort. The regular whose order you
+                know by heart. It’s the little things that make your business
+                yours.
+              </p>
+              <p className="al-body-copy">
+                Aura carries that same care into your Google review replies.
+                Natural, thoughtful responses that sound like you — without
+                another job on your list.
+              </p>
+            </Reveal>
+            <Reveal className="al-editorial-photo al-photo-coffee">
+              <figure>
+                <Photo
+                  name="coffee"
+                  alt="Baristas preparing coffee together at a café counter"
+                />
+                <figcaption>
+                  <span>CARE IN EVERY DETAIL</span>
+                  <p>
+                    From the first coffee to the last reply. Keep the
+                    conversation as personal as the service.
+                  </p>
+                </figcaption>
+              </figure>
+            </Reveal>
+            <Reveal className="al-editorial-photo al-photo-salon">
+              <figure>
+                <Photo
+                  name="salon"
+                  alt="A stylist carefully finishing a customer’s hair"
+                />
+                <figcaption>
+                  <span>A VOICE THAT FEELS FAMILIAR</span>
+                  <p>
+                    Warm and chatty, calm and considered, or straight to the
+                    point. Your business sets the tone.
+                  </p>
+                </figcaption>
+              </figure>
+            </Reveal>
+            <Reveal className="al-voice-example">
+              <div className="al-example-label">
+                <span>THE AURA TOUCH</span>
+                <span>EXAMPLE REPLY</span>
+              </div>
+              <Stars />
+              <p>
+                “So glad you love your new look. It was lovely having you in —
+                see you at your next appointment!”
+              </p>
+              <span className="al-caption">
+                A little warmth goes a long way.
+              </span>
+            </Reveal>
           </div>
-          {devSignInMessage && (
-            <p
-              className={`text-center text-[11px] font-semibold ${
-                devSignInStatus === 'error' ? 'text-rose-300' : 'text-slate-400'
-              }`}
-              role={devSignInStatus === 'error' ? 'alert' : 'status'}
-            >
-              {devSignInMessage}
+        </section>
+
+        <section
+          id="in-action"
+          tabIndex={-1}
+          className="al-action al-section"
+          aria-labelledby="action-heading"
+        >
+          <Reveal className="al-statement">
+            <p className="al-eyebrow">MORE TIME FOR WHAT YOU DO BEST</p>
+            <h2 id="action-heading">
+              You look after
+              <br />
+              your customers.
+              <br />
+              <span>
+                Aura looks after
+                <br />
+                your reviews.
+              </span>
+            </h2>
+            <p>
+              Every thoughtful reply starts with understanding your business.
             </p>
-          )}
-        </footer>
-      </div>
-    </main>
+          </Reveal>
+          <ReviewDemo />
+          <div className="al-action-cta">
+            <SignupLink light />
+            <span>Your voice, with a little help from Aura.</span>
+          </div>
+        </section>
+
+        <section
+          id="businesses"
+          tabIndex={-1}
+          className="al-businesses al-section"
+          aria-labelledby="businesses-heading"
+        >
+          <figure className="al-floating al-float-cafe">
+            <Photo
+              name="coffee"
+              alt="Coffee being prepared in a local café"
+              sizes="(max-width: 700px) 44vw, 22vw"
+            />
+            <figcaption>CAFÉS</figcaption>
+          </figure>
+          <figure className="al-floating al-float-salon">
+            <Photo
+              name="salon"
+              alt="The care and attention of a hair stylist"
+              sizes="(max-width: 700px) 44vw, 18vw"
+            />
+            <figcaption>SALONS</figcaption>
+          </figure>
+          <Reveal className="al-business-copy">
+            <p className="al-eyebrow">BIG CARE. LOCAL BUSINESSES.</p>
+            <h2 id="businesses-heading">
+              Made for
+              <br />
+              local businesses.
+            </h2>
+            <p>
+              For the morning rush. The fully booked Friday.
+              <br className="al-desktop-break" /> The job you stayed late to
+              finish.
+            </p>
+            <p>
+              You put your heart into your work.
+              <br />
+              Aura helps that care come through online.
+            </p>
+            <SignupLink />
+          </Reveal>
+          <figure className="al-floating al-float-restaurant">
+            <Photo
+              name="restaurant"
+              alt="A welcoming restaurant ready for service"
+              sizes="(max-width: 700px) 44vw, 24vw"
+            />
+            <figcaption>RESTAURANTS</figcaption>
+          </figure>
+          <figure className="al-floating al-float-craft">
+            <Photo
+              name="craft"
+              alt="A carpenter at work in a workshop"
+              sizes="(max-width: 700px) 44vw, 18vw"
+            />
+            <figcaption>TRADES & SERVICES</figcaption>
+          </figure>
+        </section>
+
+        <section
+          id="benefits"
+          tabIndex={-1}
+          className="al-benefits al-section"
+          aria-labelledby="benefits-heading"
+        >
+          <div className="al-section-heading">
+            <h2 id="benefits-heading">A little less on your plate.</h2>
+            <span className="al-eyebrow">A LITTLE MORE TAKEN CARE OF</span>
+          </div>
+          <div className="al-benefit-grid">
+            <Reveal>
+              <article>
+                <div className="al-benefit-image">
+                  <Photo
+                    name="salon"
+                    alt="A stylist giving a customer personal attention"
+                  />
+                </div>
+                <p className="al-eyebrow">MAKE PEOPLE FEEL HEARD</p>
+                <h3>Thoughtful replies.</h3>
+                <p>
+                  Keep the conversation going with responses that acknowledge
+                  the details and reflect your business’s personality.
+                </p>
+              </article>
+            </Reveal>
+            <Reveal>
+              <article>
+                <div className="al-benefit-image">
+                  <Photo
+                    name="restaurant"
+                    alt="The atmosphere of a busy neighbourhood restaurant"
+                  />
+                </div>
+                <p className="al-eyebrow">GET ON WITH YOUR DAY</p>
+                <h3>Less admin. More living.</h3>
+                <p>
+                  Spend less time finding the right words and more time on the
+                  people, work and moments that matter to you.
+                </p>
+              </article>
+            </Reveal>
+            <Reveal>
+              <article>
+                <div className="al-benefit-image">
+                  <Photo
+                    name="coffee"
+                    alt="Two members of a café team preparing drinks"
+                  />
+                </div>
+                <p className="al-eyebrow">NOTICE THE PEOPLE WHO CARE</p>
+                <h3>Great staff, recognised.</h3>
+                <p>
+                  When a customer mentions someone who made their day, help that
+                  recognition reach the people behind the service.
+                </p>
+              </article>
+            </Reveal>
+          </div>
+        </section>
+
+        <section className="al-closing" aria-labelledby="closing-heading">
+          <Photo name="restaurant" sizes="100vw" />
+          <div className="al-closing-shade" />
+          <Reveal className="al-closing-copy">
+            <p className="al-eyebrow">A LITTLE HELP GOES A LONG WAY</p>
+            <h2 id="closing-heading">
+              Your next chapter.
+              <br />A little lighter.
+            </h2>
+            <p>
+              Make room for what you do best.
+              <br />
+              Let Aura help with the replies.
+            </p>
+            <SignupLink light />
+          </Reveal>
+        </section>
+      </main>
+
+      <footer className="al-footer">
+        <div className="al-footer-main">
+          <Link className="al-footer-wordmark" to="/" aria-label="AURA home">
+            AURA
+          </Link>
+          <nav aria-label="Footer navigation">
+            {sectionLinks.map(([label, href]) => (
+              <a key={href} href={href}>
+                {label}
+              </a>
+            ))}
+          </nav>
+          <div className="al-footer-account">
+            <Link to="/signup">
+              Create an account <ArrowRight size={15} aria-hidden="true" />
+            </Link>
+            <Link to="/login">Log in</Link>
+          </div>
+        </div>
+        <div className="al-footer-bottom">
+          <span>© {new Date().getFullYear()} AURA</span>
+          <span>Thoughtful replies. A more personal presence.</span>
+          <div>
+            <Link to="/privacy">Privacy</Link>
+            <Link to="/terms">Terms</Link>
+          </div>
+        </div>
+      </footer>
+    </div>
   )
 }

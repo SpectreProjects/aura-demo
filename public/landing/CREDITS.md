@@ -1,0 +1,12 @@
+# Landing page photography
+
+Downloaded 14 September 2026 under the [Unsplash License](https://unsplash.com/license). Local WebP derivatives at responsive sizes; used as illustrative business-category photography, not testimonials or endorsements. No Spyker assets are included.
+
+| Files              | Photographer        | Source                                  |
+| ------------------ | ------------------- | --------------------------------------- |
+| coffee-\*.webp     | Nathan Dumlao       | https://unsplash.com/photos/eksqjXTLpak |
+| restaurant-\*.webp | Gerrie van der Walt | https://unsplash.com/photos/yM4GL3REtsU |
+| salon-\*.webp      | Baylee Gramling     | https://unsplash.com/photos/MMz03PyCOZg |
+| craft-\*.webp      | qyy qyyy            | https://unsplash.com/photos/oW4mPEcgdEc |
+
+Fonts: Barlow Condensed and DM Sans from Google Fonts, self-hosted in `/fonts`; SIL OFL licence files are included there.
