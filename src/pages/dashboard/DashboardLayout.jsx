@@ -318,22 +318,26 @@ function buildPlacesDashboardState(place, baseStaff, existingPointEvents = []) {
   }
 }
 
-async function callAuraApi(path, body) {
+async function callAuraApi(path, body, method = 'POST') {
   if (!supabase) throw new Error('Google business search is available on the live AURA dashboard.')
   const { data } = await supabase.auth.getSession()
   const accessToken = data.session?.access_token
   if (!accessToken) throw new Error('Please sign in again to connect Google reviews.')
 
   const response = await fetch(path, {
-    body: JSON.stringify(body),
+    body: method === 'GET' ? undefined : JSON.stringify(body || {}),
     headers: {
       Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
     },
-    method: 'POST',
+    method,
   })
   const payload = await response.json().catch(() => ({}))
-  if (!response.ok) throw new Error(payload.error || 'AURA could not complete that request.')
+  if (!response.ok) {
+    const error = new Error(payload.error || 'AURA could not complete that request.')
+    error.code = payload.code
+    throw error
+  }
   return payload
 }
 
@@ -745,6 +749,17 @@ export default function DashboardLayout() {
           } catch (placesError) {
             console.error('[AURA Places] Review sample could not be loaded:', placesError)
             placeNotice = placesError.message
+          }
+        }
+
+        try {
+          const googleReviewPayload = await callAuraApi('/api/google-reviews', null, 'GET')
+          if (googleReviewPayload.reviews?.length) {
+            visibleReviews = normalizeReviews(googleReviewPayload.reviews)
+          }
+        } catch (googleReviewError) {
+          if (!['GOOGLE_NOT_CONFIGURED', 'GOOGLE_NOT_CONNECTED'].includes(googleReviewError.code)) {
+            console.info('[AURA Google] Imported reviews are not available yet:', googleReviewError.message)
           }
         }
         const { data: publicAccess } = await supabase.rpc('get_aura_public_leaderboard', {
@@ -1365,13 +1380,35 @@ export default function DashboardLayout() {
     const cleanReply = reply.trim()
     if (!cleanReply) return
 
+    const review = reviews.find((item) => item.id === reviewId)
+    let updatedAt = new Date().toISOString()
+    if (review?.source === 'google_business') {
+      const result = await callAuraApi('/api/google-reply', { reply: cleanReply, reviewId })
+      updatedAt = result.updatedAt || updatedAt
+    }
+
     setReviews((current) =>
       current.map((review) =>
         review.id === reviewId
-          ? { ...review, aura_reply: cleanReply, aura_reply_updated_at: new Date().toISOString() }
+          ? { ...review, aura_reply: cleanReply, aura_reply_updated_at: updatedAt }
           : review,
       ),
     )
+  }
+
+  async function connectGoogleProfile() {
+    const { url } = await callAuraApi('/api/google-oauth-start', {})
+    window.location.assign(url)
+  }
+
+  async function getGoogleConnectionStatus() {
+    return callAuraApi('/api/google-status', null, 'GET')
+  }
+
+  async function syncGoogleReviews() {
+    const payload = await callAuraApi('/api/google-reviews-sync', {})
+    setReviews(normalizeReviews(payload.reviews || []))
+    return payload
   }
 
   async function saveReward(reward) {
@@ -1457,14 +1494,17 @@ export default function DashboardLayout() {
       assignReviewPoints,
       approveName,
       connectGoogleBusiness,
+      connectGoogleProfile,
       deleteReward,
       ignoreName,
+      getGoogleConnectionStatus,
       openBusinessSetup: () => setIsBusinessSetupOpen(true),
       redeemReward,
       saveReward,
       searchGoogleBusinesses,
       setLeaderboardPin,
       setStaffActive,
+      syncGoogleReviews,
       updateAutoReplySettings,
       updatePointsRule,
       updateReviewReply,
