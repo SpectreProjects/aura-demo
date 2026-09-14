@@ -56,6 +56,21 @@ function getReplyStatus(review, settings, now) {
     }
   }
 
+  if (review.source === 'google_business') {
+    if (review.aura_reply) {
+      return {
+        detail: 'This reply is live on the connected Google Business Profile.',
+        label: 'Replied on Google',
+        type: 'sent',
+      }
+    }
+    return {
+      detail: 'Review the prepared response, then publish it directly to Google.',
+      label: 'Ready for your reply',
+      type: 'scheduled',
+    }
+  }
+
   if (!settings.enabled) {
     return {
       detail: 'Automatic replies are currently switched off in Settings.',
@@ -473,7 +488,7 @@ function ReplyWorkspace({ businessName, categories, now, onAddCategory, onAddSta
                       onClick={saveReply}
                       type="button"
                     >
-                      <Check size={16} /> Save reply
+                      <Check size={16} /> {review.source === 'google_business' ? 'Publish to Google' : 'Save reply'}
                     </button>
                     <button
                       className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-black/[0.08] bg-white/35 px-4 text-sm font-black text-[#4e5f5a]"
