@@ -101,6 +101,10 @@ revoke all on table public.google_reviews from anon;
 revoke insert, update, delete on table public.google_reviews from authenticated;
 grant select on table public.google_reviews to authenticated;
 
+-- Supabase's newer Data API defaults may no longer grant new tables to service_role.
+-- Keep the backend operational while browser roles remain least-privileged.
+grant all on table public.google_connections, public.google_reviews, public.google_review_sync_logs to service_role;
+
 comment on table public.google_connections is
   'Server-only encrypted Google OAuth connections. Never grant browser clients access to token columns.';
 comment on table public.google_reviews is
