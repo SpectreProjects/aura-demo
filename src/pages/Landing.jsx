@@ -30,12 +30,13 @@ function Photo({
   hero = false,
   sizes = '(max-width: 700px) 100vw, 45vw',
 }) {
-  const wide = name === 'coffee' || name === 'restaurant'
+  const wide = name === 'coffee' || name === 'restaurant' || name === 'aura-restaurant'
+  const extension = name === 'aura-restaurant' ? 'jpg' : 'webp'
   return (
     <img
       className={className}
-      src={`/landing/${name}-1200.webp`}
-      srcSet={`/landing/${name}-640.webp 640w, /landing/${name}-1200.webp 1200w${wide ? `, /landing/${name}-1920.webp 1920w` : ''}`}
+      src={`/landing/${name}-1200.${extension}`}
+      srcSet={`/landing/${name}-640.${extension} 640w, /landing/${name}-1200.${extension} 1200w${wide ? `, /landing/${name}-1920.${extension} 1920w` : ''}`}
       sizes={sizes}
       alt={alt}
       width={1200}
@@ -360,7 +361,7 @@ export default function Landing() {
         >
           <div className="al-hero-media" aria-hidden="true">
             <Photo
-              name="coffee"
+              name="aura-restaurant"
               hero
               sizes="100vw"
               className="al-hero-photo al-hero-photo-first"

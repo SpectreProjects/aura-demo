@@ -9,8 +9,8 @@ Downloaded 14 September 2026 under the [Unsplash License](https://unsplash.com/l
 | salon-\*.webp      | Baylee Gramling     | https://unsplash.com/photos/MMz03PyCOZg |
 | craft-\*.webp      | qyy qyyy            | https://unsplash.com/photos/oW4mPEcgdEc |
 
-## Login photography
+## AURA restaurant photography
 
-The responsive `login/aura-restaurant-*.jpg` derivatives were created from the user-supplied Pexels image `pexels-ekrulila-29219956.jpg`, credited in the filename to Ekrulila. It is used as illustrative restaurant photography, not as a named Aura customer or endorsement.
+The responsive `landing/aura-restaurant-*.jpg` and `login/aura-restaurant-*.jpg` derivatives were created from the user-supplied Pexels image `pexels-ekrulila-29219956.jpg`, credited in the filename to Ekrulila. It is used as illustrative restaurant photography, not as a named Aura customer or endorsement.
 
 Fonts: Barlow Condensed and DM Sans from Google Fonts, self-hosted in `/fonts`; SIL OFL licence files are included there.

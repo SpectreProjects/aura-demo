@@ -238,6 +238,7 @@
 }
 .al-hero-photo-first {
   opacity: 1;
+  object-position: 50% 54%;
 }
 .al-hero-photo-second {
   opacity: 0;
@@ -1049,7 +1050,7 @@
     display: none;
   }
   .al-hero-photo-first {
-    object-position: 62% center;
+    object-position: 50% 55%;
   }
   .al-button {
     min-height: 52px;
