@@ -53,13 +53,12 @@
 }
 
 .ali-shell {
+  position: relative;
   width: 100%;
   height: 100svh;
   min-height: 640px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(520px, 1fr);
   overflow: hidden;
-  background: var(--ali-white);
+  background: var(--ali-black);
 }
 
 .ali-auth-loading {
@@ -87,12 +86,13 @@
 .ali-skip:focus { transform: translateY(0); }
 
 .ali-scene {
-  position: relative;
+  position: absolute;
+  inset: 0 auto 0 0;
   z-index: 1;
+  width: 58%;
   min-width: 0;
   height: 100%;
   overflow: hidden;
-  border-radius: 0 clamp(46px, 4.8vw, 82px) clamp(46px, 4.8vw, 82px) 0;
   background: var(--ali-black);
   color: var(--ali-white);
 }
@@ -179,15 +179,16 @@
 }
 
 .ali-auth-panel {
-  position: relative;
+  position: absolute;
+  inset: 0 0 0 auto;
   z-index: 2;
-  min-width: 0;
+  width: 54%;
+  min-width: 520px;
   height: 100%;
   display: grid;
   grid-template-rows: 1fr auto;
   justify-items: center;
   overflow-y: auto;
-  margin-left: clamp(-54px, -3.4vw, -32px);
   padding: clamp(34px, 6vh, 72px) clamp(40px, 7vw, 112px) 26px;
   border-left: 1px solid var(--ali-line);
   border-radius: clamp(46px, 4.8vw, 82px) 0 0 clamp(46px, 4.8vw, 82px);
@@ -357,7 +358,6 @@
 }
 
 @media (max-width: 1120px) {
-  .ali-shell { grid-template-columns: minmax(0, 0.88fr) minmax(500px, 1.12fr); }
   .ali-scene-copy span { font-size: clamp(76px, 10vw, 112px); }
   .ali-auth-panel { padding-inline: clamp(32px, 5vw, 64px); }
 }
@@ -381,10 +381,12 @@
   .ali-shell {
     height: auto;
     min-height: 100svh;
-    display: block;
   }
 
   .ali-scene {
+    position: relative;
+    inset: auto;
+    width: 100%;
     min-height: 235px;
     height: clamp(235px, 34svh, 340px);
     border-radius: 0 0 34px 34px;
@@ -398,6 +400,10 @@
   .ali-scene-copy span { font-size: clamp(62px, 18vw, 88px); line-height: 0.82; }
 
   .ali-auth-panel {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    min-width: 0;
     min-height: calc(100svh - 203px);
     height: auto;
     margin: -32px 0 0;
