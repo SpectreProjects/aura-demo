@@ -79,26 +79,37 @@ export default function Login() {
     <main className="aura-login">
       <a className="ali-skip" href="#login-form">Skip to log in</a>
 
-      <section className="ali-scene" aria-label="AURA welcome">
-        <picture aria-hidden="true" className="ali-scene-media">
-          <source media="(max-width: 700px)" srcSet="/landing/coffee-640.webp" />
-          <img alt="" height="1280" src="/landing/coffee-1920.webp" width="1920" />
-        </picture>
-        <div className="ali-scene-shade" />
-        <Link aria-label="AURA home" className="ali-wordmark ali-wordmark-light" to="/">
-          AURA
-        </Link>
-        <div className="ali-scene-copy" aria-hidden="true">
-          <p>THOUGHTFUL REPLIES. A MORE PERSONAL PRESENCE.</p>
-          <span>WELCOME<br />BACK.</span>
-        </div>
-        <p className="ali-scene-caption">FOR THE PEOPLE BEHIND THE BUSINESS</p>
-      </section>
+      <div className="ali-shell">
+        <section className="ali-scene" aria-label="AURA welcome">
+          <picture aria-hidden="true" className="ali-scene-media">
+            <source
+              media="(max-width: 880px)"
+              srcSet="/login/aura-restaurant-900.jpg"
+            />
+            <img
+              alt=""
+              height="2400"
+              sizes="(max-width: 880px) 100vw, 50vw"
+              src="/login/aura-restaurant-1600.jpg"
+              srcSet="/login/aura-restaurant-900.jpg 900w, /login/aura-restaurant-1600.jpg 1600w"
+              width="1600"
+            />
+          </picture>
+          <div className="ali-scene-shade" />
+          <Link aria-label="AURA home" className="ali-wordmark ali-wordmark-light" to="/">
+            AURA
+          </Link>
+          <div className="ali-scene-copy" aria-hidden="true">
+            <p>THOUGHTFUL REPLIES. A MORE PERSONAL PRESENCE.</p>
+            <span>WELCOME<br />BACK.</span>
+          </div>
+          <p className="ali-scene-caption">FOR THE PEOPLE BEHIND THE BUSINESS</p>
+        </section>
 
-      <section className="ali-auth-panel" aria-labelledby="login-title">
-        <Link aria-label="AURA home" className="ali-wordmark ali-wordmark-dark" to="/">
-          AURA
-        </Link>
+        <section className="ali-auth-panel" aria-labelledby="login-title">
+          <Link aria-label="AURA home" className="ali-wordmark ali-wordmark-dark" to="/">
+            AURA
+          </Link>
 
         <form className="ali-form" id="login-form" noValidate onSubmit={handleLogin}>
           <div className="ali-meta" aria-hidden="true">
@@ -194,11 +205,12 @@ export default function Login() {
           </p>
         </form>
 
-        <p className="ali-legal">
-          By logging in, you agree to Aura’s <Link to="/terms">Terms</Link> and acknowledge the{' '}
-          <Link to="/privacy">Privacy Policy</Link>.
-        </p>
-      </section>
+          <p className="ali-legal">
+            By logging in, you agree to Aura’s <Link to="/terms">Terms</Link> and acknowledge the{' '}
+            <Link to="/privacy">Privacy Policy</Link>.
+          </p>
+        </section>
+      </div>
     </main>
   )
 }
