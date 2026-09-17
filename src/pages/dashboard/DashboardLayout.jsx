@@ -1450,7 +1450,7 @@ export default function DashboardLayout() {
       return
     }
 
-    navigate('/login', { replace: true })
+    navigate('/', { replace: true })
   }
 
   const dashboard = {
