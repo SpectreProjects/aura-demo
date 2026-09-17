@@ -22,6 +22,7 @@ components:
   button: {}
   navigation: {}
   review-demo: {}
+  login-entry: {}
 ---
 
 # AURA Design System
@@ -37,7 +38,7 @@ Spyker’s September 2026 homepage: cinematic opening, condensed typography, sta
 - Audience: owners of cafés, restaurants, salons, trades and local services in Scotland and the UK, per the project brief.
 - Page job: explain Aura’s personalised Google review replies and lead to account creation.
 - Language: English (UK). Natural, warm, direct; no unsupported metrics, endorsements or free-trial promises.
-- Register: brand marketing on `/`. Keep this visual system scoped to the public homepage so authenticated product screens retain their operational layout.
+- Register: brand marketing on `/`, with a restrained editorial extension on `/login`. Authenticated product screens retain their operational layout.
 - Signature: the transition from a full-screen business photograph to an oversized black-and-white statement and an illustrative review-to-reply sequence.
 - Anti-references: dashboard card grids, coloured gradients, stock SaaS feature icons, invented testimonials.
 - Canonical runtime tokens: `src/pages/Landing.css`, scoped under `.aura-landing`; this document mirrors those tokens. Update both together when changing the identity. Do not migrate dashboard colours to these values.
@@ -67,6 +68,10 @@ Rectangular imagery, panels and buttons. Circles are limited to the media contro
 ### Buttons and actions
 
 All primary CTAs say “Create an account” and link to `/signup`. Black on white; white on photography or black. Use 52–54px minimum height, an arrow, visible focus, restrained hover and active feedback. Existing login remains `/login`.
+
+### Login entry
+
+The `/login` screen extends the landing page through a cinematic copper-toned photograph, the plain AURA wordmark, oversized condensed type and a flat white sign-in panel. Controls stay rectangular with hairline borders; Google and email/password authentication retain their production behaviour. On narrow screens, the photograph becomes a compact branded header above the form.
 
 ### Navigation and overlays
 
