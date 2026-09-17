@@ -13,13 +13,23 @@ const initialForm = {
 
 export default function Signup() {
   const navigate = useNavigate()
-  const { session } = useAuth()
+  const { isAuthLoading, session } = useAuth()
   const [form, setForm] = useState(initialForm)
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  if (session) return <Navigate to="/dashboard" replace />
+  if (isAuthLoading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#020617] px-5 text-sm font-semibold text-white" aria-busy="true">
+        Checking your account…
+      </main>
+    )
+  }
+
+  if (session) {
+    return <Navigate state={{ notice: 'already-signed-in' }} to="/dashboard" replace />
+  }
 
   function updateField(field, value) {
     setForm((current) => ({ ...current, [field]: value }))

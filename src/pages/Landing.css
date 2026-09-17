@@ -130,6 +130,10 @@
 .al-button-light:hover {
   background: var(--al-line);
 }
+.al-button-pending {
+  cursor: wait;
+  opacity: 0.72;
+}
 .al-button:active {
   transform: translateY(0);
 }
@@ -156,6 +160,23 @@
   align-items: center;
   padding: 29px var(--al-gutter);
   color: var(--al-white);
+}
+.al-account-pending {
+  cursor: wait;
+  opacity: 0.72;
+}
+.al-account-error {
+  position: fixed;
+  z-index: 60;
+  top: 88px;
+  right: var(--al-gutter);
+  max-width: min(360px, calc(100vw - 48px));
+  padding: 12px 16px;
+  border: 1px solid #f1c1c1;
+  background: #fff5f5;
+  color: #8f2424;
+  font-size: 13px;
+  box-shadow: 0 12px 35px #0000001f;
 }
 .al-menu-trigger {
   display: flex;
@@ -823,6 +844,7 @@
   letter-spacing: -0.03em;
 }
 .al-footer-main a:hover,
+.al-footer-account button:hover,
 .al-footer-bottom a:hover {
   text-decoration: underline;
   text-underline-offset: 5px;
@@ -834,10 +856,13 @@
   gap: 16px;
   font-size: 13px;
 }
-.al-footer-account > a:first-child {
+.al-footer-account > :first-child {
   display: flex;
   align-items: center;
   gap: 15px;
+}
+.al-footer-account button {
+  font-size: inherit;
 }
 .al-footer-bottom {
   border-top: 1px solid var(--al-line);
@@ -907,7 +932,7 @@
   justify-content: space-between;
   gap: 30px;
 }
-.al-menu-bottom > a:last-child {
+.al-menu-bottom > :last-child {
   font-size: 13px;
   display: flex;
   align-items: center;

@@ -9,6 +9,7 @@ import {
   Star,
   Trophy,
   Users,
+  X,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
@@ -599,8 +600,21 @@ export default function DashboardLayout() {
       : 'The dashboard is running in demo mode because environment variables have not been added yet.',
   )
   const [isSigningOut, setIsSigningOut] = useState(false)
+  const [accountNotice, setAccountNotice] = useState(
+    location.state?.notice === 'already-signed-in'
+      ? 'You’re already signed in. We’ve opened your dashboard.'
+      : '',
+  )
   const [leaderboardPinEnabled, setLeaderboardPinEnabled] = useState(false)
   const [isBusinessSetupOpen, setIsBusinessSetupOpen] = useState(false)
+
+  useEffect(() => {
+    if (location.state?.notice !== 'already-signed-in') return
+    navigate(`${location.pathname}${location.search}${location.hash}`, {
+      replace: true,
+      state: null,
+    })
+  }, [location.hash, location.pathname, location.search, location.state, navigate])
 
   useEffect(() => {
     if (!supabase || !user) return undefined
@@ -1522,6 +1536,22 @@ export default function DashboardLayout() {
                 : 'mx-auto max-w-7xl px-5 py-6 sm:px-8 lg:px-10 lg:py-8'
             }
           >
+            {accountNotice ? (
+              <div
+                className="mb-5 flex items-center justify-between gap-4 rounded-2xl border border-[#b9d2cb] bg-white/70 px-4 py-3 text-sm font-semibold text-[#33433f] shadow-sm"
+                role="status"
+              >
+                <span>{accountNotice}</span>
+                <button
+                  aria-label="Dismiss message"
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-full transition hover:bg-black/[0.06]"
+                  onClick={() => setAccountNotice('')}
+                  type="button"
+                >
+                  <X aria-hidden="true" size={17} />
+                </button>
+              </div>
+            ) : null}
             <Outlet context={dashboard} />
           </section>
         </div>

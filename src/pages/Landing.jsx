@@ -12,6 +12,8 @@ import {
   X,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../lib/AuthContext'
+import { supabase } from '../lib/supabaseClient'
 import './Landing.css'
 
 const sectionLinks = [
@@ -45,13 +47,24 @@ function Photo({
   )
 }
 
-function SignupLink({ light = false, children = 'Create an account' }) {
+function AccountCta({ authenticated, isLoading, light = false, children = 'Create an account' }) {
+  const className = `al-button${light ? ' al-button-light' : ''}`
+
+  if (isLoading) {
+    return (
+      <span aria-busy="true" className={`${className} al-button-pending`}>
+        Checking account…
+        <ArrowRight size={17} aria-hidden="true" />
+      </span>
+    )
+  }
+
   return (
     <Link
-      className={`al-button${light ? ' al-button-light' : ''}`}
-      to="/signup"
+      className={className}
+      to={authenticated ? '/dashboard' : '/signup'}
     >
-      {children}
+      {authenticated ? 'Open dashboard' : children}
       <ArrowRight size={17} aria-hidden="true" />
     </Link>
   )
@@ -181,11 +194,15 @@ function ReviewDemo() {
 }
 
 export default function Landing() {
+  const { isAuthLoading, session } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
   const [paused, setPaused] = useState(false)
+  const [isSigningOut, setIsSigningOut] = useState(false)
+  const [accountError, setAccountError] = useState('')
   const reducedMotion = useReducedMotion()
   const dialogRef = useRef(null)
   const menuButtonRef = useRef(null)
+  const authenticated = Boolean(session)
 
   useEffect(() => {
     if (!menuOpen) return undefined
@@ -214,6 +231,23 @@ export default function Landing() {
     })
   }
 
+  async function handleSignOut() {
+    if (!supabase || isSigningOut) return
+
+    setAccountError('')
+    setIsSigningOut(true)
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
+      setMenuOpen(false)
+    } catch (error) {
+      console.error('[Supabase Auth] Sign out error:', error)
+      setAccountError('We could not log you out. Please try again.')
+    } finally {
+      setIsSigningOut(false)
+    }
+  }
+
   return (
     <div className="aura-landing">
       <title>AURA — Thoughtful Google review replies, in your voice</title>
@@ -240,10 +274,21 @@ export default function Landing() {
         <Link to="/" className="al-wordmark" aria-label="AURA home">
           AURA
         </Link>
-        <Link to="/login" className="al-login">
-          Log in <ArrowRight size={15} aria-hidden="true" />
-        </Link>
+        {isAuthLoading ? (
+          <span aria-busy="true" className="al-login al-account-pending">Checking…</span>
+        ) : (
+          <Link to={authenticated ? '/dashboard' : '/login'} className="al-login">
+            {authenticated ? 'Open dashboard' : 'Log in'}{' '}
+            <ArrowRight size={15} aria-hidden="true" />
+          </Link>
+        )}
       </header>
+
+      {accountError ? (
+        <p className="al-account-error" role="alert">
+          {accountError}
+        </p>
+      ) : null}
 
       <dialog
         className="al-menu"
@@ -293,11 +338,18 @@ export default function Landing() {
           ))}
         </nav>
         <div className="al-menu-bottom">
-          <SignupLink />
-          <Link to="/login" onClick={() => setMenuOpen(false)}>
-            Already with Aura? Log in{' '}
-            <ArrowRight size={16} aria-hidden="true" />
-          </Link>
+          <AccountCta authenticated={authenticated} isLoading={isAuthLoading} />
+          {!isAuthLoading && authenticated ? (
+            <button disabled={isSigningOut} onClick={handleSignOut} type="button">
+              {isSigningOut ? 'Logging out…' : 'Log out'}{' '}
+              <ArrowRight size={16} aria-hidden="true" />
+            </button>
+          ) : !isAuthLoading ? (
+            <Link to="/login" onClick={() => setMenuOpen(false)}>
+              Already with Aura? Log in{' '}
+              <ArrowRight size={16} aria-hidden="true" />
+            </Link>
+          ) : null}
         </div>
       </dialog>
 
@@ -333,7 +385,7 @@ export default function Landing() {
               Aura replies in your business’s voice — with optional staff rewards
               when customers recognise great service.
             </p>
-            <SignupLink light />
+            <AccountCta authenticated={authenticated} isLoading={isAuthLoading} light />
           </div>
           <div className="al-hero-bottom">
             <a href="#voice" className="al-scroll-link">
@@ -460,7 +512,7 @@ export default function Landing() {
           </Reveal>
           <ReviewDemo />
           <div className="al-action-cta">
-            <SignupLink light />
+            <AccountCta authenticated={authenticated} isLoading={isAuthLoading} light />
             <span>Your voice, with a little help from Aura.</span>
           </div>
         </section>
@@ -504,7 +556,7 @@ export default function Landing() {
               <br />
               Aura helps that care come through online.
             </p>
-            <SignupLink />
+            <AccountCta authenticated={authenticated} isLoading={isAuthLoading} />
           </Reveal>
           <figure className="al-floating al-float-restaurant">
             <Photo
@@ -600,7 +652,7 @@ export default function Landing() {
               <br />
               Let Aura help with the replies.
             </p>
-            <SignupLink light />
+            <AccountCta authenticated={authenticated} isLoading={isAuthLoading} light />
           </Reveal>
         </section>
       </main>
@@ -618,10 +670,21 @@ export default function Landing() {
             ))}
           </nav>
           <div className="al-footer-account">
-            <Link to="/signup">
-              Create an account <ArrowRight size={15} aria-hidden="true" />
-            </Link>
-            <Link to="/login">Log in</Link>
+            {isAuthLoading ? (
+              <span aria-busy="true" className="al-account-pending">Checking account…</span>
+            ) : (
+              <Link to={authenticated ? '/dashboard' : '/signup'}>
+                {authenticated ? 'Open dashboard' : 'Create an account'}{' '}
+                <ArrowRight size={15} aria-hidden="true" />
+              </Link>
+            )}
+            {!isAuthLoading && authenticated ? (
+              <button disabled={isSigningOut} onClick={handleSignOut} type="button">
+                {isSigningOut ? 'Logging out…' : 'Log out'}
+              </button>
+            ) : !isAuthLoading ? (
+              <Link to="/login">Log in</Link>
+            ) : null}
           </div>
         </div>
         <div className="al-footer-bottom">
