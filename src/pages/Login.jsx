@@ -1,4 +1,3 @@
-import { ArrowRight, Eye, EyeOff } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import GoogleAuthButton from '../components/GoogleAuthButton'
@@ -15,7 +14,6 @@ export default function Login() {
   const passwordRef = useRef(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
   const [fieldErrors, setFieldErrors] = useState({})
   const [errorMessage, setErrorMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -107,59 +105,47 @@ export default function Login() {
         </section>
 
         <section className="ali-auth-panel" aria-labelledby="login-title">
-          <Link aria-label="AURA home" className="ali-wordmark ali-wordmark-dark" to="/">
-            AURA
-          </Link>
+          <form className="ali-form" id="login-form" noValidate onSubmit={handleLogin}>
+            <h1 id="login-title">Log in to look after your reviews and your staff</h1>
 
-        <form className="ali-form" id="login-form" noValidate onSubmit={handleLogin}>
-          <div className="ali-meta" aria-hidden="true">
-            <span>Your Aura workspace</span>
-            <span>Secure sign in</span>
-          </div>
-
-          <p className="ali-kicker">Good to see you again</p>
-          <h1 id="login-title">Welcome back.</h1>
-          <p className="ali-intro">Log in to look after your reviews, your way.</p>
-
-          <div className="ali-google-action">
-            <GoogleAuthButton label="Continue with Google" onError={setErrorMessage} />
-          </div>
-
-          <div className="ali-divider" aria-hidden="true">
-            <span />
-            <em>or use your email</em>
-            <span />
-          </div>
-
-          <div className="ali-fields">
-            <div className="ali-field-group">
-              <label htmlFor="login-email">Email address</label>
-              <input
-                aria-describedby={fieldErrors.email ? 'login-email-error' : undefined}
-                aria-invalid={Boolean(fieldErrors.email)}
-                autoCapitalize="none"
-                autoComplete="email"
-                id="login-email"
-                onChange={(event) => {
-                  setEmail(event.target.value)
-                  setFieldErrors((current) => ({ ...current, email: '' }))
-                  setErrorMessage('')
-                }}
-                placeholder="you@yourbusiness.co.uk"
-                ref={emailRef}
-                required
-                spellCheck="false"
-                type="email"
-                value={email}
-              />
-              <span className="ali-field-message" id="login-email-error">
-                {fieldErrors.email || ''}
-              </span>
+            <div className="ali-google-action">
+              <GoogleAuthButton label="Continue with Google" onError={setErrorMessage} />
             </div>
 
-            <div className="ali-field-group">
-              <label htmlFor="login-password">Password</label>
-              <div className="ali-password-field">
+            <div className="ali-divider" aria-hidden="true">
+              <span />
+              <em>or</em>
+              <span />
+            </div>
+
+            <div className="ali-fields">
+              <div className="ali-field-group">
+                <label htmlFor="login-email">Email address</label>
+                <input
+                  aria-describedby={fieldErrors.email ? 'login-email-error' : undefined}
+                  aria-invalid={Boolean(fieldErrors.email)}
+                  autoCapitalize="none"
+                  autoComplete="email"
+                  id="login-email"
+                  onChange={(event) => {
+                    setEmail(event.target.value)
+                    setFieldErrors((current) => ({ ...current, email: '' }))
+                    setErrorMessage('')
+                  }}
+                  placeholder="you@yourbusiness.co.uk"
+                  ref={emailRef}
+                  required
+                  spellCheck="false"
+                  type="email"
+                  value={email}
+                />
+                <span className="ali-field-message" id="login-email-error">
+                  {fieldErrors.email || ''}
+                </span>
+              </div>
+
+              <div className="ali-field-group">
+                <label htmlFor="login-password">Password</label>
                 <input
                   aria-describedby={fieldErrors.password ? 'login-password-error' : undefined}
                   aria-invalid={Boolean(fieldErrors.password)}
@@ -173,37 +159,27 @@ export default function Login() {
                   placeholder="Your password"
                   ref={passwordRef}
                   required
-                  type={showPassword ? 'text' : 'password'}
+                  type="password"
                   value={password}
                 />
-                <button
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  aria-pressed={showPassword}
-                  onClick={() => setShowPassword((current) => !current)}
-                  type="button"
-                >
-                  {showPassword ? <EyeOff aria-hidden="true" size={19} /> : <Eye aria-hidden="true" size={19} />}
-                </button>
+                <span className="ali-field-message" id="login-password-error">
+                  {fieldErrors.password || ''}
+                </span>
               </div>
-              <span className="ali-field-message" id="login-password-error">
-                {fieldErrors.password || ''}
-              </span>
             </div>
-          </div>
 
-          <div aria-live="polite" className="ali-alert-slot">
-            {errorMessage ? <p role="alert">{errorMessage}</p> : null}
-          </div>
+            <div aria-live="polite" className="ali-alert-slot">
+              {errorMessage ? <p role="alert">{errorMessage}</p> : null}
+            </div>
 
-          <button className="ali-submit" disabled={isSubmitting} type="submit">
-            <span>{isSubmitting ? 'Logging in…' : 'Log in'}</span>
-            <ArrowRight aria-hidden="true" size={18} />
-          </button>
+            <button className="ali-submit" disabled={isSubmitting} type="submit">
+              {isSubmitting ? 'Logging in…' : 'Log in'}
+            </button>
 
-          <p className="ali-create-account">
-            New to Aura? <Link to="/signup">Create an account</Link>
-          </p>
-        </form>
+            <p className="ali-create-account">
+              New to Aura? <Link to="/signup">Create an account</Link>
+            </p>
+          </form>
 
           <p className="ali-legal">
             By logging in, you agree to Aura’s <Link to="/terms">Terms</Link> and acknowledge the{' '}

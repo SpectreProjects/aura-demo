@@ -57,11 +57,11 @@ The hero fills the small viewport height, with a 680px desktop / 640px mobile mi
 
 ## Elevation & Depth
 
-Use tonal sections, photography, spacing and hairline borders. Avoid drop shadows, translucent cards and ornamental gradients across marketing content; the `/login` shell is the deliberate exception, using one soft ambient shadow to separate its rounded frame from the neutral canvas. Dark photo overlays exist to protect white text contrast. The navigation uses the native HTML dialog top layer.
+Use tonal sections, photography, spacing and hairline borders. No drop shadows, translucent cards or ornamental gradients. Dark photo overlays exist to protect white text contrast. The navigation uses the native HTML dialog top layer.
 
 ## Shapes
 
-Rectangular imagery, panels and buttons. The `/login` route uses a deep rounded outer frame and curved image-to-form seam as a contained authentication treatment. Circles are limited to the media control, illustrative avatar and process indicator.
+Rectangular imagery, panels and buttons. The `/login` route keeps its outer viewport edges flat and reserves deep curves for the inward image-to-form join. Circles are limited to the media control, illustrative avatar and process indicator.
 
 ## Components
 
@@ -71,7 +71,7 @@ All primary CTAs say “Create an account” and link to `/signup`. Black on whi
 
 ### Login entry
 
-The `/login` screen extends the landing page through a cinematic copper-toned photograph, the plain AURA wordmark, oversized condensed type and a flat white sign-in panel. A deep rounded outer shell and curved overlapping seam frame the split composition; controls remain rectangular with hairline borders. Google and email/password authentication retain their production behaviour. Below tablet width, the photograph becomes a compact branded header and the white panel overlaps it with rounded top corners so the form keeps a comfortable single-column measure.
+The `/login` screen is a full-viewport split between cinematic copper-toned photography and a flat white sign-in panel. Outer edges stay square; only the inward join is deeply curved. The right panel contains one concise sign-in heading, Google and email/password authentication, the account-creation link and legal copy. Below tablet width, the photograph becomes a compact branded header and the white panel overlaps it with rounded top corners so the form keeps a comfortable single-column measure.
 
 ### Navigation and overlays
 
