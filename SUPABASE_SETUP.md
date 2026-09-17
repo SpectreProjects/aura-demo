@@ -9,6 +9,46 @@ VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
+## Password recovery email delivery
+
+AURA password recovery is handled by Supabase Auth. Resend is the SMTP delivery provider; do
+not add a Resend API key to the Vite client.
+
+1. In Supabase, install the Resend integration and connect the AURA Resend account.
+2. In Resend, verify `auth.aurareviewplatform.com`, publish Resend's SPF and DKIM records, and
+   ensure a DMARC policy exists with the DNS provider.
+3. In Supabase Auth SMTP settings, use `AURA` as the sender name and
+   `no-reply@auth.aurareviewplatform.com` as the sender address.
+4. In Supabase Auth URL Configuration, set the Site URL to
+   `https://aurareviewplatform.com` and add these redirect URLs:
+   - `https://aurareviewplatform.com/reset-password`
+   - `http://localhost:5173/reset-password`
+5. In the Supabase Recovery email template, set the subject to `Reset your AURA password` and
+   use this focused template:
+
+```html
+<div style="margin:0;background:#f4f1ed;padding:40px 18px;font-family:Arial,sans-serif;color:#080808">
+  <div style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #dedede;padding:42px">
+    <p style="margin:0 0 38px;font-size:24px;letter-spacing:0.12em">AURA</p>
+    <h1 style="margin:0 0 18px;font-size:30px;line-height:1.15;font-weight:500">
+      Choose a new password
+    </h1>
+    <p style="margin:0 0 30px;color:#626262;font-size:15px;line-height:1.6">
+      We received a request to reset your AURA password. Use the secure link below to choose a
+      new one.
+    </p>
+    <p style="margin:0 0 30px">
+      <a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#080808;color:#ffffff;padding:16px 24px;text-decoration:none;font-size:14px;letter-spacing:0.08em;text-transform:uppercase">
+        Choose a new password
+      </a>
+    </p>
+    <p style="margin:0;color:#8a8a8a;font-size:12px;line-height:1.6">
+      If you didn’t request this, you can safely ignore this email. The link can only be used once.
+    </p>
+  </div>
+</div>
+```
+
 ## SQL
 
 Run this in the Supabase SQL editor.

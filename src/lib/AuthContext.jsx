@@ -1,11 +1,17 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
-import { supabase } from './supabaseClient'
+import { initialAuthCallback, supabase } from './supabaseClient'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
   const [isAuthLoading, setIsAuthLoading] = useState(Boolean(supabase))
   const [session, setSession] = useState(null)
+  const [authEvent, setAuthEvent] = useState(null)
+  const [passwordRecoveryStatus, setPasswordRecoveryStatus] = useState(() => {
+    if (initialAuthCallback.hasError) return 'invalid'
+    if (initialAuthCallback.isPasswordRecovery) return 'checking'
+    return 'idle'
+  })
 
   useEffect(() => {
     if (!supabase) {
@@ -22,9 +28,16 @@ export function AuthProvider({ children }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      setAuthEvent(event)
       setSession(nextSession || null)
       setIsAuthLoading(false)
+
+      if (event === 'PASSWORD_RECOVERY') {
+        setPasswordRecoveryStatus('active')
+      } else if (event === 'SIGNED_OUT') {
+        setPasswordRecoveryStatus('idle')
+      }
     })
 
     return () => {
@@ -33,13 +46,26 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
+  useEffect(() => {
+    if (passwordRecoveryStatus !== 'checking') return undefined
+
+    const timer = window.setTimeout(() => {
+      setPasswordRecoveryStatus((current) => (current === 'checking' ? 'invalid' : current))
+    }, 2500)
+
+    return () => window.clearTimeout(timer)
+  }, [passwordRecoveryStatus])
+
   const value = useMemo(
     () => ({
+      authEvent,
       isAuthLoading,
+      passwordRecoveryErrorCode: initialAuthCallback.errorCode,
+      passwordRecoveryStatus,
       session,
       user: session?.user || null,
     }),
-    [isAuthLoading, session],
+    [authEvent, isAuthLoading, passwordRecoveryStatus, session],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

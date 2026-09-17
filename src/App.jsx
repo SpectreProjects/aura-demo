@@ -9,7 +9,9 @@ import Staff from './pages/dashboard/Staff'
 import Landing from './pages/Landing'
 import LegalPage from './pages/LegalPage'
 import Login from './pages/Login'
+import ForgotPassword from './pages/ForgotPassword'
 import PublicLeaderboard from './pages/PublicLeaderboard'
+import ResetPassword from './pages/ResetPassword'
 import Signup from './pages/Signup'
 import { AuthProvider, useAuth } from './lib/AuthContext'
 
@@ -40,6 +42,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/privacy" element={<LegalPage type="privacy" />} />
         <Route path="/terms" element={<LegalPage type="terms" />} />

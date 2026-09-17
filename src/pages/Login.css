@@ -205,6 +205,8 @@
   background: #b2aca6;
 }
 
+.ali-auth-panel--single { grid-template-rows: 1fr; }
+
 .ali-form {
   width: min(100%, 540px);
   align-self: center;
@@ -283,12 +285,57 @@
 .ali-field-group input:focus { border-color: var(--ali-black); background: #fafafa; }
 .ali-field-group input[aria-invalid="true"] { border-color: #a63434; }
 
+.ali-password-control { position: relative; }
+
+.ali-password-control input { padding-right: 54px; }
+
+.ali-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 13px;
+  display: inline-grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--ali-grey);
+  transform: translateY(-50%);
+  transition: color 160ms ease, background-color 160ms ease;
+}
+
+.ali-password-toggle:hover { background: #f2f2f2; color: var(--ali-black); }
+
+.ali-password-toggle svg { width: 19px; height: 19px; stroke-width: 1.7; }
+
 .ali-field-message {
   min-height: 20px;
   padding-top: 5px;
   color: #9f2d2d;
   font-size: 12px;
 }
+
+.ali-field-hint {
+  margin: 6px 0 0;
+  color: var(--ali-soft-grey);
+  font-size: 11px;
+}
+
+.ali-forgot-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -5px;
+}
+
+.ali-forgot-row a,
+.ali-text-action {
+  color: var(--ali-grey);
+  font-size: 12px;
+  font-weight: 600;
+  text-underline-offset: 4px;
+}
+
+.ali-forgot-row a:hover { color: var(--ali-black); text-decoration-thickness: 2px; }
 
 .ali-alert-slot { min-height: 52px; padding-top: 6px; }
 
@@ -300,6 +347,12 @@
   padding: 10px 12px;
   font-size: 13px;
   line-height: 1.45;
+}
+
+.ali-alert-slot .ali-status-success {
+  border-left-color: var(--ali-black);
+  background: #f4f4f4;
+  color: var(--ali-charcoal);
 }
 
 .ali-submit {
@@ -325,6 +378,48 @@
 }
 
 .ali-submit:active:not(:disabled) { transform: translateY(0); }
+
+.ali-submit-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.ali-submit-link:hover {
+  background: var(--ali-black);
+  color: var(--ali-white);
+  transform: translateY(-2px);
+}
+
+.ali-form--recovery { align-self: center; }
+
+.ali-form--recovery h1 { margin-bottom: 20px; }
+
+.ali-recovery-copy {
+  max-width: 480px;
+  margin: 0 0 38px;
+  color: var(--ali-grey);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.ali-alert-slot--recovery { min-height: 86px; padding-top: 10px; }
+
+.ali-text-action {
+  display: block;
+  margin: 18px auto 0;
+  border: 0;
+  background: transparent;
+  padding: 5px;
+  text-decoration: underline;
+}
+
+.ali-text-action:hover { color: var(--ali-black); text-decoration-thickness: 2px; }
+
+.ali-create-account--recovery { margin-top: 28px; }
+
+.ali-recovery-state .ali-submit-link { margin-top: 38px; }
 
 .ali-create-account {
   margin: 25px 0 0;
@@ -374,7 +469,9 @@
   .ali-field-group input { min-height: 48px; padding-block: 11px; }
   .ali-field-message { min-height: 17px; padding-top: 3px; }
   .ali-alert-slot { min-height: 42px; padding-top: 4px; }
+  .ali-alert-slot--recovery { min-height: 68px; }
   .ali-create-account { margin-top: 16px; }
+  .ali-recovery-copy { margin-bottom: 24px; }
 }
 
 @media (max-width: 820px) {
@@ -416,6 +513,8 @@
 
   .ali-form { padding: 0 0 38px; }
   .ali-form h1 { margin-bottom: 32px; font-size: clamp(30px, 7vw, 42px); }
+  .ali-form--recovery h1 { margin-bottom: 18px; }
+  .ali-recovery-copy { margin-bottom: 30px; }
 }
 
 @media (max-width: 420px) {
@@ -424,6 +523,7 @@
   .ali-form h1 { font-size: 30px; }
   .ali-google-action > button,
   .ali-submit { min-height: 54px; }
+  .ali-alert-slot--recovery { min-height: 76px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
