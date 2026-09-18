@@ -2,7 +2,6 @@ import {
   Activity,
   CalendarDays,
   Check,
-  ChevronDown,
   ChevronRight,
   Download,
   Gift,
@@ -29,26 +28,26 @@ const accentStyles = {
   cyan: {
     glow: '',
     icon: 'border-black/[0.06] bg-white/35 text-[#24332f]',
-    text: 'text-[#273733]',
-    stroke: '#3867F4',
+    text: 'text-[#d18a62]',
+    stroke: '#d18a62',
   },
   emerald: {
     glow: '',
     icon: 'border-black/[0.06] bg-white/35 text-[#24332f]',
-    text: 'text-[#273733]',
-    stroke: '#3867F4',
+    text: 'text-[#c4a089]',
+    stroke: '#c4a089',
   },
   violet: {
     glow: '',
     icon: 'border-black/[0.06] bg-white/35 text-[#24332f]',
-    text: 'text-[#273733]',
-    stroke: '#5D7FF6',
+    text: 'text-[#d18a62]',
+    stroke: '#b56e49',
   },
   amber: {
     glow: '',
     icon: 'border-black/[0.06] bg-white/35 text-[#24332f]',
-    text: 'text-[#273733]',
-    stroke: '#2F5BE0',
+    text: 'text-[#e2a783]',
+    stroke: '#e2a783',
   },
 }
 
@@ -277,7 +276,7 @@ function DonutChart({ counts }) {
   const safeTotal = total || 1
   const positivePercent = Math.round((counts.positive / safeTotal) * 100)
   const segments = [
-    { color: '#3867F4', value: counts.positive },
+    { color: '#d18a62', value: counts.positive },
     { color: '#ffffff', value: counts.neutral },
     { color: '#8ba09a', value: counts.negative },
   ]
@@ -528,6 +527,8 @@ export default function Overview() {
   )
   const hour = new Date().getHours()
   const greeting = hour >= 5 && hour < 12 ? 'Good Morning' : hour >= 12 && hour < 17 ? 'Good Afternoon' : 'Good Evening'
+  const accountName = account?.user?.user_metadata?.full_name || account?.user?.user_metadata?.name || ''
+  const firstName = String(accountName).trim().split(/\s+/)[0]
   const publicLeaderboardSlug = account?.businessProfile?.public_slug
 
   async function shareLeaderboard() {
@@ -547,6 +548,24 @@ export default function Overview() {
 
     setShareCopied(true)
     window.setTimeout(() => setShareCopied(false), 1800)
+  }
+
+  function exportDashboard() {
+    const rows = [
+      ['AURA dashboard export', formatDateRange(selectedRange)],
+      ['Business', businessName],
+      ['Reviews', periodOverview.reviews],
+      ['Team mentions', periodOverview.totalMentions],
+      ['Points awarded', periodOverview.points],
+      ['Pending approvals', periodOverview.nameApprovals],
+    ]
+    const csv = rows.map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(',')).join('\n')
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `aura-dashboard-${new Date().toISOString().slice(0, 10)}.csv`
+    link.click()
+    URL.revokeObjectURL(url)
   }
   const pendingApprovals = Object.values(
     periodApprovals.reduce((groups, approval) => {
@@ -638,9 +657,9 @@ export default function Overview() {
           <div className="max-w-3xl">
             <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-[#5c6d68]">Team pulse</p>
             <h2 className="text-4xl font-medium leading-[1.08] tracking-[-0.045em] text-white lg:text-[3.35rem]">
-              {greeting}, let&apos;s get you up to speed on {businessName}.
+              {greeting}{firstName ? `, ${firstName}` : ''}.
             </h2>
-            <p className="mt-4 text-lg font-normal text-slate-400">Explore what guests are saying and who they are recognising.</p>
+            <p className="mt-4 text-lg font-normal text-slate-400">Here&apos;s what guests noticed at {businessName}.</p>
           </div>
 
           <div className="flex shrink-0 flex-wrap gap-3 lg:pt-14">
@@ -693,16 +712,13 @@ export default function Overview() {
               )
             })}
           </div>
-          <button
-            className="inline-flex h-11 items-center justify-center gap-3 rounded-lg border border-white/[0.07] bg-[#0b0a0e] px-4 text-xs font-black text-slate-200 transition hover:border-violet-300/20 hover:bg-violet-300/[0.05]"
-            type="button"
-          >
+          <div className="inline-flex h-11 items-center justify-center gap-3 rounded-lg border border-white/[0.07] bg-[#0b0a0e] px-4 text-xs font-black text-slate-200">
             <CalendarDays size={16} />
             {formatDateRange(selectedRange)}
-            <ChevronDown size={15} />
-          </button>
+          </div>
           <button
             className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-white/[0.07] bg-[#0b0a0e] px-4 text-xs font-black text-slate-200 transition hover:border-violet-300/20 hover:bg-violet-300/[0.05]"
+            onClick={exportDashboard}
             type="button"
           >
             <Download size={16} />

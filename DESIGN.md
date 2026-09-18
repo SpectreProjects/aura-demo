@@ -8,13 +8,16 @@ colors:
   charcoal: "#242424"
   grey: "#626262"
   line: "#EAEAEA"
+  copper: "#A96847"
+  copper-bright: "#D18A62"
+  product-glass: "rgba(255, 255, 255, 0.045)"
 typography:
   sans:
-    fontFamily: "DM Sans, Arial, sans-serif"
+    fontFamily: "Barlow Condensed, Arial Narrow, sans-serif"
   display:
     fontFamily: "Barlow Condensed, Arial Narrow, sans-serif"
 rounded:
-  DEFAULT: "0"
+  DEFAULT: "0px"
 spacing:
   page-gutter: "clamp(24px, 5vw, 88px)"
   editorial-max: "1170px"
@@ -22,6 +25,7 @@ components:
   button: {}
   navigation: {}
   review-demo: {}
+  signup-entry: {}
   login-entry: {}
 ---
 
@@ -38,18 +42,18 @@ Spyker’s September 2026 homepage: cinematic opening, condensed typography, sta
 - Audience: owners of cafés, restaurants, salons, trades and local services in Scotland and the UK, per the project brief.
 - Page job: explain Aura’s personalised Google review replies and lead to account creation.
 - Language: English (UK). Natural, warm, direct; no unsupported metrics, endorsements or free-trial promises.
-- Register: brand marketing on `/`, with a restrained editorial extension on `/login`. Authenticated product screens retain their operational layout.
+- Register: brand marketing on `/`, with restrained editorial extensions on `/signup` and `/login`. Authenticated product screens use smoked liquid glass, graphite depth and brushed-copper emphasis while retaining their operational hierarchy.
 - Signature: the transition from a full-screen business photograph to an oversized black-and-white statement and an illustrative review-to-reply sequence.
-- Anti-references: dashboard card grids, coloured gradients, stock SaaS feature icons, invented testimonials.
-- Canonical runtime tokens: `src/pages/Landing.css`, scoped under `.aura-landing`; this document mirrors those tokens. Update both together when changing the identity. Do not migrate dashboard colours to these values.
+- Anti-references: bright SaaS gradients, blue/purple AI branding, decorative stock illustrations, excessive pill shapes and invented testimonials.
+- Canonical runtime tokens: `src/index.css` owns the project-wide type family, while `src/pages/Landing.css` owns the marketing colour and layout tokens scoped under `.aura-landing`. Update this document and those runtime owners together when changing the identity.
 
 ## Colors
 
-White and black carry the main section contrast. Charcoal is body copy, grey is secondary copy and pale grey is the divider colour. On black, secondary text is #AAAAAA. Photography supplies colour. Use current-colour focus outlines with clear offsets and system colours in forced-colours mode.
+White and black carry the main section contrast. Charcoal is body copy, grey is secondary copy and pale grey is the divider colour. On black, secondary text is #AAAAAA. Photography supplies colour on public pages. Product screens use #A96847 and #D18A62 as the only decorative accents, alongside semantic red/green states. Use current-colour focus outlines with clear offsets and system colours in forced-colours mode.
 
 ## Typography
 
-Self-hosted Barlow Condensed 500 for display headings, small uppercase labels and account buttons. Self-hosted DM Sans 400–600 for body text, navigation and the wordmark. Fonts use the SIL Open Font License, included beside the font files. Body copy is 13–15px with generous line height; large display headings use a tight 0.94–0.99 line height. Do not use a registration mark without trademark evidence.
+Self-hosted Barlow Condensed 500 is the sole project-wide type family: display headings, body copy, navigation, controls, wordmark and data figures all use it. Hierarchy comes from scale, case, tracking, colour and spacing rather than switching families. Figures use lining, tabular numerals for stable dashboard alignment. The font uses the SIL Open Font License included beside the font file. Body copy keeps generous line height; large display headings use a tight 0.94–0.99 line height. Do not use a registration mark without trademark evidence.
 
 ## Layout
 
@@ -57,17 +61,21 @@ The hero fills the small viewport height, with a 680px desktop / 640px mobile mi
 
 ## Elevation & Depth
 
-Use tonal sections, photography, spacing and hairline borders. No drop shadows, translucent cards or ornamental gradients. Dark photo overlays exist to protect white text contrast. The navigation uses the native HTML dialog top layer.
+Public pages use tonal sections, photography, spacing and hairline borders without ornamental card effects. Product pages may use restrained smoked-glass surfaces, a diffuse silver top glow and deep black shadows to create an Apple-like liquid-glass hierarchy. Glass is functional: navigation, metrics, work panels and focused conversational steps only. Dark photo overlays exist to protect white text contrast. The navigation uses the native HTML dialog top layer.
 
 ## Shapes
 
-Rectangular imagery, panels and buttons. The `/login` route keeps its outer viewport edges flat and reserves deep curves for the inward image-to-form join. Circles are limited to the media control, illustrative avatar and process indicator.
+Rectangular imagery, panels and buttons. The `/login` route and authenticated dashboard keep outer viewport edges flat and reserve one deep curve for an inward join: image-to-form on login and sidebar-to-workspace in the dashboard. Product cards use restrained 14–20px radii; conversational panels use up to 28px. Circles are limited to media controls, avatars, status dots and progress indicators.
 
 ## Components
 
 ### Buttons and actions
 
 All primary CTAs say “Create an account” and link to `/signup`. Black on white; white on photography or black. Use 52–54px minimum height, an arrow, visible focus, restrained hover and active feedback. Existing login remains `/login`.
+
+### Signup entry
+
+The `/signup` entry is a white editorial canvas with a centred AURA wordmark, one hairline panel and the monochrome assistant orb. It presents one short typewritten prompt and one rectangular black Google action. Reuse the existing production Google OAuth component and its redirect unchanged. Keep email/password login on `/login`; the public account-creation entry asks only for Google. Reduced motion uses the static orb and renders the full prompt immediately.
 
 ### Login entry
 
@@ -76,6 +84,22 @@ The `/login` screen is a full-viewport split between cinematic copper-toned phot
 ### Navigation and overlays
 
 Menu on the left, AURA centred and Log in on the right. Menu is a full-screen modal dialog with native focus containment, Escape/close handling, restored trigger focus and locked background scrolling. Section links close the menu, scroll to the section and focus it. Footer includes account, login and existing legal routes. No public developer sign-in shortcut or waitlist form.
+
+### Dashboard shell
+
+The dashboard uses a flat graphite sidebar and a smoked-glass workspace joined by one deep inward curve. The sidebar wordmark is text-only and collapses to an icon rail through the existing control. Active navigation uses a slim copper edge and a quiet glass fill. The same shell, tokens and responsive bottom navigation apply to Overview, Reviews, Team, Leaderboard, Rewards and Settings.
+
+### Conversational workflows
+
+Staff, rewards, points and Google Business setup remain step-by-step conversations. They open on a darkened, blurred scrim in a focused graphite glass panel, with copper used for progress, focus and the primary action. Mobile panels stay within the small viewport and scroll internally. Native select popovers remain platform-owned; AURA owns the closed control geometry, type, border and focus state.
+
+### Canonical UI Map
+
+| Capability | Canonical owner | Source of truth | Allowed variants | Verification |
+|---|---|---|---|---|
+| Select/Listbox | Native platform select | DESIGN.md + `premium-ui.json` | Native popup with AURA-authored closed control | Keyboard, narrow viewport, desktop browser |
+| Form | Existing dashboard form and conversational modal patterns | Dashboard route components | Inline settings, modal stepper | Validation, loading, error and success states |
+| Scrollbar | Global application stylesheet | `src/index.css` | Workspace and internally scrolling modal | Chromium screenshot + standards properties |
 
 ### Iconography
 
@@ -92,6 +116,6 @@ All reviews and replies are explicitly illustrative. Photography depicts busines
 ## Do’s and Don’ts
 
 - Do preserve spacious editorial pacing and natural business language.
-- Do scope new landing styles and fonts to the marketing page.
+- Do use the global Barlow Condensed family across marketing, authentication and product screens.
 - Don’t transfer marketing animations or spacing into operational dashboard screens.
 - Don’t add fabricated evidence or claims to fill a layout.

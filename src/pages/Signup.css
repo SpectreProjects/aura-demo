@@ -1,0 +1,395 @@
+.aura-signup {
+  --as-black: #080808;
+  --as-charcoal: #242424;
+  --as-grey: #626262;
+  --as-line: #eaeaea;
+  --as-white: #fff;
+  min-height: 100svh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--as-white);
+  color: var(--as-black);
+  padding: 27px clamp(20px, 5vw, 72px) 26px;
+  font-family: var(--aura-font-family);
+  font-weight: 400;
+  line-height: 1.5;
+  color-scheme: light;
+}
+
+.as-auth-loading {
+  justify-content: center;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+}
+
+.aura-signup *,
+.aura-signup *::before,
+.aura-signup *::after {
+  box-sizing: border-box;
+}
+
+.aura-signup ::selection {
+  background: var(--as-black);
+  color: var(--as-white);
+}
+
+.aura-signup a {
+  color: inherit;
+}
+
+.aura-signup a:focus-visible,
+.aura-signup button:focus-visible {
+  outline: 2px solid var(--as-black);
+  outline-offset: 5px;
+}
+
+.as-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.as-skip {
+  position: fixed;
+  z-index: 10;
+  top: 12px;
+  left: 18px;
+  padding: 10px 15px;
+  background: var(--as-black);
+  color: var(--as-white) !important;
+  font-size: 13px;
+  text-decoration: none;
+  transform: translateY(-160%);
+  transition: transform 160ms ease;
+}
+
+.as-skip:focus {
+  transform: translateY(0);
+}
+
+.as-header {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.as-wordmark {
+  padding-left: 0.1em;
+  color: var(--as-black);
+  font-size: 38px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.as-card {
+  position: relative;
+  width: min(100%, 760px);
+  min-height: 590px;
+  margin: 82px auto 28px;
+  border: 1px solid #d8d8d8;
+  background: var(--as-white);
+  padding: 80px clamp(28px, 7vw, 84px) 38px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.as-card:focus {
+  outline: none;
+}
+
+.as-orb {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 116px;
+  height: 116px;
+  overflow: hidden;
+  border: 8px solid var(--as-white);
+  border-radius: 50%;
+  background: #000;
+  transform: translate(-50%, -50%);
+}
+
+.as-orb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.as-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 52px;
+  color: #757575;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.as-intro {
+  text-align: center;
+}
+
+.as-kicker {
+  margin: 0 0 20px;
+  color: var(--as-grey);
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.aura-signup h1 {
+  min-height: 1em;
+  margin: 0;
+  color: var(--as-black);
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: clamp(62px, 7.4vw, 92px);
+  font-weight: 500;
+  letter-spacing: -0.018em;
+  line-height: 0.94;
+  text-transform: uppercase;
+}
+
+.aura-signup h1:focus {
+  outline: none;
+}
+
+.as-type-caret {
+  display: inline-block;
+  width: 0.055em;
+  height: 0.76em;
+  margin-left: 0.055em;
+  background: currentColor;
+  animation: as-caret 740ms steps(1, end) infinite;
+  vertical-align: 0.02em;
+}
+
+.as-prompt {
+  max-width: 490px;
+  margin: 24px auto 34px;
+  color: var(--as-charcoal);
+  font-size: clamp(16px, 2vw, 19px);
+  line-height: 1.55;
+}
+
+.as-google-action {
+  width: min(100%, 520px);
+  margin: 0 auto;
+}
+
+/* The existing production GoogleAuthButton keeps its OAuth and redirect logic; this wrapper only restyles it. */
+.aura-signup .as-google-action > button {
+  width: 100%;
+  min-height: 58px;
+  border: 1px solid var(--as-black);
+  border-radius: 0;
+  background: var(--as-black);
+  box-shadow: none;
+  color: var(--as-white);
+  cursor: pointer;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+  transform: none;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.aura-signup .as-google-action > button:hover:not(:disabled) {
+  background: var(--as-charcoal);
+  color: var(--as-white);
+  transform: translateY(-2px);
+}
+
+.aura-signup .as-google-action > button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.aura-signup .as-google-action > button:disabled {
+  cursor: wait;
+  opacity: 0.58;
+}
+
+.as-message-slot {
+  width: min(100%, 520px);
+  min-height: 52px;
+  margin: 12px auto 0;
+}
+
+.as-alert {
+  margin: 0;
+  border-left: 2px solid #9d4f4f;
+  background: #fff5f5;
+  color: #6e2727;
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.as-consent,
+.as-account-link {
+  margin: 0;
+  color: var(--as-grey);
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.as-consent a,
+.as-account-link a {
+  color: var(--as-black);
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.as-account-link {
+  margin-top: 13px;
+  font-size: 13px;
+}
+
+.as-footer-note {
+  margin: auto 0 0;
+  color: var(--as-grey);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
+@keyframes as-caret {
+  0%,
+  48% {
+    opacity: 1;
+  }
+
+  49%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .aura-signup {
+    padding: 21px 16px 22px;
+  }
+
+  .as-wordmark {
+    font-size: 32px;
+  }
+
+  .as-card {
+    min-height: 0;
+    margin-top: 70px;
+    padding: 68px 21px 30px;
+  }
+
+  .as-orb {
+    width: 100px;
+    height: 100px;
+    border-width: 7px;
+  }
+
+  .as-meta {
+    margin-bottom: 39px;
+    font-size: 11px;
+  }
+
+  .as-kicker {
+    margin-bottom: 17px;
+  }
+
+  .aura-signup h1 {
+    font-size: clamp(52px, 17vw, 68px);
+    min-height: 1.88em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .as-prompt {
+    margin-top: 21px;
+    margin-bottom: 29px;
+    font-size: 16px;
+  }
+
+  .as-message-slot {
+    min-height: 42px;
+  }
+
+  .as-footer-note {
+    display: none;
+  }
+}
+
+@media (max-height: 720px) and (min-width: 601px) {
+  .aura-signup {
+    padding-top: 18px;
+  }
+
+  .as-card {
+    min-height: 530px;
+    margin-top: 65px;
+    padding-top: 68px;
+    padding-bottom: 28px;
+  }
+
+  .as-meta {
+    margin-bottom: 34px;
+  }
+
+  .as-prompt {
+    margin-top: 20px;
+    margin-bottom: 26px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aura-signup *,
+  .aura-signup *::before,
+  .aura-signup *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  .as-type-caret {
+    display: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .as-orb {
+    border-color: Canvas;
+  }
+
+  .aura-signup .as-google-action > button,
+  .as-alert {
+    border: 1px solid ButtonText;
+  }
+}

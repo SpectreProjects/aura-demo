@@ -27,7 +27,7 @@ export default function Settings() {
         </h2>
       </section>
 
-      <form className="max-w-3xl overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0b0a0e]/90" onSubmit={saveSettings}>
+      <form className="max-w-3xl overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0b0a0e]/90" noValidate onSubmit={saveSettings}>
         <div className="flex items-start justify-between gap-5 border-b border-white/[0.07] p-6 sm:p-7">
           <div className="flex items-start gap-4">
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/[0.07] bg-white/35 text-[#263632]">

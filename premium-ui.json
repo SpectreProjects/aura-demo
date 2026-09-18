@@ -1,0 +1,18 @@
+{
+  "profile": "product-admin",
+  "sourceRoots": [
+    "src/pages/dashboard",
+    "src/components/BusinessSetupModal.jsx",
+    "src/components/LeaderboardExperience.jsx"
+  ],
+  "locale": "en-GB",
+  "canonicalMap": "DESIGN.md",
+  "requiredCapabilities": [
+    "Select/Listbox",
+    "Form",
+    "Scrollbar"
+  ],
+  "ownership": {
+    "Select/Listbox": "native"
+  }
+}

@@ -102,7 +102,7 @@ export default function Leaderboard() {
           </p>
         </div>
 
-        <form className="rounded-2xl border border-[#17201e]/10 bg-white/55 p-4" onSubmit={savePin}>
+        <form className="rounded-2xl border border-[#17201e]/10 bg-white/55 p-4" noValidate onSubmit={savePin}>
           <div className="mb-3 flex items-center justify-between gap-3">
             <p className="flex items-center gap-2 text-sm font-black text-[#17201e]">
               <LockKeyhole className="text-[#3867F4]" size={16} /> Optional company PIN

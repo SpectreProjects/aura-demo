@@ -154,10 +154,11 @@ export default function StaffModal({ allowAddAnother = true, categories, initial
   const motionDistance = reduceMotion ? 0 : direction * 72
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#17201e]/55 px-4 py-8 backdrop-blur-md">
+    <div className="dashboard-conversation-overlay fixed inset-0 z-50 flex items-center justify-center px-4 py-8 backdrop-blur-md">
       <form
         aria-label={title}
-        className="w-full max-w-2xl overflow-hidden rounded-[1.75rem] border border-white/60 bg-[#edf5f2] text-[#17201e] shadow-[0_34px_140px_rgba(23,32,30,0.28)]"
+        className="dashboard-conversation-card w-full max-w-2xl overflow-hidden rounded-[1.75rem] border text-[#17201e]"
+        noValidate
         onSubmit={handleSubmit}
       >
         <div className="flex items-center justify-between border-b border-[#17201e]/10 px-6 py-5 sm:px-8">

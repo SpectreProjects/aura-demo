@@ -5,7 +5,6 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Settings2,
-  Sparkles,
   Star,
   Trophy,
   Users,
@@ -458,21 +457,18 @@ function addPointTotals(staff, pointEvents) {
 function DesktopSidebar({ collapsed, isSigningOut, nameApprovalsCount, onCollapse, onSignOut }) {
   return (
     <aside
-      className={`dashboard-desktop-sidebar hidden h-full shrink-0 flex-col border-r border-black/[0.07] bg-white/10 px-3 py-5 transition-[width] duration-300 lg:flex ${
-        collapsed ? 'w-20' : 'w-64'
+      className={`dashboard-desktop-sidebar hidden h-full shrink-0 flex-col px-3 py-5 transition-[width] duration-300 lg:flex ${
+        collapsed ? 'w-[74px]' : 'w-[238px]'
       }`}
     >
-      <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between px-2'}`}>
-        <Link to="/" aria-label="AURA home" className="flex items-center gap-3 rounded-xl">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.9rem] bg-[#3867F4] text-white">
-            <Sparkles size={19} strokeWidth={2.2} />
-          </span>
-          {!collapsed && <span className="text-base font-black tracking-[0.12em] text-[#17201e]">AURA</span>}
+      <div className={`flex min-h-10 items-center ${collapsed ? 'justify-center' : 'justify-between px-2'}`}>
+        <Link to="/" aria-label="AURA home" className="dashboard-wordmark rounded-lg">
+          {collapsed ? <span aria-hidden="true">A</span> : <span>AURA</span>}
         </Link>
         {!collapsed && (
           <button
             aria-label="Collapse sidebar"
-            className="flex h-9 w-9 items-center justify-center rounded-xl text-[#5e706b] transition hover:bg-white/45 hover:text-[#17201e]"
+            className="dashboard-collapse-control"
             onClick={onCollapse}
             type="button"
           >
@@ -484,7 +480,7 @@ function DesktopSidebar({ collapsed, isSigningOut, nameApprovalsCount, onCollaps
       {collapsed && (
         <button
           aria-label="Expand sidebar"
-          className="mx-auto mt-4 flex h-9 w-9 items-center justify-center rounded-xl text-[#5e706b] transition hover:bg-white/45 hover:text-[#17201e]"
+          className="dashboard-collapse-control mx-auto mt-4"
           onClick={onCollapse}
           type="button"
         >
@@ -492,15 +488,15 @@ function DesktopSidebar({ collapsed, isSigningOut, nameApprovalsCount, onCollaps
         </button>
       )}
 
-      <nav className="mt-12 space-y-2">
+      <nav className="mt-12 space-y-1.5">
         {navItems.map((item) => (
           <NavLink
             aria-label={collapsed ? item.label : undefined}
             className={({ isActive }) =>
-              `relative flex h-12 items-center rounded-xl text-sm font-semibold outline-none transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#17201e]/20 ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} ${
+              `dashboard-nav-link relative flex h-12 items-center rounded-xl text-sm font-semibold outline-none transition-all duration-200 ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} ${
                 isActive
-                  ? 'bg-white/65 text-[#17201e] shadow-[0_8px_24px_rgba(59,82,77,0.06)]'
-                  : 'text-[#60716d] hover:bg-white/35 hover:text-[#17201e]'
+                  ? 'is-active'
+                  : ''
               }`
             }
             end={item.end}
@@ -510,7 +506,7 @@ function DesktopSidebar({ collapsed, isSigningOut, nameApprovalsCount, onCollaps
             <item.icon size={17} />
             {!collapsed && item.label}
             {item.href === '/dashboard/reviews' && nameApprovalsCount > 0 && (
-              <span className={`${collapsed ? 'absolute right-1.5 top-1.5 h-2 w-2' : 'ml-auto flex h-5 min-w-5 items-center justify-center px-1 text-[10px]'} rounded-full bg-[#3867F4] font-black text-white`}>
+              <span className={`${collapsed ? 'absolute right-1.5 top-1.5 h-2 w-2' : 'ml-auto flex h-5 min-w-5 items-center justify-center px-1 text-[10px]'} dashboard-nav-badge rounded-full font-black`}>
                 {!collapsed && nameApprovalsCount}
               </span>
             )}
@@ -519,7 +515,7 @@ function DesktopSidebar({ collapsed, isSigningOut, nameApprovalsCount, onCollaps
       </nav>
       <button
         aria-label={collapsed ? 'Log out' : undefined}
-        className={`mt-auto flex h-12 items-center rounded-xl border border-black/[0.07] bg-white/25 text-sm font-semibold text-[#52645f] transition hover:bg-white/55 hover:text-[#17201e] disabled:opacity-50 ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'}`}
+        className={`dashboard-signout mt-auto flex h-12 items-center rounded-xl text-sm font-semibold transition disabled:opacity-50 ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'}`}
         disabled={isSigningOut}
         onClick={onSignOut}
         type="button"
@@ -533,12 +529,12 @@ function DesktopSidebar({ collapsed, isSigningOut, nameApprovalsCount, onCollaps
 
 function MobileNav({ nameApprovalsCount }) {
   return (
-    <nav className="dashboard-mobile-nav fixed inset-x-3 bottom-3 z-30 grid grid-cols-6 rounded-2xl border border-black/10 bg-[#d8e8e4]/95 p-2 text-[#53635f] shadow-[0_22px_65px_rgba(32,49,45,0.18)] backdrop-blur-xl lg:hidden">
+    <nav className="dashboard-mobile-nav fixed inset-x-3 bottom-3 z-30 grid grid-cols-6 rounded-2xl p-2 backdrop-blur-xl lg:hidden">
       {navItems.map((item) => (
         <NavLink
           className={({ isActive }) =>
-            `relative flex flex-col items-center justify-center gap-1 rounded-xl py-2 text-[10px] font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-[#17201e]/20 ${
-              isActive ? 'bg-[#3867F4] text-white' : 'text-[#53635f]'
+            `relative flex flex-col items-center justify-center gap-1 rounded-xl py-2 text-[10px] font-bold outline-none transition ${
+              isActive ? 'is-active' : ''
             }`
           }
           end={item.end}
@@ -548,7 +544,7 @@ function MobileNav({ nameApprovalsCount }) {
           <item.icon size={17} />
           {item.label}
           {item.href === '/dashboard/reviews' && nameApprovalsCount > 0 && (
-            <span className="absolute right-2 top-1 h-2 w-2 rounded-full bg-[#3867F4]" />
+            <span className="dashboard-nav-badge absolute right-2 top-1 h-2 w-2 rounded-full" />
           )}
         </NavLink>
       ))}
@@ -1496,8 +1492,8 @@ export default function DashboardLayout() {
   }
 
   return (
-    <main className="dashboard-shell h-screen overflow-hidden bg-[#d8e8e4] text-[#17201e]">
-      <div className="dashboard-frame relative flex h-full overflow-hidden bg-[#d8e8e4]">
+    <main className="dashboard-shell h-screen overflow-hidden">
+      <div className="dashboard-frame relative flex h-full overflow-hidden">
         <DesktopSidebar
           collapsed={isSidebarCollapsed}
           isSigningOut={isSigningOut}
@@ -1506,18 +1502,18 @@ export default function DashboardLayout() {
           onSignOut={handleSignOut}
         />
 
-        <div className="h-full min-w-0 flex-1 overflow-y-auto overscroll-contain pb-28 lg:pb-0">
+        <div className="dashboard-workspace h-full min-w-0 flex-1 overflow-y-auto overscroll-contain pb-28 lg:pb-0">
           {!isOverviewRoute && (
-            <header className="dashboard-topbar sticky top-0 z-20 border-b border-black/[0.07] bg-[#d8e8e4]/85 px-5 py-4 backdrop-blur-2xl sm:px-8 lg:px-10">
+            <header className="dashboard-topbar sticky top-0 z-20 px-5 py-4 backdrop-blur-2xl sm:px-8 lg:px-10">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#667873]">Workspace</p>
-                  <h1 className="text-2xl font-semibold tracking-tight text-[#17201e] sm:text-3xl">
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#a66f50]">Workspace</p>
+                  <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
                     AURA dashboard
                   </h1>
                 </div>
                 <button
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-black/[0.07] bg-white/45 px-4 text-sm font-semibold text-[#33433f] transition hover:bg-white/80 disabled:cursor-not-allowed disabled:opacity-60 lg:hidden"
+                  className="dashboard-quiet-action inline-flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 lg:hidden"
                   disabled={isSigningOut}
                   onClick={handleSignOut}
                   type="button"
@@ -1538,7 +1534,7 @@ export default function DashboardLayout() {
           >
             {accountNotice ? (
               <div
-                className="mb-5 flex items-center justify-between gap-4 rounded-2xl border border-[#b9d2cb] bg-white/70 px-4 py-3 text-sm font-semibold text-[#33433f] shadow-sm"
+                className="dashboard-notice mb-5 flex items-center justify-between gap-4 rounded-2xl px-4 py-3 text-sm font-semibold"
                 role="status"
               >
                 <span>{accountNotice}</span>

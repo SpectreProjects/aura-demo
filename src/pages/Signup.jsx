@@ -1,28 +1,63 @@
-import { ArrowRight, Sparkles, UserPlus } from 'lucide-react'
-import { useState } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useReducedMotion } from 'framer-motion'
+import { Link, Navigate } from 'react-router-dom'
 import GoogleAuthButton from '../components/GoogleAuthButton'
 import { useAuth } from '../lib/AuthContext'
-import { supabase } from '../lib/supabaseClient'
+import './Signup.css'
 
-const initialForm = {
-  businessName: '',
-  email: '',
-  password: '',
+const heading = 'Let’s set up Aura.'
+
+function TypewriterHeading() {
+  const reducedMotion = useReducedMotion()
+  const [visibleCharacters, setVisibleCharacters] = useState(0)
+
+  useEffect(() => {
+    if (reducedMotion) return undefined
+
+    let timer
+    const revealNextCharacter = () => {
+      setVisibleCharacters((current) => {
+        const next = Math.min(current + 1, heading.length)
+        if (next < heading.length) {
+          timer = window.setTimeout(revealNextCharacter, 28)
+        }
+        return next
+      })
+    }
+
+    timer = window.setTimeout(revealNextCharacter, 180)
+    return () => window.clearTimeout(timer)
+  }, [reducedMotion])
+
+  const characterCount = reducedMotion ? heading.length : visibleCharacters
+
+  return (
+    <h1 id="signup-title" tabIndex={-1}>
+      <span className="as-sr-only">{heading}</span>
+      <span aria-hidden="true">
+        {heading.slice(0, characterCount)}
+        <span className="as-type-caret" />
+      </span>
+    </h1>
+  )
 }
 
 export default function Signup() {
-  const navigate = useNavigate()
   const { isAuthLoading, session } = useAuth()
-  const [form, setForm] = useState(initialForm)
   const [errorMessage, setErrorMessage] = useState('')
-  const [successMessage, setSuccessMessage] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useEffect(() => {
+    document.title = 'Create your account — AURA'
+    window.scrollTo({ top: 0, behavior: 'auto' })
+    window.requestAnimationFrame(() => {
+      document.getElementById('signup-title')?.focus({ preventScroll: true })
+    })
+  }, [])
 
   if (isAuthLoading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#020617] px-5 text-sm font-semibold text-white" aria-busy="true">
-        Checking your account…
+      <main aria-busy="true" className="aura-signup as-auth-loading">
+        <p>Checking your account…</p>
       </main>
     )
   }
@@ -31,159 +66,63 @@ export default function Signup() {
     return <Navigate state={{ notice: 'already-signed-in' }} to="/dashboard" replace />
   }
 
-  function updateField(field, value) {
-    setForm((current) => ({ ...current, [field]: value }))
-    setErrorMessage('')
-    setSuccessMessage('')
-  }
-
-  async function handleSignup(event) {
-    event.preventDefault()
-    setErrorMessage('')
-    setSuccessMessage('')
-
-    const businessName = form.businessName.trim()
-    const email = form.email.trim()
-
-    if (!supabase) {
-      setErrorMessage('AURA signup is not available right now. Please try again soon.')
-      return
-    }
-
-    setIsSubmitting(true)
-
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password: form.password,
-      options: {
-        data: {
-          business_name: businessName,
-        },
-      },
-    })
-
-    if (authError) {
-      console.error('[Supabase Auth] Signup error:', authError)
-      setErrorMessage(authError.message || 'We could not create your account. Please try again.')
-      setIsSubmitting(false)
-      return
-    }
-
-    if (authData.session && authData.user) {
-      const { error: profileError } = await supabase.from('business_profiles').upsert(
-        {
-          business_name: businessName,
-          user_id: authData.user.id,
-        },
-        { onConflict: 'user_id' },
-      )
-
-      if (profileError) {
-        console.error('[Supabase] Business profile creation error:', profileError)
-        setErrorMessage('Your account was created, but we could not create the business profile yet.')
-        setIsSubmitting(false)
-        return
-      }
-
-      setIsSubmitting(false)
-      navigate('/dashboard')
-      return
-    }
-
-    setIsSubmitting(false)
-    setSuccessMessage('Account created. Please check your email to confirm your account, then log in.')
-    setForm(initialForm)
-  }
-
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#020617] px-5 py-10 text-white">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_-10%,rgba(88,80,236,0.24),transparent_28%),radial-gradient(circle_at_90%_72%,rgba(14,165,233,0.5),transparent_34%),linear-gradient(135deg,#030414_0%,#050927_50%,#06185c_100%)]" />
-      <section className="relative z-10 w-full max-w-lg">
-        <Link to="/" className="mb-8 flex items-center justify-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-violet-500/20 text-white shadow-[0_0_42px_rgba(124,58,237,0.32)] backdrop-blur">
-            <Sparkles size={20} />
-          </span>
-          <span className="text-xl font-black">AURA</span>
+    <main className="aura-signup">
+      <a className="as-skip" href="#signup-card">
+        Skip to sign in
+      </a>
+
+      <header className="as-header">
+        <Link aria-label="AURA home" className="as-wordmark" to="/">
+          AURA
         </Link>
+      </header>
 
-        <form
-          className="rounded-[2rem] border border-white/10 bg-white/[0.07] p-6 shadow-[0_30px_120px_rgba(0,0,0,0.34)] backdrop-blur-2xl sm:p-8"
-          onSubmit={handleSignup}
-        >
-          <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-950">
-            <UserPlus size={22} />
-          </div>
-          <h1 className="text-3xl font-black tracking-tight text-white">Create your account</h1>
-          <p className="mt-2 text-sm leading-6 text-slate-400">
-            Start a private AURA workspace for your company.
+      <section aria-labelledby="signup-title" className="as-card" id="signup-card">
+        <picture aria-hidden="true" className="as-orb">
+          <source
+            media="(prefers-reduced-motion: reduce)"
+            srcSet="/onboarding/aura-bubble-static.png"
+          />
+          <img alt="" height="500" src="/onboarding/aura-bubble.gif" width="500" />
+        </picture>
+
+        <div className="as-meta" aria-hidden="true">
+          <span>Your Aura workspace</span>
+          <span>Secure sign in</span>
+        </div>
+
+        <div className="as-intro">
+          <p className="as-kicker">A quick introduction</p>
+          <TypewriterHeading />
+          <p className="as-prompt">
+            First, sign in with the Google account you’d like to use for Aura.
           </p>
+        </div>
 
-          <div className="mt-6">
-            <GoogleAuthButton label="Sign up with Google" onError={setErrorMessage} />
-          </div>
+        <div className="as-google-action">
+          <GoogleAuthButton label="Continue with Google" onError={setErrorMessage} />
+        </div>
 
-          <div className="my-6 flex items-center gap-3" aria-hidden="true">
-            <span className="h-px flex-1 bg-white/10" />
-            <span className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">or</span>
-            <span className="h-px flex-1 bg-white/10" />
-          </div>
-
-          <div className="space-y-4">
-            <input
-              className="aura-field"
-              onChange={(event) => updateField('businessName', event.target.value)}
-              placeholder="Business or company name"
-              required
-              value={form.businessName}
-            />
-            <input
-              className="aura-field"
-              onChange={(event) => updateField('email', event.target.value)}
-              placeholder="Email"
-              required
-              type="email"
-              value={form.email}
-            />
-            <input
-              className="aura-field"
-              minLength={6}
-              onChange={(event) => updateField('password', event.target.value)}
-              placeholder="Password"
-              required
-              type="password"
-              value={form.password}
-            />
-          </div>
-
-          {errorMessage && (
-            <p className="mt-4 rounded-2xl border border-rose-300/20 bg-rose-400/10 px-4 py-3 text-sm font-semibold text-rose-100">
+        <div aria-live="polite" className="as-message-slot">
+          {errorMessage ? (
+            <p className="as-alert" role="alert">
               {errorMessage}
             </p>
-          )}
+          ) : null}
+        </div>
 
-          {successMessage && (
-            <p className="mt-4 rounded-2xl border border-emerald-300/20 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-100">
-              {successMessage}
-            </p>
-          )}
+        <p className="as-consent">
+          By continuing, you agree to Aura’s <Link to="/terms">Terms</Link> and acknowledge the{' '}
+          <Link to="/privacy">Privacy Policy</Link>.
+        </p>
 
-          <button
-            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-4 text-sm font-black text-slate-950 transition hover:-translate-y-0.5 hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={isSubmitting}
-            type="submit"
-          >
-            {isSubmitting ? 'Creating account...' : 'Create account'}
-            <ArrowRight size={18} />
-          </button>
-
-          <p className="mt-5 text-center text-sm text-slate-400">
-            Already have an account?{' '}
-            <Link className="font-bold text-white transition hover:text-cyan-100" to="/login">
-              Log in
-            </Link>
-          </p>
-        </form>
+        <p className="as-account-link">
+          Already have an account? <Link to="/login">Log in</Link>
+        </p>
       </section>
+
+      <p className="as-footer-note">Thoughtful replies. A more personal presence.</p>
     </main>
   )
 }

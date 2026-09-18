@@ -67,7 +67,7 @@ export default function BusinessSetupModal({ isOpen, onClose, onConnect }) {
       {isOpen && (
         <motion.div
           animate={{ opacity: 1 }}
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-[#080b0f]/75 p-4 backdrop-blur-md"
+          className="dashboard-conversation-overlay fixed inset-0 z-[80] flex items-center justify-center p-4 backdrop-blur-md"
           exit={{ opacity: 0 }}
           initial={{ opacity: 0 }}
         >
@@ -75,7 +75,7 @@ export default function BusinessSetupModal({ isOpen, onClose, onConnect }) {
             animate={{ opacity: 1, y: 0 }}
             aria-labelledby="business-setup-title"
             aria-modal="true"
-            className="relative max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-[2rem] border border-black/10 bg-[#e8f1ef] text-[#17201e] shadow-[0_30px_120px_rgba(0,0,0,0.48)]"
+            className="dashboard-conversation-card relative max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-[2rem] border text-[#17201e]"
             exit={{ opacity: 0, y: 18 }}
             initial={{ opacity: 0, y: 24 }}
             role="dialog"
@@ -113,7 +113,7 @@ export default function BusinessSetupModal({ isOpen, onClose, onConnect }) {
                     Search the business name with its town or postcode, then choose the exact Google listing.
                   </p>
 
-                  <form className="mt-8" onSubmit={searchBusinesses}>
+                  <form className="mt-8" noValidate onSubmit={searchBusinesses}>
                     <div className="flex flex-col gap-3 sm:flex-row">
                       <label className="flex h-14 min-w-0 flex-1 items-center gap-3 rounded-xl border border-black/10 bg-white/60 px-4 focus-within:border-[#3867F4] focus-within:ring-4 focus-within:ring-[#3867F4]/10">
                         <Search className="shrink-0 text-slate-500" size={18} />
