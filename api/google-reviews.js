@@ -1,4 +1,5 @@
-import { publicGoogleReview, requireGoogleUser } from '../server/google-business.js'
+import { getGoogleConnection, requireGoogleUser } from '../server/google-business.js'
+import { listGoogleReviews } from '../server/google-review-sync.js'
 import { handleApiError, sendJson } from '../server/places.js'
 
 export default async function handler(request, response) {
@@ -10,15 +11,15 @@ export default async function handler(request, response) {
 
   try {
     const { admin, businessProfile, user } = await requireGoogleUser(request)
-    const { data, error } = await admin
-      .from('google_reviews')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('business_profile_id', businessProfile.id)
-      .order('review_created_at', { ascending: false })
-      .limit(500)
-    if (error) throw error
-    sendJson(response, 200, { reviews: (data || []).map(publicGoogleReview) })
+    const connection = await getGoogleConnection(admin, user.id, {
+      businessProfileId: businessProfile.id,
+    })
+    const reviews = await listGoogleReviews(admin, {
+      businessProfileId: businessProfile.id,
+      connectionId: connection.id,
+      userId: user.id,
+    })
+    sendJson(response, 200, { reviews })
   } catch (error) {
     handleApiError(response, error)
   }

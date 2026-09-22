@@ -63,7 +63,7 @@ export default function Signup() {
   }
 
   if (session) {
-    return <Navigate state={{ notice: 'already-signed-in' }} to="/dashboard" replace />
+    return <Navigate to="/setup/google" replace />
   }
 
   return (
@@ -101,7 +101,7 @@ export default function Signup() {
         </div>
 
         <div className="as-google-action">
-          <GoogleAuthButton label="Continue with Google" onError={setErrorMessage} />
+          <GoogleAuthButton label="Continue with Google" onError={setErrorMessage} redirectPath="/setup/google" />
         </div>
 
         <div aria-live="polite" className="as-message-slot">

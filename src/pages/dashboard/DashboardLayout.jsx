@@ -21,6 +21,7 @@ import {
   defaultStaff,
 } from '../../data/mvpData'
 import { useAuth } from '../../lib/AuthContext'
+import { callAuraApi } from '../../lib/auraApi'
 import { supabase } from '../../lib/supabaseClient'
 import {
   applyReviewToStaff,
@@ -34,7 +35,6 @@ import {
 
 const STORAGE_KEY = 'aura-dashboard-state-v1'
 const DEV_ACCOUNT_EMAIL = 'info@spectreprojects.co.uk'
-const defaultAutoReplySettings = { delayUnit: 'hours', delayValue: 2, enabled: true }
 const BUSINESS_PROFILE_FIELDS = 'id,user_id,business_name,public_slug,leaderboard_public,google_place_id,google_place_connected_at,created_at'
 
 const navItems = [
@@ -134,18 +134,6 @@ function normalizeReviews(reviews) {
       created_at: review.created_at || new Date().toISOString(),
     }))
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-}
-
-function normalizeAutoReplySettings(settings) {
-  const delayUnit = ['minutes', 'hours', 'days'].includes(settings?.delayUnit)
-    ? settings.delayUnit
-    : defaultAutoReplySettings.delayUnit
-
-  return {
-    delayUnit,
-    delayValue: Math.max(0, Number(settings?.delayValue ?? defaultAutoReplySettings.delayValue)),
-    enabled: settings?.enabled !== false,
-  }
 }
 
 function normalizeNameApprovals(approvals) {
@@ -318,29 +306,6 @@ function buildPlacesDashboardState(place, baseStaff, existingPointEvents = []) {
   }
 }
 
-async function callAuraApi(path, body, method = 'POST') {
-  if (!supabase) throw new Error('Google business search is available on the live AURA dashboard.')
-  const { data } = await supabase.auth.getSession()
-  const accessToken = data.session?.access_token
-  if (!accessToken) throw new Error('Please sign in again to connect Google reviews.')
-
-  const response = await fetch(path, {
-    body: method === 'GET' ? undefined : JSON.stringify(body || {}),
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-    },
-    method,
-  })
-  const payload = await response.json().catch(() => ({}))
-  if (!response.ok) {
-    const error = new Error(payload.error || 'AURA could not complete that request.')
-    error.code = payload.code
-    throw error
-  }
-  return payload
-}
-
 function buildDemoDashboardState(reviews) {
   let demoStaff = normalizeStaff(defaultStaff)
   const demoPointEvents = []
@@ -366,7 +331,6 @@ function readLocalState() {
     if (!saved) throw new Error('No saved dashboard state')
 
     return {
-      autoReplySettings: normalizeAutoReplySettings(saved.autoReplySettings),
       categories: normalizeCategories(saved.categories),
       nameApprovals: normalizeNameApprovals(saved.nameApprovals),
       pointEvents: normalizePointEvents(saved.pointEvents),
@@ -378,7 +342,6 @@ function readLocalState() {
     }
   } catch {
     return {
-      autoReplySettings: defaultAutoReplySettings,
       categories: defaultCategories,
       nameApprovals: [],
       pointEvents: [],
@@ -568,7 +531,6 @@ export default function DashboardLayout() {
 
     const demoState = buildDemoDashboardState(defaultReviews)
     return {
-      autoReplySettings: defaultAutoReplySettings,
       categories: defaultCategories,
       nameApprovals: [],
       pointEvents: demoState.pointEvents,
@@ -584,7 +546,6 @@ export default function DashboardLayout() {
       ? { business_name: 'Hilton Glasgow Demo', public_slug: 'hilton-glasgow-demo-9663c5f4' }
       : null,
   )
-  const [autoReplySettings, setAutoReplySettings] = useState(initialState.autoReplySettings)
   const [categories, setCategories] = useState(initialState.categories)
   const [nameApprovals, setNameApprovals] = useState(initialState.nameApprovals)
   const [pointEvents, setPointEvents] = useState(initialState.pointEvents)
@@ -607,6 +568,7 @@ export default function DashboardLayout() {
   )
   const [leaderboardPinEnabled, setLeaderboardPinEnabled] = useState(false)
   const [isBusinessSetupOpen, setIsBusinessSetupOpen] = useState(false)
+  const [googleSetupStatus, setGoogleSetupStatus] = useState(null)
 
   useEffect(() => {
     if (location.state?.notice !== 'already-signed-in') return
@@ -752,6 +714,7 @@ export default function DashboardLayout() {
           }
         }
 
+        let googleStatus = null
         try {
           const googleReviewPayload = await callAuraApi('/api/google-reviews', null, 'GET')
           if (googleReviewPayload.reviews?.length) {
@@ -762,6 +725,13 @@ export default function DashboardLayout() {
             console.info('[AURA Google] Imported reviews are not available yet:', googleReviewError.message)
           }
         }
+        try {
+          googleStatus = await callAuraApi('/api/google-status', null, 'GET')
+        } catch (googleStatusError) {
+          if (!['GOOGLE_NOT_CONFIGURED'].includes(googleStatusError.code)) {
+            console.info('[AURA Google] Setup status is not available yet:', googleStatusError.message)
+          }
+        }
         const { data: publicAccess } = await supabase.rpc('get_aura_public_leaderboard', {
           p_pin: null,
           p_slug: profile.public_slug,
@@ -769,6 +739,7 @@ export default function DashboardLayout() {
 
         if (!isMounted) return
         setBusinessProfile(profile)
+        setGoogleSetupStatus(googleStatus)
         if (
           import.meta.env.VITE_GOOGLE_PLACES_ONBOARDING === 'true' &&
           !profile.google_place_id &&
@@ -796,6 +767,7 @@ export default function DashboardLayout() {
         if (!isMounted) return
         console.error('[AURA dashboard] Account data connection failed:', error)
         setBusinessProfile(null)
+        setGoogleSetupStatus(null)
         setConnectionStatus('demo')
         setReviews([])
         setTechnicalNotice(
@@ -815,9 +787,9 @@ export default function DashboardLayout() {
     if (!isLocalPreview) return
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ autoReplySettings, categories, nameApprovals, pointEvents, pointsRules, redemptions, rewards, reviews, staff }),
+      JSON.stringify({ categories, nameApprovals, pointEvents, pointsRules, redemptions, rewards, reviews, staff }),
     )
-  }, [autoReplySettings, categories, isLocalPreview, nameApprovals, pointEvents, pointsRules, redemptions, rewards, reviews, staff])
+  }, [categories, isLocalPreview, nameApprovals, pointEvents, pointsRules, redemptions, rewards, reviews, staff])
 
   const overview = useMemo(() => {
     const reviewsThisMonth = reviews.filter((review) => isThisMonth(review.created_at))
@@ -1372,28 +1344,46 @@ export default function DashboardLayout() {
     setCategories((current) => [...current, cleanName])
   }
 
-  async function updateAutoReplySettings(settings) {
-    setAutoReplySettings(normalizeAutoReplySettings(settings))
+  function replaceGoogleReview(updatedReview) {
+    if (!updatedReview) return
+    setReviews((current) =>
+      normalizeReviews(current.map((review) => (review.id === updatedReview.id ? updatedReview : review))),
+    )
   }
 
-  async function updateReviewReply(reviewId, reply) {
-    const cleanReply = reply.trim()
-    if (!cleanReply) return
+  async function saveGoogleDraft(reviewId, draftId, text, version) {
+    const payload = await callAuraApi('/api/google-draft', { draftId, text, version }, 'PATCH')
+    setReviews((current) => current.map((review) => (
+      review.id === reviewId ? { ...review, draft: payload.draft } : review
+    )))
+    return payload.draft
+  }
 
-    const review = reviews.find((item) => item.id === reviewId)
-    let updatedAt = new Date().toISOString()
-    if (review?.source === 'google_business') {
-      const result = await callAuraApi('/api/google-reply', { reply: cleanReply, reviewId })
-      updatedAt = result.updatedAt || updatedAt
-    }
+  async function generateGoogleDraft(reviewId, idempotencyKey) {
+    const payload = await callAuraApi('/api/google-draft-generate', { idempotencyKey, reviewId })
+    replaceGoogleReview(payload.review)
+    return payload.review
+  }
 
-    setReviews((current) =>
-      current.map((review) =>
-        review.id === reviewId
-          ? { ...review, aura_reply: cleanReply, aura_reply_updated_at: updatedAt }
-          : review,
-      ),
-    )
+  async function publishGoogleDraft(reviewId, draftId, confirmedText, version, idempotencyKey) {
+    const payload = await callAuraApi('/api/google-reply', {
+      confirmedText,
+      draftId,
+      idempotencyKey,
+      version,
+    })
+    setReviews((current) => current.map((review) => (
+      review.id === reviewId
+        ? {
+            ...review,
+            aura_reply: payload.reply,
+            aura_reply_updated_at: payload.updatedAt,
+            draft: payload.draft,
+            draft_eligible: false,
+          }
+        : review
+    )))
+    return payload
   }
 
   async function connectGoogleProfile() {
@@ -1402,12 +1392,22 @@ export default function DashboardLayout() {
   }
 
   async function getGoogleConnectionStatus() {
-    return callAuraApi('/api/google-status', null, 'GET')
+    const payload = await callAuraApi('/api/google-status', null, 'GET')
+    setGoogleSetupStatus(payload)
+    return payload
   }
 
   async function syncGoogleReviews() {
     const payload = await callAuraApi('/api/google-reviews-sync', {})
     setReviews(normalizeReviews(payload.reviews || []))
+    setGoogleSetupStatus((current) => current
+      ? {
+          ...current,
+          connection: current.connection
+            ? { ...current.connection, lastSyncedAt: payload.syncedAt || current.connection.lastSyncedAt }
+            : current.connection,
+        }
+      : current)
     return payload
   }
 
@@ -1496,18 +1496,19 @@ export default function DashboardLayout() {
       connectGoogleBusiness,
       connectGoogleProfile,
       deleteReward,
+      generateGoogleDraft,
       ignoreName,
       getGoogleConnectionStatus,
       openBusinessSetup: () => setIsBusinessSetupOpen(true),
       redeemReward,
+      publishGoogleDraft,
       saveReward,
+      saveGoogleDraft,
       searchGoogleBusinesses,
       setLeaderboardPin,
       setStaffActive,
       syncGoogleReviews,
-      updateAutoReplySettings,
       updatePointsRule,
-      updateReviewReply,
       undoReviewPoints,
     },
     account: {
@@ -1515,7 +1516,6 @@ export default function DashboardLayout() {
       email: user?.email || '',
       user,
     },
-    autoReplySettings,
     categories,
     connectionStatus,
     leaderboard,
@@ -1586,6 +1586,23 @@ export default function DashboardLayout() {
                 >
                   <X aria-hidden="true" size={17} />
                 </button>
+              </div>
+            ) : null}
+            {googleSetupStatus?.needsSetup ? (
+              <div className="mb-5 flex flex-col gap-3 rounded-2xl border border-[#d18a62]/25 bg-[#a96847]/10 px-5 py-4 text-sm sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="font-bold text-white">
+                    {googleSetupStatus.connection?.status === 'reconnect_required'
+                      ? 'Reconnect Google to keep receiving review drafts.'
+                      : googleSetupStatus.pendingConnection
+                        ? 'Confirm which Google location AURA should use.'
+                        : 'Finish Google setup when you are ready.'}
+                  </p>
+                  <p className="mt-1 leading-6 text-slate-400">Your existing AURA workspace stays available. Nothing will publish automatically.</p>
+                </div>
+                <Link className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl bg-[#a96847] px-4 font-bold text-white transition hover:bg-[#bd7652]" to="/setup/google">
+                  Continue setup
+                </Link>
               </div>
             ) : null}
             <Outlet context={dashboard} />

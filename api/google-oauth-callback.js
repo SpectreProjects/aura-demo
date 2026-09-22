@@ -1,9 +1,11 @@
 import {
-  discoverGoogleLocation,
+  assertGoogleFeature,
+  clearGoogleOAuthSessionCookie,
   encryptGoogleToken,
   exchangeGoogleCode,
   getGoogleAdminClient,
   getGoogleConfig,
+  requireGoogleOAuthSession,
   verifyOAuthState,
 } from '../server/google-business.js'
 
@@ -11,7 +13,8 @@ function redirect(response, status, detail) {
   const params = new URLSearchParams({ google: status })
   if (detail) params.set('detail', detail)
   response.setHeader('Cache-Control', 'private, no-store, max-age=0')
-  response.redirect(302, `/dashboard/settings?${params.toString()}`)
+  response.setHeader('Set-Cookie', clearGoogleOAuthSessionCookie())
+  response.redirect(302, `/setup/google?${params.toString()}`)
 }
 
 export default async function handler(request, response) {
@@ -22,53 +25,74 @@ export default async function handler(request, response) {
 
   try {
     const config = getGoogleConfig()
+    assertGoogleFeature(config, 'connection')
+    const rawState = String(request.query.state || '')
+    const state = verifyOAuthState(rawState, config.stateSecret)
+    const codeVerifier = requireGoogleOAuthSession(request, rawState, config.stateSecret)
     if (request.query.error) {
       redirect(response, 'error', request.query.error === 'access_denied' ? 'permission_denied' : 'google_error')
       return
     }
 
-    const state = verifyOAuthState(request.query.state, config.stateSecret)
-    if (!request.query.code) throw new Error('Google did not return an authorization code.')
-    const tokenPayload = await exchangeGoogleCode(request.query.code, config)
-    const { account, location } = await discoverGoogleLocation(tokenPayload.access_token)
-    const admin = getGoogleAdminClient(config)
+    if (!request.query.code) {
+      redirect(response, 'error', 'missing_code')
+      return
+    }
 
-    const { data: existing, error: existingError } = await admin
+    const tokenPayload = await exchangeGoogleCode(request.query.code, config, codeVerifier)
+    const admin = getGoogleAdminClient(config)
+    const { data: ownedBusiness, error: ownershipError } = await admin
+      .from('business_profiles')
+      .select('id')
+      .eq('id', state.businessProfileId)
+      .eq('user_id', state.userId)
+      .maybeSingle()
+    if (ownershipError || !ownedBusiness) throw new Error('AURA could not verify the Google connection owner.')
+
+    const { data: openConnections, error: connectionError } = await admin
       .from('google_connections')
-      .select('id,refresh_token_encrypted')
+      .select('id,status,refresh_token_encrypted')
       .eq('user_id', state.userId)
       .eq('business_profile_id', state.businessProfileId)
-      .limit(1)
-      .maybeSingle()
-    if (existingError) throw existingError
+      .in('status', ['pending_selection', 'active', 'reconnect_required'])
+      .order('connected_at', { ascending: false })
+    if (connectionError) throw connectionError
 
-    const connection = {
+    const pending = openConnections?.find((connection) => connection.status === 'pending_selection')
+    const active = openConnections?.find((connection) => connection.status === 'active')
+    const reconnect = openConnections?.find((connection) => connection.status === 'reconnect_required')
+    const connectedAt = new Date().toISOString()
+    const pendingConnection = {
       access_token_encrypted: encryptGoogleToken(tokenPayload.access_token, config.tokenSecret),
-      active: true,
+      active: false,
       business_profile_id: state.businessProfileId,
-      google_account_name: account.name,
-      google_account_title: account.accountName || account.name,
-      google_location_name: location.name,
-      google_location_title: location.title || location.storeCode || location.name,
+      connected_at: connectedAt,
       granted_scope: tokenPayload.scope || 'https://www.googleapis.com/auth/business.manage',
+      last_error_code: null,
       refresh_token_encrypted: tokenPayload.refresh_token
         ? encryptGoogleToken(tokenPayload.refresh_token, config.tokenSecret)
-        : existing?.refresh_token_encrypted || null,
+        : pending?.refresh_token_encrypted || active?.refresh_token_encrypted || reconnect?.refresh_token_encrypted || null,
+      selection_expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+      status: 'pending_selection',
       token_expires_at: new Date(Date.now() + Number(tokenPayload.expires_in || 3600) * 1000).toISOString(),
-      updated_at: new Date().toISOString(),
+      updated_at: connectedAt,
       user_id: state.userId,
     }
 
-    const query = existing
-      ? admin.from('google_connections').update(connection).eq('id', existing.id)
-      : admin.from('google_connections').insert(connection)
+    const query = pending
+      ? admin.from('google_connections').update(pendingConnection).eq('id', pending.id)
+      : admin.from('google_connections').insert(pendingConnection)
     const { error } = await query
     if (error) throw error
 
-    redirect(response, 'connected')
+    redirect(response, 'select_location')
   } catch (error) {
     console.error('[AURA Google OAuth]', error?.code || error?.message)
-    const detail = error?.code === 'GOOGLE_API_APPROVAL_REQUIRED' ? 'approval_required' : 'connection_failed'
+    const detail = error?.code === 'GOOGLE_API_APPROVAL_REQUIRED'
+      ? 'approval_required'
+      : error?.code === 'GOOGLE_CONNECTION_DISABLED'
+        ? 'temporarily_paused'
+        : 'connection_failed'
     redirect(response, 'error', detail)
   }
 }

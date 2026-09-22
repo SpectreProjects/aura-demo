@@ -24,7 +24,7 @@ function GoogleMark() {
   )
 }
 
-export default function GoogleAuthButton({ label = 'Continue with Google', onError }) {
+export default function GoogleAuthButton({ label = 'Continue with Google', onError, redirectPath = '/dashboard' }) {
   const [isLoading, setIsLoading] = useState(false)
 
   async function handleGoogleAuth() {
@@ -37,7 +37,7 @@ export default function GoogleAuthButton({ label = 'Continue with Google', onErr
 
     setIsLoading(true)
 
-    const redirectTo = new URL('/dashboard', window.location.origin).toString()
+    const redirectTo = new URL(redirectPath, window.location.origin).toString()
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo },

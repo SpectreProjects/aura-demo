@@ -1,0 +1,68 @@
+.aura-confirm-dialog {
+  width: min(92vw, 560px);
+  max-height: min(86svh, 720px);
+  overflow: auto;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 20px;
+  background: #111014;
+  color: #fff;
+  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.7);
+}
+
+.aura-confirm-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(10px);
+}
+
+.acd-heading {
+  padding: 22px 22px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+  gap: 13px;
+}
+
+.acd-heading > button {
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  color: #c8c2c9;
+  cursor: pointer;
+}
+
+.acd-heading > button:disabled { cursor: not-allowed; opacity: 0.5; }
+.acd-heading p { margin: 1px 0 4px; color: #8b838c; font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; }
+.acd-heading h2 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+.acd-icon { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; }
+.acd-icon-primary { background: rgba(169, 104, 71, 0.15); color: #e4aa87; }
+.acd-icon-danger { background: rgba(225, 29, 72, 0.12); color: #fda4af; }
+.acd-body { padding: 22px; color: #c1bbc2; font-size: 15px; line-height: 1.65; }
+.acd-body p { margin: 0; }
+.acd-error-slot { min-height: 0; padding: 0 22px; }
+.acd-error-slot p { margin: 0 0 16px; padding: 11px 12px; border: 1px solid rgba(251, 113, 133, 0.24); border-radius: 11px; background: rgba(159, 18, 57, 0.12); color: #fecdd3; font-size: 13px; font-weight: 600; }
+.acd-actions { position: sticky; bottom: 0; padding: 16px 22px 22px; display: flex; justify-content: flex-end; gap: 10px; background: #111014; }
+.acd-actions button { min-height: 46px; padding: 0 18px; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; }
+.acd-actions button:disabled { cursor: wait; opacity: 0.58; }
+.acd-cancel { border: 1px solid rgba(255, 255, 255, 0.12); background: rgba(255, 255, 255, 0.04); color: #ddd7de; }
+.acd-confirm { border: 1px solid transparent; color: #fff; }
+.acd-confirm-primary { background: #a96847; }
+.acd-confirm-danger { background: #be123c; }
+.aura-confirm-dialog :is(button, a):focus-visible { outline: 2px solid #d18a62; outline-offset: 3px; }
+
+@media (max-width: 540px) {
+  .aura-confirm-dialog { width: calc(100vw - 24px); max-height: calc(100svh - 24px); border-radius: 17px; }
+  .acd-heading, .acd-body, .acd-actions { padding-left: 17px; padding-right: 17px; }
+  .acd-actions { flex-direction: column-reverse; }
+  .acd-actions button { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aura-confirm-dialog { animation: none; }
+}
+

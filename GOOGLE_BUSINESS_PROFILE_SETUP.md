@@ -1,103 +1,153 @@
 # Google Business Profile integration
 
-AURA uses two separate Google integrations:
+AURA uses two separate Google permissions:
 
-- **Places API (New)** finds a business and displays a small public review preview.
-- **Google Business Profile APIs** use OAuth to pull the complete review list and publish owner replies.
+1. Google sign-in creates or opens the customer's private AURA account.
+2. Google Business Profile OAuth grants `business.manage` so AURA can discover managed locations, import reviews and publish only a reply the owner explicitly confirms.
 
-The Places API key cannot read private Business Profile data or post replies. Every AURA customer must grant the `business.manage` OAuth permission using a Google account that owns or manages the relevant verified location.
+The Places API preview is separate. A Places API key cannot read a customer's complete Business Profile review history and cannot publish owner replies.
 
-## Current external blocker
+## Draft-only production boundary
 
-On 14 September 2026, the AURA Google Cloud project's My Business Account Management API quota was `0 requests per minute` and marked non-adjustable. Google has therefore not granted Business Profile API access to this project yet.
+AURA checks for reviews and creates drafts in the background. It never publishes a reply in the background. The only code path that calls Google's reply endpoint is `POST /api/google-reply`, which requires:
 
-Check the inbox of the Google account used for the application for a response from Google Business Profile API support. Confirm that the application used the same Cloud project (`aura-494720`). If Google asks for more information, reply to that existing case rather than opening duplicate applications.
+- an authenticated AURA owner;
+- the active selected location;
+- a saved draft ID and current version;
+- the exact server-saved text;
+- an explicit confirmation from the AURA dialog;
+- a fresh check that Google does not already hold a different owner reply.
 
-After approval, the quota should normally show `300 requests per minute` and the Google My Business API should become visible in the API Library.
+No cron or retry worker imports that publication handler.
 
-## Google Cloud requirements
+## Isolated environments
 
-Enable these APIs in the approved project:
+Use separate infrastructure for staging and production.
 
-- Google My Business API
-- My Business Account Management API
-- My Business Business Information API
-- My Business Notifications API
-- My Business Verifications API
-- My Business Place Actions API
-- My Business Lodging API
-- Places API (New), for AURA's optional business-search preview
+| Concern | Staging | Production |
+|---|---|---|
+| App | Separate Vercel project | Existing AURA Vercel project |
+| Hostname | `staging.aurareviewplatform.com` | `aurareviewplatform.com` |
+| OAuth client | Dedicated staging Web client | Dedicated production Web client |
+| OAuth callback | `https://staging.aurareviewplatform.com/api/google-oauth-callback` | `https://aurareviewplatform.com/api/google-oauth-callback` |
+| Database | Supabase branch or dedicated AURA Staging project | AURA production project |
+| Email links | Staging hostname | Production hostname |
 
-Configure an OAuth 2.0 Client ID with application type **Web application**.
+Never point a staging deployment at production Supabase credentials or the production Google OAuth client.
 
-Production redirect URI:
+## Google Cloud configuration
 
-```text
-https://aurareviewplatform.com/api/google-oauth-callback
-```
+Use the Google Cloud project approved for Google Business Profile API access and enable the APIs used by this release:
 
-Local redirect URI, when using `vercel dev`:
+- Google My Business API, for review listing and owner replies;
+- My Business Account Management API, for managed accounts;
+- My Business Business Information API, for managed locations;
+- Places API (New), only for the optional public preview already present in AURA.
 
-```text
-http://localhost:3000/api/google-oauth-callback
-```
-
-The OAuth consent screen must include:
+Create an OAuth 2.0 Client ID with application type **Web application** for each environment. Add the exact environment callback URI and request only:
 
 ```text
 https://www.googleapis.com/auth/business.manage
 ```
 
-If the consent screen remains in Testing, add every person who will test the connection as a test user. For customer use, publish the consent screen and complete any Google verification requested for the scope.
+OAuth branding verification and Google Business Profile API access are separate checks. Before the controlled live test, verify that the intended Cloud project has non-zero Business Profile quota and can list the tester's accounts and locations.
+
+If the consent screen is still in Testing, add each tester as a test user. Customer rollout requires the production consent configuration and any Google verification requested for the scope.
 
 ## Vercel environment variables
 
-Add these as encrypted environment variables for Production and Preview:
+Set these independently in the staging and production projects:
 
 ```text
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
-GOOGLE_REDIRECT_URI=https://aurareviewplatform.com/api/google-oauth-callback
+GOOGLE_REDIRECT_URI=
 GOOGLE_OAUTH_STATE_SECRET=
 GOOGLE_TOKEN_ENCRYPTION_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
+
 SUPABASE_URL=
 SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+
+CRON_SECRET=
+AURA_APP_URL=
+
+AI_GATEWAY_API_KEY=
+AURA_GOOGLE_DRAFT_MODEL=openai/gpt-5.4
+
+RESEND_API_KEY=
+AURA_EMAIL_FROM=
 ```
 
-`VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are accepted as server fallbacks, but the non-`VITE_` names are preferred for server functions.
+Vercel deployments may use the automatically managed `VERCEL_OIDC_TOKEN` instead of `AI_GATEWAY_API_KEY`. A direct `OPENAI_API_KEY` is supported only as a server-side fallback. The draft request uses structured output and `store: false` in every case.
 
-Generate the state and encryption secrets with a cryptographically secure random generator. Never prefix server-only values with `VITE_`, and never expose the Google client secret, token encryption key, refresh tokens or Supabase service-role key to frontend code.
+The browser still requires its existing `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. Never prefix the Google client secret, encryption key, cron secret, AI credential, refresh token or Supabase service-role key with `VITE_`.
 
-## Supabase setup
+Generate state, encryption and cron secrets with a cryptographically secure random generator. Use different values in staging and production.
 
-Run `SUPABASE_GOOGLE_CONNECTIONS_SCHEMA.sql` in the Supabase project used by the production `VITE_SUPABASE_URL`. It:
+## Feature controls
 
-- stores Google access and refresh tokens encrypted by the Vercel server;
-- removes browser access to token-bearing rows;
-- stores imported Google reviews separately per AURA user and business;
-- enables RLS for every exposed table;
-- gives authenticated users read-only access to their own imported reviews.
+These server-only flags default on and can pause one part of the integration without deleting data:
 
-Run Supabase security and performance advisors after applying the SQL.
+```text
+AURA_GOOGLE_CONNECTION_ENABLED=true
+AURA_GOOGLE_SYNC_ENABLED=true
+AURA_GOOGLE_DRAFTS_ENABLED=true
+AURA_GOOGLE_MANUAL_PUBLISH_ENABLED=true
+```
 
-## Live flow
+Setting a flag to `false`, `off`, `disabled`, `no` or `0` disables that capability. There is intentionally no automatic-publish flag or endpoint.
 
-1. A signed-in AURA user opens Dashboard → Settings and selects **Connect Google**.
-2. `/api/google-oauth-start` verifies the Supabase session and creates a signed, short-lived OAuth state.
-3. Google asks the business owner to grant `business.manage`.
-4. `/api/google-oauth-callback` exchanges the code, discovers the first managed account/location and securely stores encrypted tokens.
-5. **Pull reviews** requests the complete paginated review list and stores it in Supabase.
-6. Saving a reply for an imported Google review calls Google's `updateReply` endpoint and records the returned reply state.
+## Supabase migration order
 
-For businesses managing multiple locations, the current first version connects the first location returned by Google. Add a location-selection screen before onboarding multi-location groups.
+For a branch cloned from production, apply:
 
-## Verification checklist
+```text
+supabase/migrations/20260922161000_google_review_draft_only_release.sql
+```
 
-- Google My Business API quota is greater than zero.
-- OAuth consent returns the user to `/dashboard/settings?google=connected`.
-- Google connection status shows the expected location.
-- Pull reviews imports more than the five-review Places preview.
-- A manual test reply appears on the verified Google Business Profile.
-- Refresh-token renewal still works after the initial access token expires.
-- Supabase advisors report no security or performance findings.
+For a new empty staging project, first apply the existing AURA base schemas, including `SUPABASE_GOOGLE_CONNECTIONS_SCHEMA.sql`, and then apply the canonical migration above.
+
+The migration:
+
+- adds pending, active, reconnect, disconnected and archived connection states;
+- permits only one active location per standard AURA business;
+- safely removes unused plaintext token columns and keeps encrypted tokens server-only;
+- creates owner reply settings, draft records, bounded idempotent jobs and append-only audit events;
+- retains archived connections and reviews when the location changes;
+- enables RLS and gives browser roles only the minimum owner-scoped read access.
+
+After migration, run `supabase/tests/google_review_draft_release.sql`, inspect migration history, and run Supabase security and performance advisors. Do not apply the release migration to production until all staging checks pass.
+
+## Runtime flow
+
+1. `/api/google-oauth-start` verifies the AURA session and creates a signed, ten-minute OAuth state.
+2. Google displays the real `business.manage` consent screen.
+3. `/api/google-oauth-callback` exchanges the code and saves a short-lived `pending_selection` connection with encrypted tokens.
+4. `/api/google-locations` lists every managed account and location.
+5. The owner confirms one location; the server re-fetches it from Google before atomically activating it.
+6. Tone, phrase, example, timing and notification settings are saved.
+7. The complete review history is imported. Only reviews whose original Google creation time is after location confirmation are eligible for drafts and emails.
+8. Vercel calls `/api/google-review-sync-cron` every 15 minutes with `Authorization: Bearer $CRON_SECRET`; owners can also refresh manually.
+9. A new review appears even if AI generation fails. Generation and email retries are bounded, idempotent and recoverable.
+10. The owner edits or regenerates the saved draft, presses **Publish to Google**, reviews the exact text and confirms it.
+
+## Staging verification checklist
+
+- Account creation leads to the separate Google activation journey.
+- Permission denial leaves AURA unconnected and recoverable.
+- No-location, one-location and several-location states are visually verified.
+- A single result still requires confirmation; multiple results support search.
+- Initial import produces no historical drafts or emails.
+- A genuinely new review creates one draft and one email despite repeated sync calls.
+- One- and two-star reviews show **Needs careful review**.
+- Rating-only reviews do not invent review details.
+- Editing and regeneration never publish.
+- Publishing before the recommended time is allowed but explicitly warned.
+- Repeated publish requests do not duplicate publication or audit/usage records.
+- A different remote owner reply produces a conflict instead of being overwritten.
+- Revoked Google access becomes `reconnect_required` and reconnecting archives the previous connection.
+- One authenticated owner cannot read another owner's location, reviews, settings or drafts.
+- Desktop and mobile screenshots are added to the visual QA pack.
+
+Production rollout remains Connor's internal account for 48 hours, then one trusted customer, before wider availability.

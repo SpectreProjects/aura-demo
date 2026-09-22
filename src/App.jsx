@@ -10,6 +10,7 @@ import Landing from './pages/Landing'
 import LegalPage from './pages/LegalPage'
 import Login from './pages/Login'
 import ForgotPassword from './pages/ForgotPassword'
+import GoogleActivation from './pages/GoogleActivation'
 import PublicLeaderboard from './pages/PublicLeaderboard'
 import ResetPassword from './pages/ResetPassword'
 import Signup from './pages/Signup'
@@ -48,6 +49,14 @@ export default function App() {
         <Route path="/privacy" element={<LegalPage type="privacy" />} />
         <Route path="/terms" element={<LegalPage type="terms" />} />
         <Route path="/leaderboard/:slug" element={<PublicLeaderboard />} />
+        <Route
+          path="/setup/google"
+          element={
+            <ProtectedRoute>
+              <GoogleActivation />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/dashboard"
           element={

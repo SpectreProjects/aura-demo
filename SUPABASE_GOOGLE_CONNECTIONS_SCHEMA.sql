@@ -1,5 +1,7 @@
--- AURA Google Business Profile integration for the Vercel deployment.
--- Run in the Supabase project referenced by VITE_SUPABASE_URL.
+-- BASELINE ONLY: AURA Google Business Profile tables for a new empty project.
+-- A production clone already has these tables and should not rerun this file.
+-- After this baseline, always apply the canonical draft-only migration:
+-- supabase/migrations/20260922161000_google_review_draft_only_release.sql
 -- OAuth tokens are encrypted by the server before they reach this table.
 
 create table if not exists public.google_connections (
@@ -42,7 +44,7 @@ create table if not exists public.google_reviews (
   user_id uuid not null references auth.users(id) on delete cascade,
   business_profile_id uuid not null references public.business_profiles(id) on delete cascade,
   google_connection_id uuid not null references public.google_connections(id) on delete cascade,
-  google_review_name text not null unique,
+  google_review_name text not null,
   google_review_id text,
   reviewer_name text,
   rating smallint not null check (rating between 1 and 5),
@@ -57,6 +59,9 @@ create table if not exists public.google_reviews (
 
 create index if not exists google_reviews_business_created_idx
   on public.google_reviews (business_profile_id, review_created_at desc);
+
+create unique index if not exists google_reviews_connection_review_name_idx
+  on public.google_reviews (google_connection_id, google_review_name);
 
 create table if not exists public.google_review_sync_logs (
   id uuid primary key default gen_random_uuid(),
