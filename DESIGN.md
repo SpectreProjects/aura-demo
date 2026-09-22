@@ -91,7 +91,7 @@ The dashboard uses a flat graphite sidebar and a smoked-glass workspace joined b
 
 ### Conversational workflows
 
-Staff, rewards, points and Google Business setup remain step-by-step conversations. They open on a darkened, blurred scrim in a focused graphite glass panel, with copper used for progress, focus and the primary action. Mobile panels stay within the small viewport and scroll internally. Native select popovers remain platform-owned; AURA owns the closed control geometry, type, border and focus state.
+Staff, rewards, points and Google Business setup remain step-by-step conversations. They open in a focused graphite glass panel, with copper used for progress, focus and the primary action. Google setup uses four compact chapters — Connect Google, Your voice, Your routine and Ready — while presenting one question at a time with the established cursor, Back/Continue rhythm and slim segmented progress. Mobile panels stay within the small viewport and scroll internally. Native select popovers remain platform-owned; AURA owns the closed control geometry, type, border and focus state.
 
 ### Canonical UI Map
 

@@ -1,9 +1,9 @@
 import {
-  ArrowLeft,
   ArrowRight,
   Building2,
   Check,
   CheckCircle2,
+  Circle,
   MapPin,
   RefreshCw,
   Search,
@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import GoogleReplySettingsForm from '../components/GoogleReplySettingsForm'
+import GoogleSetupConversationForm from '../components/GoogleSetupConversationForm'
 import { callAuraApi } from '../lib/auraApi'
 import './GoogleActivation.css'
 
@@ -56,25 +56,15 @@ const defaultSettings = {
   toneChoice: 'warm_friendly',
 }
 
-const steps = [
-  { key: 'connect', label: 'Connect' },
-  { key: 'locations', label: 'Location' },
-  { key: 'tone', label: 'Voice' },
-  { key: 'import', label: 'Import' },
-  { key: 'complete', label: 'Ready' },
-]
-
-function stepIndex(step) {
-  return Math.max(0, steps.findIndex((item) => item.key === step))
-}
+const sections = ['Connect Google', 'Your voice', 'Your routine', 'Ready']
 
 function callbackMessage(detail) {
   const messages = {
     approval_required: 'Google Business Profile access is not available for this Cloud project yet.',
-    connection_failed: 'Google could not finish the connection. Nothing was changed in AURA.',
+    connection_failed: 'That Google connection expired before it finished.',
     google_error: 'Google returned an error before the connection completed.',
-    missing_code: 'Google did not return the secure connection code. Please try again.',
-    permission_denied: 'You cancelled or declined Google Business Profile access. AURA has not received permission.',
+    missing_code: 'That Google connection expired before it finished.',
+    permission_denied: 'No problem—AURA wasn’t given access. Nothing changed.',
     temporarily_paused: 'Google connections are temporarily paused. Your saved AURA data is unchanged.',
   }
   return messages[detail] || ''
@@ -91,7 +81,7 @@ function visualStatus(mode) {
     selectedAt: new Date().toISOString(),
     status: 'active',
   }
-  if (mode === 'locations' || mode === 'no-locations') {
+  if (['locations', 'no-locations', 'one-location'].includes(mode)) {
     return {
       connected: false,
       connection: null,
@@ -109,15 +99,33 @@ function visualStatus(mode) {
       settings: { ...defaultSettings, setupComplete: ['import', 'complete'].includes(mode) },
     }
   }
+  if (mode === 'revoked') {
+    return {
+      connected: false,
+      connection: { ...activeConnection, status: 'reconnect_required' },
+      needsSetup: true,
+      pendingConnection: null,
+      settings: defaultSettings,
+    }
+  }
   return { connected: false, connection: null, needsSetup: true, pendingConnection: null, settings: defaultSettings }
 }
 
 function deriveStep(status) {
   if (status?.pendingConnection) return 'locations'
+  if (status?.connection?.status === 'reconnect_required') return 'connect'
   if (status?.connected && !status.settings?.setupComplete) return 'tone'
   if (status?.connected && !status.connection?.lastSyncedAt) return 'import'
   if (status?.connected) return 'complete'
   return 'connect'
+}
+
+function progressFor(step, conversationProgress) {
+  if (step === 'locations') return { sectionIndex: 0, sectionLabel: 'Connect Google', position: 2, total: 2 }
+  if (step === 'tone') return conversationProgress
+  if (step === 'import') return { sectionIndex: 3, sectionLabel: 'Ready', position: 2, total: 3 }
+  if (step === 'complete') return { sectionIndex: 3, sectionLabel: 'Ready', position: 3, total: 3 }
+  return { sectionIndex: 0, sectionLabel: 'Connect Google', position: 1, total: 2 }
 }
 
 export default function GoogleActivation() {
@@ -128,6 +136,7 @@ export default function GoogleActivation() {
   const googleDetail = searchParams.get('detail')
   const headingRef = useRef(null)
   const searchRef = useRef(null)
+  const automaticImportRef = useRef(false)
   const [status, setStatus] = useState(null)
   const [step, setStep] = useState('loading')
   const [errorMessage, setErrorMessage] = useState(
@@ -138,6 +147,7 @@ export default function GoogleActivation() {
   const [selectedKey, setSelectedKey] = useState('')
   const [isBusy, setIsBusy] = useState(false)
   const [importCount, setImportCount] = useState(0)
+  const [conversationProgress, setConversationProgress] = useState({ sectionIndex: 1, sectionLabel: 'Your voice', position: 1, total: 6 })
 
   useEffect(() => {
     document.title = 'Connect Google — AURA'
@@ -148,7 +158,7 @@ export default function GoogleActivation() {
     setErrorMessage('')
     try {
       const payload = isVisualDemo
-        ? { locations: visualMode === 'no-locations' ? [] : demoLocations }
+        ? { locations: visualMode === 'no-locations' ? [] : visualMode === 'one-location' ? demoLocations.slice(0, 1) : demoLocations }
         : await callAuraApi('/api/google-locations', null, 'GET', signal)
       setLocations(payload.locations || [])
       setSelectedKey(payload.locations?.length === 1
@@ -169,7 +179,7 @@ export default function GoogleActivation() {
   }
 
   useEffect(() => {
-    if (step === 'loading') return
+    if (['loading', 'tone'].includes(step)) return
     window.requestAnimationFrame(() => headingRef.current?.focus({ preventScroll: true }))
   }, [step])
 
@@ -179,11 +189,12 @@ export default function GoogleActivation() {
       if (isVisualDemo) {
         const nextStatus = visualStatus(visualMode)
         setStatus(nextStatus)
-        const nextStep = ['denied', 'connect'].includes(visualMode) ? 'connect' : deriveStep(nextStatus)
+        const nextStep = ['denied', 'connect', 'revoked'].includes(visualMode) ? 'connect' : deriveStep(nextStatus)
         setStep(visualMode === 'import' ? 'import' : nextStep)
         if (nextStep === 'locations') {
-          setLocations(visualMode === 'no-locations' ? [] : demoLocations)
-          setSelectedKey(visualMode === 'no-locations' ? '' : `${demoLocations[0].accountName}|${demoLocations[0].locationName}`)
+          const visualLocations = visualMode === 'no-locations' ? [] : visualMode === 'one-location' ? demoLocations.slice(0, 1) : demoLocations
+          setLocations(visualLocations)
+          setSelectedKey(visualLocations.length === 1 ? `${visualLocations[0].accountName}|${visualLocations[0].locationName}` : '')
         }
         return
       }
@@ -193,9 +204,7 @@ export default function GoogleActivation() {
         setStatus(nextStatus)
         const nextStep = deriveStep(nextStatus)
         setStep(nextStep)
-        if (nextStep === 'locations' || googleResult === 'select_location') {
-          await loadLocations(controller.signal)
-        }
+        if (nextStep === 'locations' || googleResult === 'select_location') await loadLocations(controller.signal)
       } catch (error) {
         if (error.name === 'AbortError') return
         setErrorMessage(error.message)
@@ -215,29 +224,36 @@ export default function GoogleActivation() {
       if (isVisualDemo) {
         setStatus(visualStatus('locations'))
         setLocations(demoLocations)
+        setSelectedKey('')
         setStep('locations')
-        setIsBusy(false)
         return
       }
       const { url } = await callAuraApi('/api/google-oauth-start', {})
       window.location.assign(url)
     } catch (error) {
       setErrorMessage(error.message)
-      setIsBusy(false)
+    } finally {
+      if (isVisualDemo) setIsBusy(false)
     }
   }
 
-  async function cancelSelection() {
+  async function useDifferentGoogleAccount() {
     setIsBusy(true)
+    setErrorMessage('')
     try {
-      if (!isVisualDemo) await callAuraApi('/api/google-disconnect', { mode: 'cancel_pending' })
-      setStatus(visualStatus('connect'))
-      setLocations([])
-      setStep('connect')
+      if (isVisualDemo) {
+        setStatus(visualStatus('connect'))
+        setLocations([])
+        setStep('connect')
+        return
+      }
+      await callAuraApi('/api/google-disconnect', { mode: 'cancel_pending' })
+      const { url } = await callAuraApi('/api/google-oauth-start', {})
+      window.location.assign(url)
     } catch (error) {
       setErrorMessage(error.message)
     } finally {
-      setIsBusy(false)
+      if (isVisualDemo) setIsBusy(false)
     }
   }
 
@@ -252,6 +268,13 @@ export default function GoogleActivation() {
     try {
       if (isVisualDemo) {
         const nextStatus = visualStatus('tone')
+        nextStatus.connection = {
+          ...nextStatus.connection,
+          accountTitle: selected.accountTitle,
+          locationAddress: selected.address,
+          locationStoreCode: selected.storeCode,
+          locationTitle: selected.locationTitle,
+        }
         setStatus(nextStatus)
         setStep('tone')
         return
@@ -275,11 +298,10 @@ export default function GoogleActivation() {
       setStatus((current) => ({ ...current, settings: { ...values, setupComplete: true } }))
       setStep('import')
       setIsBusy(true)
-      window.setTimeout(() => {
-        setImportCount(148)
-        setIsBusy(false)
-        setStep('complete')
-      }, 700)
+      await new Promise((resolve) => window.setTimeout(resolve, 700))
+      setImportCount(148)
+      setIsBusy(false)
+      setStep('complete')
       return
     }
 
@@ -290,13 +312,10 @@ export default function GoogleActivation() {
     try {
       const result = await callAuraApi('/api/google-reviews', {})
       setImportCount(result.count || 0)
-      setStatus((current) => ({
-        ...current,
-        connection: { ...current.connection, lastSyncedAt: result.syncedAt },
-      }))
+      setStatus((current) => ({ ...current, connection: { ...current.connection, lastSyncedAt: result.syncedAt } }))
       setStep('complete')
     } catch (error) {
-      setErrorMessage(error.message)
+      setErrorMessage('Your setup is saved, but the review import didn’t finish.')
       throw error
     } finally {
       setIsBusy(false)
@@ -309,31 +328,40 @@ export default function GoogleActivation() {
     try {
       if (isVisualDemo) {
         setImportCount(148)
-      } else {
-        const result = await callAuraApi('/api/google-reviews', {})
-        setImportCount(result.count || 0)
+        setStep('complete')
+        return
       }
+      const result = await callAuraApi('/api/google-reviews', {})
+      setImportCount(result.count || 0)
+      setStatus((current) => ({ ...current, connection: { ...current.connection, lastSyncedAt: result.syncedAt } }))
       setStep('complete')
-    } catch (error) {
-      setErrorMessage(error.message)
+    } catch {
+      setErrorMessage('Your setup is saved, but the review import didn’t finish.')
     } finally {
       setIsBusy(false)
     }
   }
 
+  useEffect(() => {
+    if (step !== 'import' || isVisualDemo || isBusy || errorMessage || automaticImportRef.current) return
+    automaticImportRef.current = true
+    retryImport()
+    // Retry is intentionally started once when resuming an already-saved setup.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step])
+
   const visibleLocations = useMemo(() => {
     const cleanQuery = query.trim().toLowerCase()
     if (!cleanQuery) return locations
-    return locations.filter((location) => [
-      location.locationTitle,
-      location.address,
-      location.storeCode,
-      location.accountTitle,
-    ].some((value) => String(value || '').toLowerCase().includes(cleanQuery)))
+    return locations.filter((location) => [location.locationTitle, location.address, location.storeCode, location.accountTitle]
+      .some((value) => String(value || '').toLowerCase().includes(cleanQuery)))
   }, [locations, query])
 
-  const currentIndex = stepIndex(step)
+  const progress = progressFor(step, conversationProgress)
   const locationTitle = status?.connection?.locationTitle || 'your selected location'
+  const isReconnect = status?.connection?.status === 'reconnect_required'
+  const connectionExpired = ['connection_failed', 'missing_code'].includes(googleDetail)
+  const notificationsEnabled = status?.settings?.notificationsEnabled !== false
 
   return (
     <main className="ga-shell">
@@ -344,84 +372,52 @@ export default function GoogleActivation() {
       </header>
 
       <section aria-labelledby="google-activation-title" className="ga-panel" id="google-activation-panel">
-        <div className="ga-progress" role="list" aria-label="Google setup progress">
-          {steps.map((item, index) => (
-            <div className={`ga-progress-item ${index <= currentIndex ? 'is-current' : ''}`} key={item.key} role="listitem">
-              <span>{index < currentIndex ? <Check aria-hidden="true" size={13} /> : index + 1}</span>
-              <small>{item.label}</small>
-            </div>
-          ))}
+        <div className="ga-progress-header">
+          <div className="ga-progress-copy"><strong>{progress.sectionLabel}</strong><span>{progress.position} of {progress.total}</span></div>
+          <div aria-label={`Section ${progress.sectionIndex + 1} of ${sections.length}: ${progress.sectionLabel}`} aria-valuemax="4" aria-valuemin="1" aria-valuenow={progress.sectionIndex + 1} className="ga-progress-track" role="progressbar">
+            {sections.map((section, index) => <span className={`${index < progress.sectionIndex ? 'is-complete' : ''} ${index === progress.sectionIndex ? 'is-current' : ''}`} key={section} />)}
+          </div>
         </div>
 
         <div aria-live="polite" className="ga-message-slot">
-          {errorMessage ? (
-            <div className="ga-alert" role="alert">
-              <span>{errorMessage}</span>
-              <button aria-label="Dismiss message" onClick={() => setErrorMessage('')} type="button"><X aria-hidden="true" size={16} /></button>
-            </div>
-          ) : null}
+          {errorMessage ? <div className="ga-alert" role="alert"><span>{errorMessage}</span><button aria-label="Dismiss message" onClick={() => setErrorMessage('')} type="button"><X aria-hidden="true" size={16} /></button></div> : null}
         </div>
 
-        {step === 'loading' ? (
-          <div aria-busy="true" className="ga-loading">
-            <RefreshCw aria-hidden="true" className="animate-spin" size={22} /> Checking your AURA setup…
-          </div>
-        ) : null}
+        {step === 'loading' ? <div aria-busy="true" className="ga-loading"><RefreshCw aria-hidden="true" className="animate-spin" size={22} /> Checking your AURA setup…</div> : null}
 
         {step === 'connect' ? (
           <div className="ga-step ga-connect-step">
             <p className="ga-kicker">A separate Google permission</p>
-            <h1 id="google-activation-title" ref={headingRef} tabIndex={-1}>Connect the profile AURA will look after.</h1>
-            <p className="ga-lead">Signing in to AURA created your account. This next Google screen is different: it asks whether AURA may read reviews and publish only the replies you personally approve.</p>
-
-            <div className="ga-permission-grid">
-              <article>
-                <span>1</span>
-                <h2>AURA sign-in</h2>
-                <p>Confirms who you are and opens your private workspace.</p>
-              </article>
-              <article>
-                <span>2</span>
-                <h2>Business Profile access</h2>
-                <p>Lets AURA read managed locations and send a reply only after you confirm it.</p>
-              </article>
+            <h1 id="google-activation-title" ref={headingRef} tabIndex={-1}>
+              {isReconnect ? `Google needs you to reconnect ${locationTitle}.` : connectionExpired ? 'That Google connection expired before it finished.' : 'Let’s connect the Business Profile you want AURA to look after.'}
+              <span aria-hidden="true" className="ga-question-cursor" />
+            </h1>
+            <p className="ga-lead">{isReconnect ? 'Your reviews and drafts are still safe.' : 'You’ve already signed in to AURA. Google will now ask for separate permission to read your reviews and publish only the replies you personally approve.'}</p>
+            <div className="ga-reassurance-grid" aria-label="Google setup assurances">
+              <div><Building2 aria-hidden="true" size={18} /><strong>One location only</strong></div>
+              <div><ShieldCheck aria-hidden="true" size={18} /><strong>Nothing posts automatically</strong></div>
             </div>
-
-            <div className="ga-assurance">
-              <ShieldCheck aria-hidden="true" size={20} />
-              <p>Google grants permission at account level. AURA will actively use only the single location you choose next. There is no automatic-publish job.</p>
+            <div className="ga-actions">
+              <Link className="ga-secondary" to="/dashboard">I’ll do this later</Link>
+              <button className="ga-primary" disabled={isBusy} onClick={startGoogleConnection} type="button">
+                {isBusy ? <RefreshCw aria-hidden="true" className="animate-spin" size={17} /> : null}
+                {isReconnect || connectionExpired ? 'Reconnect Google' : googleDetail === 'permission_denied' || visualMode === 'denied' ? 'Try again' : 'Continue to Google'}
+                {!isBusy ? <ArrowRight aria-hidden="true" size={16} /> : null}
+              </button>
             </div>
-
-            <button className="ga-primary" disabled={isBusy} onClick={startGoogleConnection} type="button">
-              {isBusy ? <RefreshCw aria-hidden="true" className="animate-spin" size={17} /> : <Building2 aria-hidden="true" size={17} />}
-              {status?.connection?.status === 'reconnect_required' ? 'Reconnect Google Business Profile' : 'Connect Google Business Profile'}
-            </button>
           </div>
         ) : null}
 
         {step === 'locations' ? (
           <div className="ga-step">
             <p className="ga-kicker">Choose one location</p>
-            <h1 id="google-activation-title" ref={headingRef} tabIndex={-1}>Which business should AURA use?</h1>
-            <p className="ga-lead">Google has granted access to the managed account. AURA will import and work with only the location you confirm here.</p>
-
+            <h1 id="google-activation-title" ref={headingRef} tabIndex={-1}>Which business should AURA look after?<span aria-hidden="true" className="ga-question-cursor" /></h1>
+            <p className="ga-lead">Google may show every profile this account manages. AURA will use only the location you choose.</p>
             {locations.length ? (
               <>
-                <div className="ga-search">
-                  <Search aria-hidden="true" size={17} />
-                  <label className="sr-only" htmlFor="google-location-search">Search locations</label>
-                  <input
-                    id="google-location-search"
-                    onChange={(event) => setQuery(event.target.value)}
-                    placeholder="Search business, address or store code"
-                    ref={searchRef}
-                    value={query}
-                  />
-                  {query ? (
-                    <button aria-label="Clear location search" onClick={() => { setQuery(''); searchRef.current?.focus() }} type="button"><X aria-hidden="true" size={16} /></button>
-                  ) : null}
-                </div>
-
+                {locations.length > 1 ? (
+                  <div className="ga-search"><Search aria-hidden="true" size={17} /><label className="sr-only" htmlFor="google-location-search">Search locations</label><input id="google-location-search" onChange={(event) => setQuery(event.target.value)} placeholder="Search business, address or store code" ref={searchRef} value={query} />{query ? <button aria-label="Clear location search" onClick={() => { setQuery(''); searchRef.current?.focus() }} type="button"><X aria-hidden="true" size={16} /></button> : null}</div>
+                ) : null}
                 <fieldset className="ga-location-list">
                   <legend className="sr-only">Google Business Profile locations</legend>
                   {visibleLocations.map((location) => {
@@ -429,63 +425,39 @@ export default function GoogleActivation() {
                     const selected = selectedKey === key
                     return (
                       <label className={`ga-location-card ${selected ? 'is-selected' : ''}`} key={key}>
-                        <input checked={selected} name="google-location" onChange={() => setSelectedKey(key)} type="radio" value={key} />
+                        <input checked={selected} name="google-location" onChange={() => { setSelectedKey(key); setErrorMessage('') }} type="radio" value={key} />
                         <span className="ga-location-marker"><MapPin aria-hidden="true" size={19} /></span>
-                        <span className="ga-location-copy">
-                          <strong>{location.locationTitle}</strong>
-                          <span>{location.address || 'Address not supplied by Google'}</span>
-                          <small>{location.accountTitle}{location.storeCode ? ` · Store code ${location.storeCode}` : ''}</small>
-                        </span>
+                        <span className="ga-location-copy"><strong>{location.locationTitle}</strong><span>{location.address || 'Address not supplied by Google'}</span><small>Google account: {location.accountTitle || location.accountName}</small><small>{location.storeCode ? `Store code: ${location.storeCode}` : 'No store code'}</small></span>
                         {selected ? <CheckCircle2 aria-hidden="true" className="ga-selected-icon" size={20} /> : null}
                       </label>
                     )
                   })}
                 </fieldset>
-
-                {!visibleLocations.length ? (
-                  <div className="ga-empty-state">
-                    <p>No locations match “{query}”.</p>
-                    <button onClick={() => { setQuery(''); searchRef.current?.focus() }} type="button">Clear search</button>
-                  </div>
-                ) : null}
-
-                <div className="ga-actions">
-                  <button className="ga-secondary" disabled={isBusy} onClick={cancelSelection} type="button"><ArrowLeft aria-hidden="true" size={16} /> Cancel</button>
-                  <button className="ga-primary" disabled={isBusy || !selectedKey} onClick={confirmLocation} type="button">
-                    {isBusy ? 'Confirming…' : 'Use this location'} <ArrowRight aria-hidden="true" size={16} />
-                  </button>
-                </div>
+                {!visibleLocations.length ? <div className="ga-empty-state"><p>No locations match “{query}”.</p><button onClick={() => { setQuery(''); searchRef.current?.focus() }} type="button">Clear search</button></div> : null}
+                <div className="ga-actions"><button className="ga-secondary" disabled={isBusy} onClick={useDifferentGoogleAccount} type="button">Use a different Google account</button><button className="ga-primary" disabled={isBusy || !selectedKey} onClick={confirmLocation} type="button">{isBusy ? 'Confirming…' : 'Use this location'} {!isBusy ? <ArrowRight aria-hidden="true" size={16} /> : null}</button></div>
               </>
             ) : (
               <div className="ga-empty-state ga-empty-state-large">
                 <Building2 aria-hidden="true" size={28} />
-                <h2>No Business Profile locations found</h2>
-                <p>This Google account does not currently return a managed location. Try another Google account, or check that the business profile is verified and you are an owner or manager.</p>
-                <button className="ga-primary" disabled={isBusy} onClick={startGoogleConnection} type="button">Try another Google account</button>
+                <h2>We couldn’t find a Business Profile managed by this Google account.</h2>
+                <div className="ga-actions ga-actions-centred"><a className="ga-secondary" href="https://support.google.com/business/answer/3403100" rel="noreferrer" target="_blank">Check my Google access</a><button className="ga-primary" disabled={isBusy} onClick={useDifferentGoogleAccount} type="button">Try another Google account</button></div>
               </div>
             )}
           </div>
         ) : null}
 
-        {step === 'tone' ? (
-          <div className="ga-step ga-form-step">
-            <p className="ga-kicker">Voice, timing and alerts</p>
-            <h1 id="google-activation-title" ref={headingRef} tabIndex={-1}>Teach AURA what an approved reply sounds like.</h1>
-            <p className="ga-lead">AURA generates a draft as soon as a new review is found. Your timing choice is a recommendation, never a publishing lock.</p>
-            <GoogleReplySettingsForm
-              initialSettings={status?.settings || defaultSettings}
-              onSubmit={saveSettingsAndImport}
-              submitLabel="Save and import reviews"
-            />
-          </div>
-        ) : null}
+        {step === 'tone' ? <GoogleSetupConversationForm connectionId={status?.connection?.id} initialSettings={status?.settings || defaultSettings} location={status?.connection} onEditBusiness={startGoogleConnection} onProgressChange={setConversationProgress} onSubmit={saveSettingsAndImport} /> : null}
 
         {step === 'import' ? (
-          <div className="ga-step ga-centred-step">
-            <span className="ga-large-icon"><RefreshCw aria-hidden="true" className={isBusy ? 'animate-spin' : ''} size={28} /></span>
-            <p className="ga-kicker">Importing review history</p>
-            <h1 id="google-activation-title" ref={headingRef} tabIndex={-1}>Bringing in {locationTitle}.</h1>
-            <p className="ga-lead">AURA is importing the complete available history. Old reviews will appear in the workspace, but they will not create drafts or emails.</p>
+          <div className="ga-step ga-import-step">
+            <p className="ga-kicker">Preparing your workspace</p>
+            <h1 id="google-activation-title" ref={headingRef} tabIndex={-1}>We’re bringing in {locationTitle}’s reviews.<span aria-hidden="true" className="ga-question-cursor" /></h1>
+            <p className="ga-lead">Past reviews will be visible, but they won’t create drafts or emails.</p>
+            <div className="ga-import-list" aria-live="polite">
+              <div className="is-complete"><Check aria-hidden="true" size={17} /><span><strong>Google connected</strong><small>{locationTitle}</small></span></div>
+              <div className={isBusy ? 'is-active' : errorMessage ? 'has-error' : 'is-complete'}>{isBusy ? <RefreshCw aria-hidden="true" className="animate-spin" size={17} /> : errorMessage ? <X aria-hidden="true" size={17} /> : <Check aria-hidden="true" size={17} />}<span><strong>Importing review history</strong><small>{errorMessage ? 'Import needs another try' : isBusy ? 'This may take a moment' : 'Review history imported'}</small></span></div>
+              <div className={!isBusy && !errorMessage ? 'is-complete' : ''}><Circle aria-hidden="true" size={17} /><span><strong>Preparing your workspace</strong><small>Draft-only controls stay in place</small></span></div>
+            </div>
             {!isBusy && errorMessage ? <button className="ga-primary" onClick={retryImport} type="button"><RefreshCw aria-hidden="true" size={17} /> Retry import</button> : null}
           </div>
         ) : null}
@@ -493,17 +465,11 @@ export default function GoogleActivation() {
         {step === 'complete' ? (
           <div className="ga-step ga-centred-step">
             <span className="ga-large-icon ga-complete-icon"><CheckCircle2 aria-hidden="true" size={30} /></span>
-            <p className="ga-kicker">Draft-only mode is ready</p>
-            <h1 id="google-activation-title" ref={headingRef} tabIndex={-1}>AURA is watching {locationTitle}.</h1>
-            <p className="ga-lead">{importCount ? `${importCount} reviews were imported. ` : ''}AURA will check every 15 minutes. New reviews can generate drafts and alerts; nothing can reach Google until you review and confirm it.</p>
-            <div className="ga-assurance">
-              <ShieldCheck aria-hidden="true" size={20} />
-              <p>Save draft and Publish to Google are separate actions throughout AURA.</p>
-            </div>
-            <div className="ga-actions ga-actions-centred">
-              <Link className="ga-secondary" to="/dashboard/settings">Review settings</Link>
-              <Link className="ga-primary" to="/dashboard/reviews">Open review drafts <ArrowRight aria-hidden="true" size={16} /></Link>
-            </div>
+            <p className="ga-kicker">Setup complete</p>
+            <h1 id="google-activation-title" ref={headingRef} tabIndex={-1}>AURA is ready for {locationTitle}.</h1>
+            <p className="ga-lead">{importCount} past reviews are now visible. {notificationsEnabled ? 'New reviews can create drafts and alerts. ' : 'New reviews can create drafts and will wait in your dashboard. '}You choose if and when anything is published.</p>
+            <div className="ga-assurance"><ShieldCheck aria-hidden="true" size={20} /><p>AURA will never publish a reply without you.</p></div>
+            <div className="ga-actions ga-actions-centred"><Link className="ga-secondary" to="/dashboard/settings">Review settings</Link><Link className="ga-primary" to="/dashboard/reviews">Open my reviews <ArrowRight aria-hidden="true" size={16} /></Link></div>
           </div>
         ) : null}
       </section>

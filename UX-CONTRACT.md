@@ -29,7 +29,8 @@
 | Capability | Canonical owner | Allowed variant | Verification |
 |---|---|---|---|
 | Location choice | Native radio group in an AURA search/list surface | One or many results | Keyboard, clear search, narrow viewport |
-| Tone and timing form | `GoogleReplySettingsForm` | Activation and Settings | Validation, busy, error, success |
+| Conversational Google setup | `GoogleSetupConversationForm` | Activation only | One-question steps, local recovery, validation, busy, error, success |
+| Tone and timing form | `GoogleReplySettingsForm` | Settings only | Validation, busy, error, success |
 | Confirmation | App-owned native `<dialog>` wrapper | Manual Google publish, disconnect | Focus, Escape, exact-text confirmation |
 | Status feedback | Persistent inline banner/status region | Info, warning, error, success | Live region, stable geometry |
 | Scrollbar | Global `src/index.css` baseline | Internal modal geometry only | Chromium and Firefox computed style |
@@ -38,9 +39,10 @@
 
 | Operation | Trigger | Pending | Success | Failure recovery | Focus outcome |
 |---|---|---|---|---|---|
-| Connect Google | Connect Google Business Profile | Stable busy button then Google's screen | Return to location selection | Permission/expiry explanation plus retry | Location heading |
-| Select location | Use this location | Stable busy button | Tone and timing step | Keep selection and show inline retry | Next step heading |
-| Save tone/settings | Save and import reviews | Stable busy button | Import step | Preserve all non-sensitive values | First invalid field or import heading |
+| Connect Google | Continue to Google | Stable busy button then Google's screen | Return to location selection | Permission/expiry explanation plus retry | Location heading |
+| Select location | Use this location | Stable busy button | First voice question | Keep selection and show inline retry | Next step heading |
+| Complete voice/routine | Back or Continue | Stable question card | Preserve later answers and move one question | Validate only active question; keep answer | Next heading or invalid field |
+| Save tone/settings | Import my reviews | Stable busy button | Import step | Preserve all non-sensitive values | First invalid field or import heading |
 | Refresh reviews | Refresh reviews | Existing content remains visible | Updated count/status | Inline retry; reviews remain visible | Trigger |
 | Edit draft | Save draft | Stable busy button | Stay on selected review | Keep textarea open with error | Draft editor/summary |
 | Regenerate draft | Regenerate | Stable draft panel | Replace saved generated text | Existing draft remains, Retry offered | Draft heading |
@@ -51,7 +53,8 @@
 
 - Routes use `{Page} — AURA` document titles.
 - New signups go to `/setup/google`; existing users remain free to use `/dashboard` and see a setup banner.
-- Activation step state is server-derived. Browser Back may return to explanatory steps but cannot invent a completed server state.
+- Activation’s Google connection state is server-derived. Unsubmitted voice and routine answers are stored only in the signed-in user’s current browser, scoped to the selected connection, and restored on return. They never invent a completed server state.
+- Activation exposes four chapters with local question counts. Summary Edit actions return to Business, Voice or Routine without clearing later answers.
 - Location results and reviews stack at narrow widths; every action and full address remains available.
 - Sticky dashboard chrome must not cover focused fields or dialog actions.
 
