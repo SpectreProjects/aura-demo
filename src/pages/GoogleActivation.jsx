@@ -288,7 +288,7 @@ export default function GoogleActivation() {
     setStep('import')
     setIsBusy(true)
     try {
-      const result = await callAuraApi('/api/google-reviews-sync', {})
+      const result = await callAuraApi('/api/google-reviews', {})
       setImportCount(result.count || 0)
       setStatus((current) => ({
         ...current,
@@ -310,7 +310,7 @@ export default function GoogleActivation() {
       if (isVisualDemo) {
         setImportCount(148)
       } else {
-        const result = await callAuraApi('/api/google-reviews-sync', {})
+        const result = await callAuraApi('/api/google-reviews', {})
         setImportCount(result.count || 0)
       }
       setStep('complete')

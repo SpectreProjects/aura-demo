@@ -1360,7 +1360,7 @@ export default function DashboardLayout() {
   }
 
   async function generateGoogleDraft(reviewId, idempotencyKey) {
-    const payload = await callAuraApi('/api/google-draft-generate', { idempotencyKey, reviewId })
+    const payload = await callAuraApi('/api/google-draft', { idempotencyKey, reviewId })
     replaceGoogleReview(payload.review)
     return payload.review
   }
@@ -1398,7 +1398,7 @@ export default function DashboardLayout() {
   }
 
   async function syncGoogleReviews() {
-    const payload = await callAuraApi('/api/google-reviews-sync', {})
+    const payload = await callAuraApi('/api/google-reviews', {})
     setReviews(normalizeReviews(payload.reviews || []))
     setGoogleSetupStatus((current) => current
       ? {
