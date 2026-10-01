@@ -1,27 +1,45 @@
 ---
 version: alpha
 name: Harmony
-description: A Pacifico wordmark with a scroll portal and floating Harmony navigation.
+description: Approved Harmony branding, design philosophy and implementation reference.
+status: approved
+approved_on: "2026-10-01"
+baseline_commit: "dc55cc9"
 colors:
   copper: "#DB5926"
   white: "#FFFFFF"
   navigation-ink: "#1D1D1F"
 typography:
   sans:
-    fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif"
+    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
   display:
     fontFamily: "Pacifico, cursive"
 rounded:
   DEFAULT: "0px"
+  pill: "999px"
+  mobile-panel: "24px"
 spacing:
   page-gutter: "24px"
   hello-width: "900px"
+  action-frame-width: "1000px"
+  navbar-max-width: "960px"
+  cta-gap-min: "48px"
+  cta-gap-max: "72px"
 components:
-  apple-hello: {}
-  navbar: {}
+  apple-hello:
+    durationScale: 0.65
+  navbar:
+    height: "64px"
+  interactive-hover-button:
+    minHeight: "44px"
+    duration: "300ms"
 ---
 
-# Harmony Design System
+# Harmony: approved design philosophy
+
+This is the permanent design reference for Harmony. Connor explicitly approved the completed direction on 1 October 2026 as exactly the branding and design language he wants. Read this complete file before every design task and compare the rendered result against it afterwards.
+
+It records his feedback and the actual approved implementation through commit `dc55cc9`. Exact values describe the current baseline, not speculative future designs. Explicit current user instructions take precedence. When a lasting change is accepted, update this reference alongside the implementation, keeping one maintained source rather than competing brand guides.
 
 ## Overview
 
@@ -31,11 +49,62 @@ The typography direction is the supplied Pacifico Regular font, using ncdai's Ap
 
 This is a brand hero on `/`. The existing authentication and dashboard routes retain their working behaviour and await a separate Harmony design brief. Their previous styling is not a reference for future Harmony work.
 
+### Design philosophy
+
+Harmony should feel as considered and restrained as an Apple interface: simple composition, precise spacing, clear controls and fluid motion. Its own identity comes from burnt copper/orange, pure white and the naturally connected Pacifico wordmark. Do not copy Apple's branding or replace Harmony's personality with a generic software template.
+
+The signature moment is the white name writing itself onto an orange field, followed by scrolling through the actual lettering into white. Everything around that moment stays quiet. The floating navbar and compact CTAs support the experience without competing with it. Create a polished, confident and calm impression through proportion, space, typography and consistent behaviour, rather than decorative effects or persuasive filler.
+
+### Approved scope
+
+The approved visual baseline is the public landing page at `/`. Future marketing, onboarding and product work should inherit this identity. The old authentication and dashboard styling is not the Harmony visual reference. Preserve useful existing behaviour when giving those screens the new visual treatment.
+
+A marketing hero can be spacious and expressive; a dashboard still needs readable information, clear states and efficient tasks. Use the same palette, utility typography, restraint and maintained control behaviour. Do not repeat the writing animation throughout ordinary product screens. Detailed dashboard grids, form layouts, chart palettes, error colours and additional component variants are not yet approved. Treat new proposals as extensions of the baseline, not existing brand rules.
+
+### Approved visual examples
+
+Final smaller wordmark, centred independently of the lower no-dot CTA:
+
+![Approved Harmony desktop composition](docs/design/harmony-approved-desktop.png)
+
+Navbar interaction state. This capture uses keyboard focus, which shares the hover animation; the extra outline is the focus indicator:
+
+![Approved orange navbar interaction](docs/design/harmony-navbar-interaction.png)
+
 ## Colors
 
 Burnt orange `#DB5926` fills the opening viewport. White `#FFFFFF` colours the wordmark and becomes the full page background after scrolling through the word. The white navbar uses `#1D1D1F` for readable labels and its primary action, with the supplied orange H logo. Its Get started action retains a dark resting background and white text, switching to orange with white text on hover. The hero has no gradients or textures.
 
 Runtime tokens live in `src/pages/Landing.css`: `--harmony-orange`, `--harmony-white`, `--harmony-page-gutter`, `--harmony-hello-width`, `--harmony-action-frame-width`, `--harmony-cta-gap` and `--harmony-display-font`. This document mirrors those values. The body background uses the same orange to cover overscroll outside the page.
+
+### Exact colour roles and component states
+
+| Role | Value | Application |
+|---|---|---|
+| Burnt copper/orange | `#DB5926` | Opening field, brand identity, hero CTA label, both CTA hover fills |
+| Pure white | `#FFFFFF` | Wordmark, navbar surface, hero button surface, hover labels, scroll destination |
+| Utility ink | `#1D1D1F` | Navbar labels, Log in and resting navbar button |
+
+Use the exact orange. Do not shift it towards red, brown, peach or pale terracotta. White stays pure white, not cream or beige. Utility ink is a functional neutral, not a second brand accent.
+
+| Element | Resting background | Resting text | Hover/focus background | Hover/focus text |
+|---|---|---|---|---|
+| Hero Get Started | White | Orange | Orange with white border | White plus arrow |
+| Navbar Get started | Utility ink | White | Orange | White plus arrow |
+| Navbar surface | White | Utility ink | White | Utility ink |
+
+Both button resting treatments are deliberate. Reuse the animation without conflating the variants. The wordmark itself has no button-like hover treatment. Use dark utility text where ordinary content needs clarity on white. A decorative colour is not automatically suitable for long text or error messages.
+
+Supporting values below provide restrained separation, not extra brand colours:
+
+| Detail | Approved value |
+|---|---|
+| Navbar/panel border | `1px solid rgba(29, 29, 31, 0.06)` |
+| Navbar shadow | `0 3px 12px rgba(44, 23, 14, 0.08)` |
+| Mobile panel shadow | `0 8px 24px rgba(44, 23, 14, 0.1)` |
+| Hero CTA border | `1px solid #FFFFFF` |
+| Hero keyboard focus | 2px white outline, 5px offset |
+| Navbar keyboard focus | 2px orange outline, 4px offset |
 
 ## Typography
 
@@ -43,9 +112,64 @@ Pacifico Regular is the brand display font. The wordmark uses contours exported 
 
 `src/components/ui/harmony-pacifico-paths.js` owns the wordmark contours and invisible pen guides. The navbar uses system sans-serif typography at 14px, keeping utility labels distinct from the Pacifico brand lettering.
 
+### Type roles and exact utility styles
+
+| Role | Font | Size | Weight | Line height |
+|---|---|---|---|---|
+| Harmony identity | Supplied Pacifico Regular contours | Proportional SVG size | Original Regular shapes | Native 824:294 artwork ratio |
+| Desktop navbar and navbar CTA | System sans-serif | 14px | 500 | 1.4 |
+| Mobile navbar CTA | System sans-serif | 13px | 500 | 1.4 |
+| Hero CTA | System sans-serif | 13px | 600 | 1.4 |
+
+The utility stack is `-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`. Labels use natural spacing, with no wide tracking, all-caps styling or oversized bold text. Future body/heading sizes should serve readability and hierarchy; they have not yet been individually locked in.
+
+Pacifico is the brand/display voice, used with restraint. Do not use it for navigation, buttons, forms, paragraphs or dense dashboard data. Do not substitute Tiempos Headline, a generic serif, another script or artificial handwriting for the wordmark. Earlier Tiempos/serif work was superseded by the supplied Pacifico; old font assets are not evidence of approval.
+
+### Assets and licences
+
+| Asset | Canonical location |
+|---|---|
+| Supplied orange H monogram | `public/brand/harmony-logo.png` |
+| Supplied Pacifico font | `public/fonts/Pacifico-Regular.ttf` |
+| Font licence | `public/fonts/Pacifico-OFL.txt` |
+| Word contours and pen guides | `src/components/ui/harmony-pacifico-paths.js` |
+| Writing reference licence | `src/components/ui/LICENSE.ncdai.txt` |
+| Hover button reference licence | `src/components/ui/LICENSE.magicui.txt` |
+
+The logo and font stay unmodified. CSS frames transparent logo padding, without redrawing the H. Retain the licence files when reusing assets.
+
 ## Layout
 
 Fill the viewport and centre the name vertically and horizontally. The SVG scales down with the viewport, retains its 824:294 aspect ratio and has a maximum artwork width of 900px, reduced by 10% from the previous navbar-spanning size for a lighter composition. The artwork stays centred independently of the CTA. A height-based cap leaves room for the navbar and button on short screens. Keep 24px of edge clearance on small screens. Use the small viewport height so mobile browser controls do not obscure the name. A 340svh portal region pins the 100svh opening stage during 240svh of native scroll travel. A blank 100svh white section follows.
+
+### Composition rules
+
+Centre the word horizontally and vertically in the viewport, independently of the button. Do not centre the combined word-and-button stack, which would move the word upwards. Keep the CTA smaller and clearly lower down.
+
+The final maximum word frame is **900px**. The earlier 1000px version felt clunky and was reduced by 10%; the original 638px size is also superseded. Do not revert to either earlier proportion as the default.
+
+The 1000px CTA frame is an invisible positioning reference, not visible oversized lettering. It intentionally holds the button in the approved lower position after the word becomes smaller.
+
+| Geometry | Approved value |
+|---|---|
+| Word maximum | 900px |
+| Word aspect ratio | 824 / 294 |
+| Stage edge clearance | 24px |
+| Short-screen word/frame width cap | `calc((100svh - 240px) * 824 / 294)` |
+| Desktop navbar width | `min(calc(100% - 48px), 960px)` |
+| Desktop navbar top | `max(20px, env(safe-area-inset-top))` |
+| Navbar minimum bar height | 64px |
+| Mobile breakpoint | Below 768px |
+| Mobile navbar width | `calc(100% - 32px)` |
+| Mobile navbar top | `max(16px, env(safe-area-inset-top))` |
+| CTA positioning frame maximum | 1000px |
+| Gap below CTA positioning frame | `clamp(48px, 8svh, 72px)` |
+
+At the reference 1280 × 720 viewport, the word frame is 900px wide, centred at x = 640; the navbar is 960px wide; the hero CTA is approximately 132 × 44px with its top near y = 596. These are calibration measurements, not hard-coded screen coordinates.
+
+Scale the artwork proportionally on mobile. Use safe-area insets and small viewport units. Keep the navbar, word and CTA separated on short landscape screens. No horizontal overflow or clipped arrow. Keep the current 44px control height for touch interaction.
+
+The opening contains only the navbar, wordmark and hero CTA. Keep the rest of the orange field empty. Taglines, paragraphs, badges, testimonials, statistics, scroll hints, pickers, imagery and further CTAs need a subsequent brief.
 
 ## Elevation & Depth
 
@@ -54,6 +178,10 @@ The hero stays flat. The floating navbar adds a restrained border and shadow to 
 ## Shapes
 
 Keep the supplied Pacifico curves and naturally joined letter shapes. The navbar and primary action use pill corners; the mobile panel uses a 24px radius.
+
+### Applying the shape language
+
+The invisible logo frame uses an 8px radius without changing the artwork. Keep the soft Pacifico curves balanced by quiet utility type. Do not add connector lines to the word or infer a universal rounded-card system from the navbar alone. New product surfaces need a considered application of the same restrained direction.
 
 ## Components
 
@@ -64,6 +192,8 @@ Keep the supplied Pacifico curves and naturally joined letter shapes. The navbar
 Source: https://github.com/ncdai/chanhdai.com/blob/main/src/registry/components/apple-hello-effect/apple-hello-effect-english.tsx
 
 The original MIT licence is retained in `src/components/ui/LICENSE.ncdai.txt`.
+
+The starting H must not fade in. Pen guides stay hidden before drawing, then appear at full opacity as their stroke begins. Do not show a dotted skeleton or visible starting points. The rejected crossbar change was reverted; retain the restored pen paths and sequence. Do not rewrite the reveal as an incidental layout fix.
 
 ### Scroll portal
 
@@ -79,15 +209,75 @@ After the writing callback finishes, the wrapper removes its now redundant SVG m
 
 The selected labels are How it works, Features and Pricing. These remain static preview labels until genuine page destinations exist. Log in links to `/login`, Get started to `/signup`, and the H logo returns to the top of `/` without replaying the writing animation. Below 768px the labels and Log in move into an animated disclosure, with a 44px menu toggle. Escape closes it and returns focus to the toggle; outside pointer input and switching to desktop also close it. Reduced motion removes the disclosure animation. All clickable controls have a visible keyboard focus outline.
 
+#### Navbar dimensions and behaviour
+
+| Detail | Approved value |
+|---|---|
+| Desktop bar padding | `8px 10px 8px 18px` |
+| Desktop bar gap | 24px |
+| Main label gap | 32px |
+| Right action gap | 16px |
+| Logo frame / source display | 40 × 40px / 68 × 68px, centred to account for transparent padding |
+| Mobile left padding / bar gap | 14px / 12px |
+| Mobile action gap | 4px |
+| Menu toggle / icon | 44 × 44px / Lucide Menu or X at 20px |
+| Disclosure gap below bar | 10px |
+| Disclosure padding | `14px 24px 20px` |
+| Disclosure entry/exit | 0.18 seconds, ease-out, 8px vertical movement with opacity |
+
+The navbar stays fixed and legible over both orange and white. Keep the mobile disclosure behaviour and accessible labels, not just its appearance. Reuse Lucide for meaningful action icons rather than introducing decorative icon styles.
+
 ### Interactive hover button
 
 `src/components/ui/interactive-hover-button.jsx` and its scoped CSS adapt the public manual source at https://magicui.design/docs/components/interactive-hover-button, linked by the requested 21st component. The JSX uses a router link to `/signup` instead of a button, with a single accessible name. The resting label is centred without a dot. An initially hidden orange fill expands over 300ms while the first label exits and a white label with arrow enters. A 132px minimum width preserves the compact button size. Keyboard focus uses the same state with a visible outline. Reduced motion switches states immediately. The hero standard colours are white with orange lettering; hover colours are orange with white lettering and a white border. Navbar1 reuses this same component and animation for its Get started action, retaining its original dark resting background, white text, 44px height and navigation typography. Its hover fill is orange with white text and the same incoming arrow.
 
 The compact call to action has a 44px minimum height, 13px text and 20px side padding. Its positioning uses the previous 1000px artwork frame and a 48–72px gap that scales with viewport height, keeping the button in place when the word is reduced. The word remains centred independently of the button. A separate portal slot fades it out during the first 6% of scroll travel and hides it from interaction afterwards, so the zoom continues into uninterrupted white. Reduced motion keeps it visible on the ordinary orange section.
 
+#### Button variants and exact motion
+
+| Detail | Hero variant | Navbar variant |
+|---|---|---|
+| Label casing | Get Started | Get started |
+| Minimum height | 44px | 44px |
+| Minimum width | 132px | Content-sized to preserve original navbar proportion |
+| Padding | `8px 20px` | `0 22px` desktop; `0 18px` mobile |
+| Type | 13px / 600 | 14px / 500 desktop; 13px / 500 mobile |
+| Resting background / label | White / orange | Utility ink / white |
+| Border | 1px white | None |
+| Interaction fill / label | Orange / white with arrow | Orange / white with arrow |
+
+Shared mechanics:
+
+- All transitions use 300ms with CSS `ease`.
+- Fill is a pseudo-element clipped from `circle(0% at 24px 50%)` to `circle(150% at 24px 50%)`. No visible circle or dot in the resting state.
+- Resting label exits 48px to the right and becomes transparent.
+- Incoming white label/arrow enters from 48px to the right and ends centred at translateX(0).
+- Lucide ArrowRight is 20px, with an 8px label gap.
+- Button dimensions stay stable through the interaction.
+- Keyboard focus shares the interaction state and adds a visible outline.
+- Reduced motion switches states immediately.
+- Each link has one accessible name; duplicated visual labels are hidden from assistive technology.
+
+Both CTAs use InteractiveHoverButton. Do not maintain separate animation implementations. The hero CTA fades out during the first 6% of portal progress, then becomes hidden and unavailable for interaction; reversing scroll restores it. Reduced motion keeps it visible in the normal orange section.
+
 ### Landing page
 
 `src/pages/Landing.jsx` owns the page composition. It composes the unchanged Harmony greeting inside the scroll portal, followed by plain white. It also mounts the fixed Navbar1 above the scroll stage and supplies the Get Started call to action to its separate portal slot. No footer, photography or additional marketing content.
+
+### Runtime ownership
+
+This document is the maintained design contract; the following files implement it. Update both in the same changeset when an accepted design decision changes. Prefer shared tokens and components over duplicated one-off values.
+
+| Concern | Runtime source of truth |
+|---|---|
+| Brand variables, font face, word size and CTA position | `src/pages/Landing.css` |
+| Word contours / pen guides | `src/components/ui/harmony-pacifico-paths.js` |
+| Writing sequence and timing | `src/components/ui/apple-hello-effect.jsx` |
+| Scroll zoom and CTA visibility | `src/components/ui/glyph-portal.jsx` |
+| Navigation composition and mobile behaviour | `src/components/ui/navbar-1.jsx` |
+| Navbar geometry, ink and elevation | `src/components/ui/navbar-1.css` |
+| Shared button markup / accessible label | `src/components/ui/interactive-hover-button.jsx` |
+| Shared button animation and hero dimensions | `src/components/ui/interactive-hover-button.css` |
 
 ## Do's and Don'ts
 
@@ -97,7 +287,7 @@ The existing product interaction owners remain in place. This table records beha
 
 | Capability | Canonical owner | Source of truth | Allowed variants | Verification |
 |---|---|---|---|---|
-| CTA | InteractiveHoverButton | `src/components/ui/interactive-hover-button.jsx` and its scoped CSS | White rest state, orange hover/focus state | Signup destination, keyboard focus, mobile layout and hidden state after scrolling |
+| CTA | InteractiveHoverButton | `src/components/ui/interactive-hover-button.jsx` and its scoped CSS | Hero white rest state; navbar dark rest state; shared orange hover/focus state | Signup destination, keyboard focus, mobile layout and hidden state after scrolling |
 | Navigation | Navbar1 | `src/components/ui/navbar-1.jsx` and its scoped CSS | Desktop pill and mobile disclosure | Logo and auth destinations, mobile open/close, Escape focus, and 390px overflow checks |
 | Select/Listbox | Native platform select | `premium-ui.json` and dashboard components | Native selection controls | Keyboard and narrow viewport checks when these controls change |
 | Form | Existing dashboard forms and business setup modal | Dashboard routes and `src/components/BusinessSetupModal.jsx` | Inline settings and modal steps | Validation, loading, error and success checks when forms change |
@@ -111,3 +301,67 @@ The existing product interaction owners remain in place. This table records beha
 - Honour reduced motion and keep the layout stable during animation.
 - Do not carry forward the previous AURA marketing design.
 - Expand the brand only when a subsequent brief calls for it.
+
+
+### Feedback ledger: final decisions, not abandoned iterations
+
+| Feedback / iteration | Rule to carry forward |
+|---|---|
+| Forget previous designs; new Harmony direction | Old AURA marketing is retired |
+| Apple-like, sleek; burnt orange and white | Precise composition, exact palette, restraint and controlled motion |
+| Initially nothing but orange and the name | Preserve the empty field; only later requested navbar and CTA are approved additions |
+| Dots / connecting-the-dots appearance rejected | Continuous writing with hidden undrawn guides |
+| Tiempos explored, then replaced by supplied Pacifico | Pacifico is final for the wordmark |
+| More fluid and faster | Preserve roughly 2.3-second reveal and final easing |
+| H fading at the beginning rejected | Immediate opacity at writing start |
+| Crossbar edit felt clunky; revert requested | Retain the restored pen paths and sequence |
+| Scroll into the word without changing it | Separate wrapper, genuine contours, white ink filling the screen |
+| CTA lower and smaller; word centred and large | Independent word centring, compact CTA, generous lower placement |
+| 1000px word felt clunky | Final 900px maximum, button position preserved |
+| Remove the button dot | No visible dot on either CTA |
+| Same animation on navbar CTA | Shared animation, dark resting state, orange/white interaction |
+
+### Applying the philosophy to future screens
+
+Keep one strong visual idea per surface. On the landing page it is the writing and scroll portal; on a product screen the primary task should lead. Do not combine unrelated animated demos because they are available on 21st.dev.
+
+Use Pacifico for identity and system sans-serif for usability. Keep controls compact, rounded and clear. Use space deliberately; do not fill every empty area. Use icons for an action or meaning, not as decoration. Let a panel exist because it groups a real task, not because every section needs a card.
+
+Use calm, direct UK English. Prefer short labels and useful explanations. No hype, generic claims, ornamental eyebrows or implementation jargon in customer-facing screens. Preserve the approved casing of the two current CTA labels unless a later copy brief changes it.
+
+Forms, loading, errors, empty states and keyboard interaction still need usable behaviour when given the Harmony visual treatment. Do not copy the hero's sparse composition into a dashboard at the expense of useful information. Detailed status colours and complex charts need deliberate decisions; do not infer a whole semantic palette from one orange accent.
+
+### Avoid
+
+- Cream/beige in place of white or a different orange hue.
+- Unapproved accents, gradients, texture, noise, photography, glow or glass effects in the opening.
+- Reviving earlier serif or disconnected-letter experiments.
+- Heavy hero typography, oversized controls or crowding the word with content.
+- Visible starting dots, initial word fades or clunky reveal revisions.
+- Decorative dots on either Get started action.
+- Independently implemented button timings or animations.
+- Rasterised/pixelated zoom, clipped mask artefacts or replacing the portal with a colour fade.
+- Scroll hijacking, replay on reversal or intrusive motion for reduced-motion users.
+- Fake links on unfinished header labels.
+- Treating old dashboard styles or imported component defaults as Harmony's visual standard.
+
+### Review checklist for every design task
+
+1. Read this complete reference and inspect the approved visual examples. Identify whether the surface is the brand opening or a functional product screen.
+2. Compare the request with the final decisions, not an earlier iteration. Explicit user changes take precedence; record accepted new decisions here.
+3. Locate and reuse the canonical owner. Preserve supplied assets, word contours and approved animation paths unless the task changes them.
+4. Compare colours, type roles, spacing, density, shapes and motion with the baseline. Remove anything added merely to decorate.
+5. Check relevant resting, hover/focus and mobile states in the browser. Verify centring, unclipped controls, visible focus and overflow where layout changes.
+6. When changing the greeting/portal, verify complete writing, uninterrupted white finish, scroll reversal and reduced motion. Do not claim checks that were not run.
+7. Run checks appropriate to the change. Update this reference and its runtime values together when an enduring decision changes.
+
+### Review and reconciliation recorded on 1 October 2026
+
+| Earlier documentation issue | Resolution |
+|---|---|
+| Generic metadata did not fully express approved shape/control rules | Added actual pill/panel dimensions and shared CTA states |
+| Earlier word sizes and fonts could compete with final choices | Marked 900px/Pacifico as final; recorded superseded choices in the feedback ledger |
+| Hero/navbar CTA variants could be conflated | Recorded different resting colours and one shared animation |
+| Existing dashboard behaviour could be mistaken for approved styling | Separated current interaction owners from the Harmony visual baseline |
+
+This review updates documentation and retains visual examples. It does not redesign product pages or change runtime behaviour. Future accepted changes should update the date/baseline and affected sections. DESIGN.md stays the canonical reference, with AGENTS.md directing future project work to consult it.
