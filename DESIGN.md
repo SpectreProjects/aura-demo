@@ -1,121 +1,87 @@
 ---
 version: alpha
-name: AURA
-description: Cinematic editorial marketing for a personal local-business review assistant.
+name: Harmony
+description: A quiet Apple-inspired introduction in burnt orange and white.
 colors:
+  copper: "#DB5926"
   white: "#FFFFFF"
-  black: "#080808"
-  charcoal: "#242424"
-  grey: "#626262"
-  line: "#EAEAEA"
-  copper: "#A96847"
-  copper-bright: "#D18A62"
-  product-glass: "rgba(255, 255, 255, 0.045)"
 typography:
   sans:
-    fontFamily: "Barlow Condensed, Arial Narrow, sans-serif"
+    fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif"
   display:
-    fontFamily: "Barlow Condensed, Arial Narrow, sans-serif"
+    fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif"
 rounded:
   DEFAULT: "0px"
 spacing:
-  page-gutter: "clamp(24px, 5vw, 88px)"
-  editorial-max: "1170px"
+  page-gutter: "24px"
+  hello-width: "638px"
 components:
-  button: {}
-  navigation: {}
-  review-demo: {}
-  signup-entry: {}
-  login-entry: {}
+  apple-hello: {}
 ---
 
-# AURA Design System
+# Harmony Design System
 
 ## Overview
 
-### Creative North Star
+Harmony is the new identity for the review assistant used by local businesses in Scotland and the UK. This document replaces the previous AURA design direction.
 
-Spyker’s September 2026 homepage: cinematic opening, condensed typography, staggered editorial photography, white space, a dramatic black statement and a quiet, spacious footer. Translate its pacing into the human world of local businesses; use original content and licensed imagery.
+The creative reference is Apple's handwritten hello greeting, using ncdai's Apple Hello Effect from 21st.dev. The first branding screen has one job: introduce the new visual direction. It contains only a flat orange background and a centred white handwritten “hello”.
 
-### Product context and register
-
-- Audience: owners of cafés, restaurants, salons, trades and local services in Scotland and the UK, per the project brief.
-- Page job: explain Aura’s personalised Google review replies and lead to account creation.
-- Language: English (UK). Natural, warm, direct; no unsupported metrics, endorsements or free-trial promises.
-- Register: brand marketing on `/`, with restrained editorial extensions on `/signup` and `/login`. Authenticated product screens use smoked liquid glass, graphite depth and brushed-copper emphasis while retaining their operational hierarchy.
-- Signature: the transition from a full-screen business photograph to an oversized black-and-white statement and an illustrative review-to-reply sequence.
-- Anti-references: bright SaaS gradients, blue/purple AI branding, decorative stock illustrations, excessive pill shapes and invented testimonials.
-- Canonical runtime tokens: `src/index.css` owns the project-wide type family, while `src/pages/Landing.css` owns the marketing colour and layout tokens scoped under `.aura-landing`. Update this document and those runtime owners together when changing the identity.
+This is a brand hero on `/`. The existing authentication and dashboard routes retain their working behaviour and await a separate Harmony design brief. Their previous styling is not a reference for future Harmony work.
 
 ## Colors
 
-White and black carry the main section contrast. Charcoal is body copy, grey is secondary copy and pale grey is the divider colour. On black, secondary text is #AAAAAA. Photography supplies colour on public pages. Product screens use #A96847 and #D18A62 as the only decorative accents, alongside semantic red/green states. Use current-colour focus outlines with clear offsets and system colours in forced-colours mode.
+Burnt orange `#DB5926` fills the entire viewport. White `#FFFFFF` is the only foreground colour. No gradients, textures, shadows or additional accents.
+
+Runtime tokens live in `src/pages/Landing.css`: `--harmony-orange`, `--harmony-white`, `--harmony-page-gutter` and `--harmony-hello-width`. This document mirrors those values. The body background uses the same orange to cover overscroll outside the page.
 
 ## Typography
 
-Self-hosted Barlow Condensed 500 is the sole project-wide type family: display headings, body copy, navigation, controls, wordmark and data figures all use it. Hierarchy comes from scale, case, tracking, colour and spacing rather than switching families. Figures use lining, tabular numerals for stable dashboard alignment. The font uses the SIL Open Font License included beside the font file. Body copy keeps generous line height; large display headings use a tight 0.94–0.99 line height. Do not use a registration mark without trademark evidence.
+The visible greeting uses the original SVG handwriting, not a substitute font. Its paths inherit white through `currentColor`. System typography is reserved for future utility text; no utility text is visible on this opening screen.
 
 ## Layout
 
-The hero fills the small viewport height, with a 680px desktop / 640px mobile minimum. Main gutters scale from 24px to 88px. The editorial grid caps at 1170px. Responsive breakpoints are 1000px and 700px. Below 700px, editorial and benefit content become one column and the floating image composition becomes an ordered two-column image grid surrounding the text. Keep CTA labels readable and media geometry reserved.
+Fill the viewport and centre the greeting vertically and horizontally. The SVG scales down with the viewport, retains its 638:200 aspect ratio and has a maximum width of 638px. Keep 24px of edge clearance on small screens. Use the small viewport height so mobile browser controls do not obscure the greeting.
 
 ## Elevation & Depth
 
-Public pages use tonal sections, photography, spacing and hairline borders without ornamental card effects. Product pages may use restrained smoked-glass surfaces, a diffuse silver top glow and deep black shadows to create an Apple-like liquid-glass hierarchy. Glass is functional: navigation, metrics, work panels and focused conversational steps only. Dark photo overlays exist to protect white text contrast. The navigation uses the native HTML dialog top layer.
+One flat surface. No cards, borders, overlays or glass effects.
 
 ## Shapes
 
-Rectangular imagery, panels and buttons. The `/login` route and authenticated dashboard keep outer viewport edges flat and reserve one deep curve for an inward join: image-to-form on login and sidebar-to-workspace in the dashboard. Product cards use restrained 14–20px radii; conversational panels use up to 28px. Circles are limited to media controls, avatars, status dots and progress indicators.
+Preserve the original rounded pen strokes and handwriting contours. Add no other visible shapes.
 
 ## Components
 
-### Buttons and actions
+### Apple hello
 
-All primary CTAs say “Create an account” and link to `/signup`. Black on white; white on photography or black. Use 52–54px minimum height, an arrow, visible focus, restrained hover and active feedback. Existing login remains `/login`.
+`src/components/ui/apple-hello-effect.jsx` adapts the author's English component to the existing JSX and Framer Motion stack. Draw the greeting once on entry, then leave it visible. Reduced-motion settings show the finished word immediately.
 
-### Signup entry
+Source: https://github.com/ncdai/chanhdai.com/blob/main/src/registry/components/apple-hello-effect/apple-hello-effect-english.tsx
 
-The `/signup` entry is a white editorial canvas with a centred AURA wordmark, one hairline panel and the monochrome assistant orb. It presents one short typewritten prompt and one rectangular black Google action. Reuse the existing production Google OAuth component and its redirect unchanged. Keep email/password login on `/login`; the public account-creation entry asks only for Google. Reduced motion uses the static orb and renders the full prompt immediately.
+The original MIT licence is retained in `src/components/ui/LICENSE.ncdai.txt`.
 
-### Login entry
+### Landing page
 
-The `/login` screen is a full-viewport split between cinematic copper-toned photography and a flat white sign-in panel. Outer edges stay square; only the inward join is deeply curved. The right panel contains one concise sign-in heading, Google and email/password authentication, the account-creation link and legal copy. Below tablet width, the photograph becomes a compact branded header and the white panel overlaps it with rounded top corners so the form keeps a comfortable single-column measure.
+`src/pages/Landing.jsx` owns the page composition. No navigation, buttons, footer, photography or additional visible copy.
 
-### Navigation and overlays
-
-Menu on the left, AURA centred and Log in on the right. Menu is a full-screen modal dialog with native focus containment, Escape/close handling, restored trigger focus and locked background scrolling. Section links close the menu, scroll to the section and focus it. Footer includes account, login and existing legal routes. No public developer sign-in shortcut or waitlist form.
-
-### Dashboard shell
-
-The dashboard uses a flat graphite sidebar and a smoked-glass workspace joined by one deep inward curve. The sidebar wordmark is text-only and collapses to an icon rail through the existing control. Active navigation uses a slim copper edge and a quiet glass fill. The same shell, tokens and responsive bottom navigation apply to Overview, Reviews, Team, Leaderboard, Rewards and Settings.
-
-### Conversational workflows
-
-Staff, rewards, points and Google Business setup remain step-by-step conversations. They open in a focused graphite glass panel, with copper used for progress, focus and the primary action. Google setup uses four compact chapters — Connect Google, Your voice, Your routine and Ready — while presenting one question at a time with the established cursor, Back/Continue rhythm and slim segmented progress. Mobile panels stay within the small viewport and scroll internally. Native select popovers remain platform-owned; AURA owns the closed control geometry, type, border and focus state.
+## Do's and Don'ts
 
 ### Canonical UI Map
 
+The existing product interaction owners remain in place. This table records behaviour, not the retired visual direction. The brand opening has no interactive controls.
+
 | Capability | Canonical owner | Source of truth | Allowed variants | Verification |
 |---|---|---|---|---|
-| Select/Listbox | Native platform select | DESIGN.md + `premium-ui.json` | Native popup with AURA-authored closed control | Keyboard, narrow viewport, desktop browser |
-| Form | Existing dashboard form and conversational modal patterns | Dashboard route components | Inline settings, modal stepper | Validation, loading, error and success states |
-| Scrollbar | Global application stylesheet | `src/index.css` | Workspace and internally scrolling modal | Chromium screenshot + standards properties |
+| Select/Listbox | Native platform select | `premium-ui.json` and dashboard components | Native selection controls | Keyboard and narrow viewport checks when these controls change |
+| Form | Existing dashboard forms and business setup modal | Dashboard routes and `src/components/BusinessSetupModal.jsx` | Inline settings and modal steps | Validation, loading, error and success checks when forms change |
+| Scrollbar | Global application stylesheet | `src/index.css` | Workspace and internally scrolling modal | Desktop and narrow viewport overflow checks |
 
-### Iconography
+### Brand rules
 
-Lucide, mostly 14–22px, with thin strokes. Labels accompany actions except universally understood close/pause controls, which have accessible names. Stars are only part of clearly labelled illustrative examples.
-
-### Motion
-
-Slow 24-second crossfade and zoom in the hero with a pause control. Content shifts gently into place over 0.85 seconds; never conceal section content behind an opacity reveal. The scripted reply appears after 1.8 seconds once the demonstration is in view and supports replay. There is no live AI call or review posting. Reduced motion shows static hero imagery and the finished reply, without zoom, fades or parallax.
-
-### Content and data visualization
-
-All reviews and replies are explicitly illustrative. Photography depicts business categories, not named Aura customers or endorsements. Asset provenance lives in `public/landing/CREDITS.md`. No pricing, customer results, rankings or client logos without verified inputs.
-
-## Do’s and Don’ts
-
-- Do preserve spacious editorial pacing and natural business language.
-- Do use the global Barlow Condensed family across marketing, authentication and product screens.
-- Don’t transfer marketing animations or spacing into operational dashboard screens.
-- Don’t add fabricated evidence or claims to fill a layout.
+- Keep the exact orange and white palette.
+- Keep the first screen empty apart from the greeting.
+- Preserve the original handwriting and provide its accessible text equivalent.
+- Honour reduced motion and keep the layout stable during animation.
+- Do not carry forward the previous AURA marketing design.
+- Expand the brand only when a subsequent brief calls for it.
