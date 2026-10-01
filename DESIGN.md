@@ -55,7 +55,7 @@ Use rounded pen strokes and connected handwritten contours. Add no other visible
 
 ### Apple hello
 
-`src/components/ui/apple-hello-effect.jsx` adapts the author's drawing animation to the existing JSX and Framer Motion stack, with custom Harmony letter paths. Draw the name once on entry in approximately 1.85 seconds, then leave it visible. Reduced-motion settings show the finished word immediately.
+`src/components/ui/apple-hello-effect.jsx` uses the author's two-stroke drawing animation with custom Harmony lettering: the first stem followed by one continuous path for the rest of the name. Draw the name once on entry in 1.75 seconds, then leave it visible. Keep each stroke hidden until its drawing starts, with the reference's explicit opacity delay, so undrawn letters never show starting dots. Reduced-motion settings show the finished word immediately.
 
 Source: https://github.com/ncdai/chanhdai.com/blob/main/src/registry/components/apple-hello-effect/apple-hello-effect-english.tsx
 
