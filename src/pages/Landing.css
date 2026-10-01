@@ -11,7 +11,8 @@
   --harmony-orange: #db5926;
   --harmony-white: #ffffff;
   --harmony-page-gutter: 24px;
-  --harmony-hello-width: 1000px;
+  --harmony-hello-width: 900px;
+  --harmony-action-frame-width: 1000px;
   --harmony-cta-gap: clamp(48px, 8svh, 72px);
   --harmony-display-font: 'Pacifico', cursive;
 }
@@ -56,7 +57,7 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: min(calc(100% - 48px), var(--harmony-hello-width), calc((100svh - 240px) * 824 / 294));
+  width: min(calc(100% - 48px), var(--harmony-action-frame-width), calc((100svh - 240px) * 824 / 294));
   aspect-ratio: 824 / 294;
   transform: translate(-50%, -50%);
   pointer-events: none;
