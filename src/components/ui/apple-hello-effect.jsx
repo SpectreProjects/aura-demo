@@ -51,7 +51,7 @@ export function HarmonyHelloEffect({
             transition={{
               duration: calc(0.8),
               ease: penEase,
-              opacity: { duration: calc(0.4) },
+              opacity: { duration: 0 },
             }}
           />
           <motion.path
@@ -67,7 +67,7 @@ export function HarmonyHelloEffect({
               duration: calc(2.8),
               ease: penEase,
               delay: calc(0.7),
-              opacity: { duration: calc(0.7), delay: calc(0.7) },
+              opacity: { duration: 0, delay: calc(0.7) },
             }}
             onAnimationComplete={onAnimationComplete}
           />
