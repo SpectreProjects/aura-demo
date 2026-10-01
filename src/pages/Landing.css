@@ -51,6 +51,24 @@
   background: var(--harmony-white);
 }
 
+.harmony-portal-action {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(calc(100% - 48px), var(--harmony-hello-width));
+  aspect-ratio: 824 / 294;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.harmony-portal-action-content {
+  position: absolute;
+  top: calc(100% + 24px);
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: auto;
+}
+
 /* Once drawing finishes, render the identical contours without a cached mask.
    This keeps large zooms and resizing crisp without replaying the greeting. */
 .harmony-portal-word[data-written="true"] .harmony-hello > path {

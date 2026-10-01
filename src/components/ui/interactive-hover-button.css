@@ -1,0 +1,80 @@
+.interactive-hover-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  padding: 12px 26px;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid var(--harmony-white);
+  border-radius: 999px;
+  background: var(--harmony-white);
+  color: var(--harmony-orange);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.interactive-hover-button-rest {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.interactive-hover-button-dot {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  border-radius: 50%;
+  background: var(--harmony-orange);
+  transition: transform 300ms ease;
+}
+
+.interactive-hover-button-label {
+  position: relative;
+  transition: transform 300ms ease, opacity 300ms ease;
+}
+
+.interactive-hover-button-active {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--harmony-white);
+  opacity: 0;
+  transform: translateX(48px);
+  transition: transform 300ms ease, opacity 300ms ease;
+}
+
+.interactive-hover-button:is(:hover, :focus-visible) .interactive-hover-button-dot {
+  transform: scale(100.8);
+}
+
+.interactive-hover-button:is(:hover, :focus-visible) .interactive-hover-button-label {
+  opacity: 0;
+  transform: translateX(48px);
+}
+
+.interactive-hover-button:is(:hover, :focus-visible) .interactive-hover-button-active {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.interactive-hover-button:focus-visible {
+  outline: 2px solid var(--harmony-white);
+  outline-offset: 5px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .interactive-hover-button span {
+    transition: none;
+  }
+}

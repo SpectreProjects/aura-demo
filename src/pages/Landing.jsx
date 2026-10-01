@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { HarmonyHelloEffect } from '../components/ui/apple-hello-effect'
 import { GlyphPortal } from '../components/ui/glyph-portal'
 import { Navbar1 } from '../components/ui/navbar-1'
+import { InteractiveHoverButton } from '../components/ui/interactive-hover-button'
 import './Landing.css'
 
 export default function Landing() {
@@ -10,7 +11,10 @@ export default function Landing() {
     <>
       <Navbar1 />
       <main className="harmony-landing" aria-label="Harmony">
-        <GlyphPortal written={written}>
+        <GlyphPortal
+          written={written}
+          cta={<InteractiveHoverButton to="/signup">Get Started</InteractiveHoverButton>}
+        >
           <HarmonyHelloEffect
             className="harmony-hello"
             role="img"

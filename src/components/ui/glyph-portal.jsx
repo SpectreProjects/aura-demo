@@ -9,7 +9,7 @@ import { motion, useMotionValue, useReducedMotion, useScroll, useTransform } fro
 const inkAnchor = { x: 403, y: 133, radius: 12 }
 const artwork = { width: 824, height: 294 }
 
-export function GlyphPortal({ children, written }) {
+export function GlyphPortal({ children, written, cta }) {
   const portalRef = useRef(null)
   const stageRef = useRef(null)
   const wordRef = useRef(null)
@@ -27,6 +27,8 @@ export function GlyphPortal({ children, written }) {
   ))
   const x = useTransform(() => reduceMotion ? 0 : centreX.get() * scrollYProgress.get())
   const y = useTransform(() => reduceMotion ? 0 : centreY.get() * scrollYProgress.get())
+  const ctaOpacity = useTransform(() => reduceMotion ? 1 : Math.max(0, 1 - scrollYProgress.get() / 0.06))
+  const ctaVisibility = useTransform(() => !reduceMotion && scrollYProgress.get() >= 0.06 ? 'hidden' : 'visible')
 
   useEffect(() => {
     const stage = stageRef.current
@@ -62,6 +64,11 @@ export function GlyphPortal({ children, written }) {
           >
             {children}
           </motion.div>
+          {cta && (
+            <motion.div className="harmony-portal-action" style={{ opacity: ctaOpacity, visibility: ctaVisibility }}>
+              <div className="harmony-portal-action-content">{cta}</div>
+            </motion.div>
+          )}
         </div>
       </section>
       <section className="harmony-white-page" aria-hidden="true" />

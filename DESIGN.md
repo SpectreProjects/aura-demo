@@ -27,7 +27,7 @@ components:
 
 Harmony is the new identity for the review assistant used by local businesses in Scotland and the UK. This document replaces the previous AURA design direction.
 
-The typography direction is the supplied Pacifico Regular font, using ncdai's Apple Hello Effect from 21st.dev as the animation reference. The first branding screen has one job: introduce the new visual direction. It contains a flat orange background, a centred white, naturally connected “Harmony”, and the subsequently requested floating navigation at the top.
+The typography direction is the supplied Pacifico Regular font, using ncdai's Apple Hello Effect from 21st.dev as the animation reference. The first branding screen has one job: introduce the new visual direction. It contains a flat orange background, a centred white, naturally connected “Harmony”, the subsequently requested floating navigation at the top, and a Get Started call to action beneath the word.
 
 This is a brand hero on `/`. The existing authentication and dashboard routes retain their working behaviour and await a separate Harmony design brief. Their previous styling is not a reference for future Harmony work.
 
@@ -79,9 +79,15 @@ After the writing callback finishes, the wrapper removes its now redundant SVG m
 
 The selected labels are How it works, Features and Pricing. These remain static preview labels until genuine page destinations exist. Log in links to `/login`, Get started to `/signup`, and the H logo returns to the top of `/` without replaying the writing animation. Below 768px the labels and Log in move into an animated disclosure, with a 44px menu toggle. Escape closes it and returns focus to the toggle; outside pointer input and switching to desktop also close it. Reduced motion removes the disclosure animation. All clickable controls have a visible keyboard focus outline.
 
+### Interactive hover button
+
+`src/components/ui/interactive-hover-button.jsx` and its scoped CSS adapt the public manual source at https://magicui.design/docs/components/interactive-hover-button, linked by the requested 21st component. The JSX uses a router link to `/signup` instead of a button, with a single accessible name. A small orange dot expands to fill the white pill over 300ms while the first label exits and a white label with arrow enters. Keyboard focus uses the same state with a visible outline. Reduced motion switches states immediately. The standard colours are white with orange lettering; hover colours are orange with white lettering and a white border.
+
+The call to action sits 24px beneath the existing artwork frame without moving or changing the word. A separate portal slot fades it out during the first 6% of scroll travel and hides it from interaction afterwards, so the zoom continues into uninterrupted white. Reduced motion keeps it visible on the ordinary orange section.
+
 ### Landing page
 
-`src/pages/Landing.jsx` owns the page composition. It composes the unchanged Harmony greeting inside the scroll portal, followed by plain white. It also mounts the fixed Navbar1 above the scroll stage. No footer, photography or additional marketing content.
+`src/pages/Landing.jsx` owns the page composition. It composes the unchanged Harmony greeting inside the scroll portal, followed by plain white. It also mounts the fixed Navbar1 above the scroll stage and supplies the Get Started call to action to its separate portal slot. No footer, photography or additional marketing content.
 
 ## Do's and Don'ts
 
@@ -91,6 +97,7 @@ The existing product interaction owners remain in place. This table records beha
 
 | Capability | Canonical owner | Source of truth | Allowed variants | Verification |
 |---|---|---|---|---|
+| CTA | InteractiveHoverButton | `src/components/ui/interactive-hover-button.jsx` and its scoped CSS | White rest state, orange hover/focus state | Signup destination, keyboard focus, mobile layout and hidden state after scrolling |
 | Navigation | Navbar1 | `src/components/ui/navbar-1.jsx` and its scoped CSS | Desktop pill and mobile disclosure | Logo and auth destinations, mobile open/close, Escape focus, and 390px overflow checks |
 | Select/Listbox | Native platform select | `premium-ui.json` and dashboard components | Native selection controls | Keyboard and narrow viewport checks when these controls change |
 | Form | Existing dashboard forms and business setup modal | Dashboard routes and `src/components/BusinessSetupModal.jsx` | Inline settings and modal steps | Validation, loading, error and success checks when forms change |
@@ -99,7 +106,7 @@ The existing product interaction owners remain in place. This table records beha
 ### Brand rules
 
 - Keep the exact orange and white brand palette, with dark utility text in the white navigation.
-- Keep the first screen limited to the greeting and the requested navigation.
+- Keep the first screen limited to the greeting, requested navigation and Get Started call to action.
 - Preserve the Pacifico letter shapes and natural connections, and provide an accessible text equivalent.
 - Honour reduced motion and keep the layout stable during animation.
 - Do not carry forward the previous AURA marketing design.
