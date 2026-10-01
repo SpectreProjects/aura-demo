@@ -25,7 +25,7 @@ components:
 
 Harmony is the new identity for the review assistant used by local businesses in Scotland and the UK. This document replaces the previous AURA design direction.
 
-The creative reference is Apple's handwritten hello greeting, using ncdai's Apple Hello Effect from 21st.dev. The first branding screen has one job: introduce the new visual direction. It contains only a flat orange background and a centred white handwritten “hello”.
+The creative reference is Apple's handwritten hello greeting, using the drawing animation from ncdai's Apple Hello Effect from 21st.dev. The first branding screen has one job: introduce the new visual direction. It contains only a flat orange background and a centred white handwritten “Harmony”.
 
 This is a brand hero on `/`. The existing authentication and dashboard routes retain their working behaviour and await a separate Harmony design brief. Their previous styling is not a reference for future Harmony work.
 
@@ -37,11 +37,11 @@ Runtime tokens live in `src/pages/Landing.css`: `--harmony-orange`, `--harmony-w
 
 ## Typography
 
-The visible greeting uses the original SVG handwriting, not a substitute font. Its paths inherit white through `currentColor`. System typography is reserved for future utility text; no utility text is visible on this opening screen.
+The visible name uses custom SVG handwriting inspired by the original greeting. Its paths inherit white through `currentColor`. System typography is reserved for future utility text; no utility text is visible on this opening screen.
 
 ## Layout
 
-Fill the viewport and centre the greeting vertically and horizontally. The SVG scales down with the viewport, retains its 638:200 aspect ratio and has a maximum width of 638px. Keep 24px of edge clearance on small screens. Use the small viewport height so mobile browser controls do not obscure the greeting.
+Fill the viewport and centre the name vertically and horizontally. The SVG scales down with the viewport, retains its 810:250 aspect ratio and has a maximum width of 638px. Keep 24px of edge clearance on small screens. Use the small viewport height so mobile browser controls do not obscure the name.
 
 ## Elevation & Depth
 
@@ -49,13 +49,13 @@ One flat surface. No cards, borders, overlays or glass effects.
 
 ## Shapes
 
-Preserve the original rounded pen strokes and handwriting contours. Add no other visible shapes.
+Use rounded pen strokes and connected handwritten contours. Add no other visible shapes.
 
 ## Components
 
 ### Apple hello
 
-`src/components/ui/apple-hello-effect.jsx` adapts the author's English component to the existing JSX and Framer Motion stack. Draw the greeting once on entry, then leave it visible. Reduced-motion settings show the finished word immediately.
+`src/components/ui/apple-hello-effect.jsx` adapts the author's drawing animation to the existing JSX and Framer Motion stack, with custom Harmony letter paths. Draw the name once on entry in approximately 1.85 seconds, then leave it visible. Reduced-motion settings show the finished word immediately.
 
 Source: https://github.com/ncdai/chanhdai.com/blob/main/src/registry/components/apple-hello-effect/apple-hello-effect-english.tsx
 
@@ -81,7 +81,7 @@ The existing product interaction owners remain in place. This table records beha
 
 - Keep the exact orange and white palette.
 - Keep the first screen empty apart from the greeting.
-- Preserve the original handwriting and provide its accessible text equivalent.
+- Preserve the handwriting style and provide its accessible text equivalent.
 - Honour reduced motion and keep the layout stable during animation.
 - Do not carry forward the previous AURA marketing design.
 - Expand the brand only when a subsequent brief calls for it.

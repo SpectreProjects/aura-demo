@@ -1,60 +1,58 @@
-// Adapted from ncdai/chanhdai.com Apple Hello Effect (MIT).
-// Original SVG paths and handwriting timing retained. See LICENSE.ncdai.txt.
-import { motion, useReducedMotion } from "framer-motion"
+// Apple Hello Effect animation adapted from ncdai/chanhdai.com (MIT).
+// Custom Harmony lettering. See LICENSE.ncdai.txt for the original animation licence.
+import { motion, useReducedMotion } from 'framer-motion'
 
-const initialProps = { pathLength: 0, opacity: 0 }
-const animateProps = { pathLength: 1, opacity: 1 }
+const strokes = [
+  // Capital H: looped first stem, second stem, then joining crossbar.
+  { d: 'M9 166 C36 151 61 131 90 98 C109 75 120 49 120 31 C120 18 114 7 102 7 C88 7 80 18 75 41 C69 67 65 96 54 180', duration: 0.6 },
+  { d: 'M145 180 C153 133 164 78 171 42 C176 16 188 8 191 25 C195 49 176 99 154 117 C132 135 111 129 89 119 C83 116 78 113 72 112 C96 112 122 105 151 109 C167 111 169 128 164 150 C155 187 181 189 204 152 C211 140 215 128 218 119', duration: 0.5 },
+  { d: 'M218 143 C229 119 251 109 265 120 C279 133 269 167 252 179 C234 193 216 181 219 160 C221 140 240 116 263 119 C274 121 279 127 280 131 L270 169 C266 189 289 187 309 158', duration: 0.34 },
+  { d: 'M309 158 L321 119 C325 105 337 103 343 112 C350 123 335 141 324 148 C339 124 352 115 361 126 C369 135 363 149 358 161 C351 184 371 189 392 159', duration: 0.36 },
+  { d: 'M392 159 L403 119 L395 173 C410 129 424 112 436 118 C450 124 438 155 432 172 C447 130 465 110 477 117 C490 123 481 152 474 172 C481 187 500 179 513 156', duration: 0.54 },
+  { d: 'M513 156 C523 125 538 111 555 117 C578 126 570 161 552 176 C532 192 513 179 517 156 C521 132 535 115 552 116 C568 117 574 137 587 137 C594 137 600 128 604 118', duration: 0.36 },
+  { d: 'M604 118 L594 173 C610 130 628 111 642 118 C657 125 645 153 639 170 C635 185 653 186 669 157', duration: 0.4 },
+  { d: 'M669 157 C681 140 683 124 688 118 L679 157 C671 182 691 188 711 169 C723 154 728 137 733 119 C725 167 716 211 694 228 C676 242 658 234 667 218 C676 201 711 192 743 175 C763 164 782 143 793 129', duration: 0.6 },
+]
 
-export function AppleHelloEffectEnglish({
+export function HarmonyHelloEffect({
   className,
-  durationScale = 1,
+  durationScale = 0.5,
   onAnimationComplete,
   ...props
 }) {
   const reduceMotion = useReducedMotion()
-  const calc = (x) => reduceMotion ? 0 : x * durationScale
 
   return (
     <motion.svg
       className={className}
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 638 200"
+      viewBox="0 0 810 250"
       fill="none"
       stroke="currentColor"
-      strokeWidth="14.8883"
+      strokeWidth="13"
       strokeLinecap="round"
-      initial={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.5 }}
+      strokeLinejoin="round"
       {...props}
     >
-      <title>hello</title>
-
-      {/* h1 */}
-      <motion.path
-        d="M8.69214 166.553C36.2393 151.239 61.3409 131.548 89.8191 98.0295C109.203 75.1488 119.625 49.0228 120.122 31.0026C120.37 17.6036 113.836 7.43883 101.759 7.43883C88.3598 7.43883 79.9231 17.6036 74.7122 40.9363C69.005 66.5793 64.7866 96.0036 54.1166 190.356"
-        initial={reduceMotion ? false : initialProps}
-        animate={animateProps}
-        transition={{
-          duration: calc(0.8),
-          ease: "easeInOut",
-          opacity: { duration: calc(0.4) },
-        }}
-      />
-
-      {/* h2, ello */}
-      <motion.path
-        d="M55.1624 181.135C60.6251 133.114 81.4118 98.0479 107.963 98.0479C123.844 98.0479 133.937 110.703 131.071 128.817C129.457 139.487 127.587 150.405 125.408 163.06C122.869 178.941 130.128 191.348 152.122 191.348C184.197 191.348 219.189 173.523 237.097 145.915C243.198 136.509 245.68 128.073 245.928 119.884C246.176 104.996 237.739 93.8296 222.851 93.8296C203.992 93.8296 189.6 115.17 189.6 142.465C189.6 171.745 205.481 192.341 239.208 192.341C285.066 192.341 335.86 137.292 359.199 75.8585C365.788 58.513 368.26 42.4065 368.26 31.1512C368.26 17.8057 364.042 7.55823 352.131 7.55823C340.469 7.55823 332.777 16.6141 325.829 30.9129C317.688 47.4967 311.667 71.4162 309.203 98.4549C303 166.301 316.896 191.348 349.936 191.348C390 191.348 434.542 135.534 457.286 75.6686C463.803 58.513 466.275 42.4065 466.275 31.1512C466.275 17.8057 462.057 7.55823 450.146 7.55823C438.484 7.55823 430.792 16.6141 423.844 30.9129C415.703 47.4967 409.682 71.4162 407.218 98.4549C401.015 166.301 414.911 191.348 444.416 191.348C473.874 191.348 489.877 165.67 499.471 138.402C508.955 111.447 520.618 94.8221 544.935 94.8221C565.035 94.8221 580.916 109.71 580.916 137.75C580.916 168.768 560.792 192.093 535.362 192.341C512.984 192.589 498.285 174.475 499.774 147.179C501.511 116.907 519.873 94.8221 543.943 94.8221C557.839 94.8221 569.51 100.999 578.682 107.725C603.549 125.866 622.709 114.656 630.047 96.7186"
-        initial={reduceMotion ? false : initialProps}
-        animate={animateProps}
-        transition={{
-          duration: calc(2.8),
-          ease: "easeInOut",
-          delay: calc(0.7),
-          opacity: { duration: calc(0.7), delay: calc(0.7) },
-        }}
-        onAnimationComplete={onAnimationComplete}
-      />
+      <title>Harmony</title>
+      {strokes.map(({ d, duration }, index) => {
+        const delay = strokes.slice(0, index).reduce((total, stroke) => total + stroke.duration, 0)
+        return (
+          <motion.path
+            key={index}
+            d={d}
+            initial={reduceMotion ? false : { pathLength: 0, opacity: 0 }}
+            animate={{ pathLength: 1, opacity: 1 }}
+            transition={{
+              duration: reduceMotion ? 0 : duration * durationScale,
+              delay: reduceMotion ? 0 : delay * durationScale,
+              ease: 'easeInOut',
+              opacity: { duration: reduceMotion ? 0 : 0.08 },
+            }}
+            onAnimationComplete={index === strokes.length - 1 ? onAnimationComplete : undefined}
+          />
+        )
+      })}
     </motion.svg>
   )
 }
