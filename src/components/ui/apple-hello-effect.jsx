@@ -1,8 +1,8 @@
 // Pacifico letter shapes, revealed with the original Apple Hello Effect's
-// two-stroke path animation. Animation source: ncdai/chanhdai.com (MIT).
+// stroke animation. Animation source: ncdai/chanhdai.com (MIT).
 import { useId } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
-import { firstPenStroke, pacificoWord, wordPenStroke } from './harmony-pacifico-paths'
+import { crossbarPenStroke, firstPenStroke, pacificoWord, wordPenStroke } from './harmony-pacifico-paths'
 
 const initialProps = { pathLength: 0, opacity: 0 }
 const animateProps = { pathLength: 1, opacity: 1 }
@@ -55,19 +55,34 @@ export function HarmonyHelloEffect({
             }}
           />
           <motion.path
+            d={crossbarPenStroke}
+            fill="none"
+            stroke="white"
+            strokeWidth="28"
+            strokeLinecap="butt"
+            initial={reduceMotion ? false : initialProps}
+            animate={animateProps}
+            transition={{
+              duration: calc(0.2),
+              ease: 'linear',
+              delay: calc(0.7),
+              opacity: { duration: 0, delay: calc(0.7) },
+            }}
+          />
+          <motion.path
             d={wordPenStroke}
             fill="none"
             stroke="white"
             strokeWidth="44"
-            strokeLinecap="round"
+            strokeLinecap="butt"
             strokeLinejoin="round"
             initial={reduceMotion ? false : initialProps}
             animate={animateProps}
             transition={{
-              duration: calc(2.8),
+              duration: calc(2.6),
               ease: penEase,
-              delay: calc(0.7),
-              opacity: { duration: 0, delay: calc(0.7) },
+              delay: calc(0.9),
+              opacity: { duration: 0, delay: calc(0.9) },
             }}
             onAnimationComplete={onAnimationComplete}
           />
