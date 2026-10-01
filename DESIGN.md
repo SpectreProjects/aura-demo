@@ -33,7 +33,7 @@ This is a brand hero on `/`. The existing authentication and dashboard routes re
 
 ## Colors
 
-Burnt orange `#DB5926` fills the opening viewport. White `#FFFFFF` colours the wordmark and becomes the full page background after scrolling through the word. The white navbar uses `#1D1D1F` for readable labels and its primary action, with the supplied orange H logo. The hero has no gradients or textures.
+Burnt orange `#DB5926` fills the opening viewport. White `#FFFFFF` colours the wordmark and becomes the full page background after scrolling through the word. The white navbar uses `#1D1D1F` for readable labels and its primary action, with the supplied orange H logo. Its Get started action retains a dark resting background and white text, switching to orange with white text on hover. The hero has no gradients or textures.
 
 Runtime tokens live in `src/pages/Landing.css`: `--harmony-orange`, `--harmony-white`, `--harmony-page-gutter`, `--harmony-hello-width`, `--harmony-action-frame-width`, `--harmony-cta-gap` and `--harmony-display-font`. This document mirrors those values. The body background uses the same orange to cover overscroll outside the page.
 
@@ -81,7 +81,7 @@ The selected labels are How it works, Features and Pricing. These remain static 
 
 ### Interactive hover button
 
-`src/components/ui/interactive-hover-button.jsx` and its scoped CSS adapt the public manual source at https://magicui.design/docs/components/interactive-hover-button, linked by the requested 21st component. The JSX uses a router link to `/signup` instead of a button, with a single accessible name. The resting label is centred without a dot. An initially hidden orange fill expands over 300ms while the first label exits and a white label with arrow enters. A 132px minimum width preserves the compact button size. Keyboard focus uses the same state with a visible outline. Reduced motion switches states immediately. The standard colours are white with orange lettering; hover colours are orange with white lettering and a white border.
+`src/components/ui/interactive-hover-button.jsx` and its scoped CSS adapt the public manual source at https://magicui.design/docs/components/interactive-hover-button, linked by the requested 21st component. The JSX uses a router link to `/signup` instead of a button, with a single accessible name. The resting label is centred without a dot. An initially hidden orange fill expands over 300ms while the first label exits and a white label with arrow enters. A 132px minimum width preserves the compact button size. Keyboard focus uses the same state with a visible outline. Reduced motion switches states immediately. The hero standard colours are white with orange lettering; hover colours are orange with white lettering and a white border. Navbar1 reuses this same component and animation for its Get started action, retaining its original dark resting background, white text, 44px height and navigation typography. Its hover fill is orange with white text and the same incoming arrow.
 
 The compact call to action has a 44px minimum height, 13px text and 20px side padding. Its positioning uses the previous 1000px artwork frame and a 48–72px gap that scales with viewport height, keeping the button in place when the word is reduced. The word remains centred independently of the button. A separate portal slot fades it out during the first 6% of scroll travel and hides it from interaction afterwards, so the zoom continues into uninterrupted white. Reduced motion keeps it visible on the ordinary orange section.
 

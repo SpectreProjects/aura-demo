@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
+import { InteractiveHoverButton } from './interactive-hover-button'
 import './navbar-1.css'
 
 // Adapted from the visible floating navbar reference, not its locked source:
@@ -66,7 +67,7 @@ export function Navbar1() {
         </nav>
         <div className="harmony-navbar-actions">
           <Link to="/login" className="harmony-navbar-login">Log in</Link>
-          <Link to="/signup" className="harmony-navbar-start">Get started</Link>
+          <InteractiveHoverButton to="/signup" className="harmony-navbar-start">Get started</InteractiveHoverButton>
           <button
             ref={toggleRef}
             type="button"
