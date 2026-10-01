@@ -1,7 +1,7 @@
 ---
 version: alpha
 name: Harmony
-description: A quiet Apple-inspired introduction in burnt orange and white.
+description: A quiet serif wordmark with an Apple-inspired writing reveal in burnt orange and white.
 colors:
   copper: "#DB5926"
   white: "#FFFFFF"
@@ -9,7 +9,7 @@ typography:
   sans:
     fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif"
   display:
-    fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif"
+    fontFamily: "TeX Gyre Termes, Georgia, serif"
 rounded:
   DEFAULT: "0px"
 spacing:
@@ -25,7 +25,7 @@ components:
 
 Harmony is the new identity for the review assistant used by local businesses in Scotland and the UK. This document replaces the previous AURA design direction.
 
-The creative reference is Apple's handwritten hello greeting, using the drawing animation from ncdai's Apple Hello Effect from 21st.dev. The first branding screen has one job: introduce the new visual direction. It contains only a flat orange background and a centred white handwritten “Harmony”.
+The typography direction is the editorial serif character of Tiempos Headline, using the supplied TeX Gyre Termes family. Apple's hello greeting and ncdai's Apple Hello Effect from 21st.dev inform the stroke reveal. The first branding screen has one job: introduce the new visual direction. It contains only a flat orange background and a centred white, connected serif “Harmony”.
 
 This is a brand hero on `/`. The existing authentication and dashboard routes retain their working behaviour and await a separate Harmony design brief. Their previous styling is not a reference for future Harmony work.
 
@@ -33,15 +33,17 @@ This is a brand hero on `/`. The existing authentication and dashboard routes re
 
 Burnt orange `#DB5926` fills the entire viewport. White `#FFFFFF` is the only foreground colour. No gradients, textures, shadows or additional accents.
 
-Runtime tokens live in `src/pages/Landing.css`: `--harmony-orange`, `--harmony-white`, `--harmony-page-gutter` and `--harmony-hello-width`. This document mirrors those values. The body background uses the same orange to cover overscroll outside the page.
+Runtime tokens live in `src/pages/Landing.css`: `--harmony-orange`, `--harmony-white`, `--harmony-page-gutter`, `--harmony-hello-width` and `--harmony-display-font`. This document mirrors those values. The body background uses the same orange to cover overscroll outside the page.
 
 ## Typography
 
-The visible name uses custom SVG handwriting inspired by the original greeting. Its paths inherit white through `currentColor`. System typography is reserved for future utility text; no utility text is visible on this opening screen.
+TeX Gyre Termes is the brand serif. The wordmark uses its Italic cut, with custom connecting strokes between the letters. Font-derived SVG contours retain the supplied letter shapes and inherit white through `currentColor`. The font files are unmodified and self-hosted in `public/fonts/`, with normal, italic, bold and bold italic faces declared in `src/pages/Landing.css`. The supplied GUST licence is retained alongside them.
+
+`src/components/ui/harmony-serif-paths.js` owns the wordmark contours, pen guides and connecting strokes. System typography remains available for future utility text; no utility text is visible on this opening screen.
 
 ## Layout
 
-Fill the viewport and centre the name vertically and horizontally. The SVG scales down with the viewport, retains its 810:250 aspect ratio and has a maximum width of 638px. Keep 24px of edge clearance on small screens. Use the small viewport height so mobile browser controls do not obscure the name.
+Fill the viewport and centre the name vertically and horizontally. The SVG scales down with the viewport, retains its 750:224 aspect ratio and has a maximum width of 638px. Keep 24px of edge clearance on small screens. Use the small viewport height so mobile browser controls do not obscure the name.
 
 ## Elevation & Depth
 
@@ -49,13 +51,13 @@ One flat surface. No cards, borders, overlays or glass effects.
 
 ## Shapes
 
-Use rounded pen strokes and connected handwritten contours. Add no other visible shapes.
+Keep the serif contrast and italic letter shapes, with fine curved joins. Add no other visible shapes.
 
 ## Components
 
 ### Apple hello
 
-`src/components/ui/apple-hello-effect.jsx` uses the author's two-stroke drawing animation with custom Harmony lettering: the first stem followed by one continuous path for the rest of the name. Draw the name once on entry in 1.75 seconds, then leave it visible. Keep each stroke hidden until its drawing starts, with the reference's explicit opacity delay, so undrawn letters never show starting dots. Reduced-motion settings show the finished word immediately.
+`src/components/ui/apple-hello-effect.jsx` adapts the author's stroke-reveal technique to the filled serif contours using SVG masks and connecting strokes. Draw the name once on entry in 1.75 seconds, then leave it visible. Keep each pen guide and connecting stroke hidden until drawing starts, with explicit opacity delays, so undrawn letters never show starting dots. Reduced-motion settings show the finished word immediately.
 
 Source: https://github.com/ncdai/chanhdai.com/blob/main/src/registry/components/apple-hello-effect/apple-hello-effect-english.tsx
 
@@ -81,7 +83,7 @@ The existing product interaction owners remain in place. This table records beha
 
 - Keep the exact orange and white palette.
 - Keep the first screen empty apart from the greeting.
-- Preserve the handwriting style and provide its accessible text equivalent.
+- Preserve the serif letter shapes and custom joins, and provide an accessible text equivalent.
 - Honour reduced motion and keep the layout stable during animation.
 - Do not carry forward the previous AURA marketing design.
 - Expand the brand only when a subsequent brief calls for it.

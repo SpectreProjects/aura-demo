@@ -1,9 +1,42 @@
+@font-face {
+  font-family: 'TeX Gyre Termes';
+  src: url('/fonts/texgyretermes-regular.otf') format('opentype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'TeX Gyre Termes';
+  src: url('/fonts/texgyretermes-italic.otf') format('opentype');
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'TeX Gyre Termes';
+  src: url('/fonts/texgyretermes-bold.otf') format('opentype');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'TeX Gyre Termes';
+  src: url('/fonts/texgyretermes-bolditalic.otf') format('opentype');
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+}
+
 /* Harmony's brand tokens. DESIGN.md mirrors this runtime source of truth. */
 :root {
   --harmony-orange: #db5926;
   --harmony-white: #ffffff;
   --harmony-page-gutter: 24px;
   --harmony-hello-width: 638px;
+  --harmony-display-font: 'TeX Gyre Termes', Georgia, serif;
 }
 
 .harmony-landing {
@@ -15,6 +48,7 @@
   padding: var(--harmony-page-gutter);
   background: var(--harmony-orange);
   color: var(--harmony-white);
+  font-family: var(--harmony-display-font);
 }
 
 body:has(.harmony-landing) {
