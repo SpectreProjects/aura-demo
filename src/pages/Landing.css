@@ -39,12 +39,32 @@
   height: 100svh;
   padding: var(--harmony-page-gutter);
   overflow: hidden;
+  contain: paint;
   background: var(--harmony-orange);
 }
 
 .harmony-portal-word {
   width: min(100%, var(--harmony-hello-width), calc((100svh - 240px) * 824 / 294));
   aspect-ratio: 824 / 294;
+}
+
+/* The canvas stays viewport-sized, even at the largest zoom. The SVG retains
+   its accessible name and exact writing sequence; only its paint is hidden. */
+.harmony-portal-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.harmony-portal-stage[data-renderer="canvas"] .harmony-portal-canvas {
+  visibility: visible;
+}
+
+.harmony-portal-stage[data-renderer="canvas"] .harmony-portal-word {
+  opacity: 0;
 }
 
 .harmony-white-page {
@@ -103,6 +123,11 @@ body:has(.harmony-landing) {
   .harmony-portal-word {
     will-change: auto;
     transform: none !important;
+    opacity: 1 !important;
+  }
+
+  .harmony-portal-canvas {
+    visibility: hidden !important;
   }
 
   .harmony-hello path {

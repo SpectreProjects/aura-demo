@@ -199,9 +199,13 @@ The starting H must not fade in. Pen guides stay hidden before drawing, then app
 
 `src/components/ui/glyph-portal.jsx` owns the scroll-only wrapper, inspired by the visible Glyph Portal reference at https://21st.dev/@Legacy/components/glyph-portal. The reference source requires sign-in and has not been copied or installed. No picker, annotations, buttons, hints or demo copy are included.
 
-Native scroll drives exponential scale directly, without capturing wheel or touch input. The camera moves into a solid point of the existing Pacifico stroke (403, 133 in its 824 by 294 artwork coordinates). Responsive geometry sizes the final zoom so white ink covers all viewport corners. No colour fade or overlay creates the white finish. Scrolling back reverses the zoom without replaying the greeting.
+Native scroll drives exponential scale through a short, damped spring, without capturing wheel or touch input. This interpolates between mobile scroll updates instead of stepping the camera directly with each event. Spring settings are stiffness 600, damping 40, mass 0.6, restDelta 0.0001 and restSpeed 0.001. Progress is clamped to 0–1 and snaps to the native start/end boundaries so the orange stage cannot lag behind the following white section. The camera moves into a solid point of the existing Pacifico stroke (403, 133 in its 824 by 294 artwork coordinates). Responsive geometry sizes the final zoom so white ink covers all viewport corners. No colour fade or overlay creates the white finish. Scrolling back reverses the zoom without replaying the greeting.
 
 After the writing callback finishes, the wrapper removes its now redundant SVG mask through CSS, leaving identical font contours. This prevents mask caching artefacts during large zooms or viewport resizing, without modifying the lettering component or its animation timing. Reduced motion uses two ordinary viewport sections, orange then white, without zooming.
+
+For mobile rendering performance, the finished lettering is redrawn from the same Pacifico vector path onto a canvas bounded to the sticky viewport during zoom. The original SVG still owns the complete writing animation and remains the accessible Harmony image. At zero scroll it is visible again, with no replay. The canvas is hidden from assistive technology and cannot receive pointer input. The original SVG also provides a fallback when Canvas 2D or Path2D is unavailable. No scaled bitmap, GPU-promoted giant SVG, changed letter shape or cached low-resolution zoom is used.
+
+Canvas resolution tracks the device pixel ratio up to 2× to bound memory, and vector contours are redrawn at the current scale on each animated progress update. Dimensions and geometry are measured only on resize, not inside the animation loop. When every viewport corner is inside the known solid ink radius, a solid fill is the equivalent final rendering. The loop stops when progress stops changing. Painting is contained within the stage. The CTA shares the smoothed camera progress and retains its original first-6% fade/hide rule.
 
 ### Navbar
 
@@ -320,6 +324,7 @@ The existing product interaction owners remain in place. This table records beha
 | 1000px word felt clunky | Final 900px maximum, button position preserved |
 | Remove the button dot | No visible dot on either CTA |
 | Same animation on navbar CTA | Shared animation, dark resting state, orange/white interaction |
+| Mobile scrolling felt jittery, especially the glyph zoom | Smooth native-scroll steps and bound zoom rendering to the viewport; retain the approved contours, writing sequence and white finish |
 
 ### Applying the philosophy to future screens
 
