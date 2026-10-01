@@ -1,32 +1,8 @@
 @font-face {
-  font-family: 'TeX Gyre Termes';
-  src: url('/fonts/texgyretermes-regular.otf') format('opentype');
+  font-family: 'Pacifico';
+  src: url('/fonts/Pacifico-Regular.ttf') format('truetype');
   font-style: normal;
   font-weight: 400;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'TeX Gyre Termes';
-  src: url('/fonts/texgyretermes-italic.otf') format('opentype');
-  font-style: italic;
-  font-weight: 400;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'TeX Gyre Termes';
-  src: url('/fonts/texgyretermes-bold.otf') format('opentype');
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'TeX Gyre Termes';
-  src: url('/fonts/texgyretermes-bolditalic.otf') format('opentype');
-  font-style: italic;
-  font-weight: 700;
   font-display: swap;
 }
 
@@ -36,7 +12,7 @@
   --harmony-white: #ffffff;
   --harmony-page-gutter: 24px;
   --harmony-hello-width: 638px;
-  --harmony-display-font: 'TeX Gyre Termes', Georgia, serif;
+  --harmony-display-font: 'Pacifico', cursive;
 }
 
 .harmony-landing {

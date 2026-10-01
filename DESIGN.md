@@ -1,7 +1,7 @@
 ---
 version: alpha
 name: Harmony
-description: A quiet serif wordmark with an Apple-inspired writing reveal in burnt orange and white.
+description: A Pacifico wordmark with the Apple Hello writing reveal in burnt orange and white.
 colors:
   copper: "#DB5926"
   white: "#FFFFFF"
@@ -9,7 +9,7 @@ typography:
   sans:
     fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif"
   display:
-    fontFamily: "TeX Gyre Termes, Georgia, serif"
+    fontFamily: "Pacifico, cursive"
 rounded:
   DEFAULT: "0px"
 spacing:
@@ -25,7 +25,7 @@ components:
 
 Harmony is the new identity for the review assistant used by local businesses in Scotland and the UK. This document replaces the previous AURA design direction.
 
-The typography direction is the editorial serif character of Tiempos Headline, using the supplied TeX Gyre Termes family. Apple's hello greeting and ncdai's Apple Hello Effect from 21st.dev inform the stroke reveal. The first branding screen has one job: introduce the new visual direction. It contains only a flat orange background and a centred white, connected serif “Harmony”.
+The typography direction is the supplied Pacifico Regular font, using ncdai's Apple Hello Effect from 21st.dev as the animation reference. The first branding screen has one job: introduce the new visual direction. It contains only a flat orange background and a centred white, naturally connected “Harmony”.
 
 This is a brand hero on `/`. The existing authentication and dashboard routes retain their working behaviour and await a separate Harmony design brief. Their previous styling is not a reference for future Harmony work.
 
@@ -37,13 +37,13 @@ Runtime tokens live in `src/pages/Landing.css`: `--harmony-orange`, `--harmony-w
 
 ## Typography
 
-TeX Gyre Termes is the brand serif. The wordmark uses its Italic cut, with custom connecting strokes between the letters. Font-derived SVG contours retain the supplied letter shapes and inherit white through `currentColor`. The font files are unmodified and self-hosted in `public/fonts/`, with normal, italic, bold and bold italic faces declared in `src/pages/Landing.css`. The supplied GUST licence is retained alongside them.
+Pacifico Regular is the brand display font. The wordmark uses contours exported from the supplied TTF with native font spacing and natural connections, without added connector lines. The contours retain the supplied letter shapes and inherit white through `currentColor`. The font is unmodified and self-hosted in `public/fonts/`, with its face declared in `src/pages/Landing.css`. Its SIL Open Font Licence is retained alongside it.
 
-`src/components/ui/harmony-serif-paths.js` owns the wordmark contours, pen guides and connecting strokes. System typography remains available for future utility text; no utility text is visible on this opening screen.
+`src/components/ui/harmony-pacifico-paths.js` owns the wordmark contours and invisible pen guides. System typography remains available for future utility text; no utility text is visible on this opening screen.
 
 ## Layout
 
-Fill the viewport and centre the name vertically and horizontally. The SVG scales down with the viewport, retains its 750:224 aspect ratio and has a maximum width of 638px. Keep 24px of edge clearance on small screens. Use the small viewport height so mobile browser controls do not obscure the name.
+Fill the viewport and centre the name vertically and horizontally. The SVG scales down with the viewport, retains its 824:294 aspect ratio and has a maximum width of 638px. Keep 24px of edge clearance on small screens. Use the small viewport height so mobile browser controls do not obscure the name.
 
 ## Elevation & Depth
 
@@ -51,13 +51,13 @@ One flat surface. No cards, borders, overlays or glass effects.
 
 ## Shapes
 
-Keep the serif contrast and italic letter shapes, with fine curved joins. Add no other visible shapes.
+Keep the supplied Pacifico curves and naturally joined letter shapes. Add no other visible shapes.
 
 ## Components
 
 ### Apple hello
 
-`src/components/ui/apple-hello-effect.jsx` adapts the author's stroke-reveal technique to the filled serif contours using SVG masks and connecting strokes. Draw the name once on entry in 1.75 seconds, then leave it visible. Keep each pen guide and connecting stroke hidden until drawing starts, with explicit opacity delays, so undrawn letters never show starting dots. Reduced-motion settings show the finished word immediately.
+`src/components/ui/apple-hello-effect.jsx` preserves the author's two-stroke sequence, accelerated with a 0.65 duration scale and a gentle, near-linear cubic easing curve `[0.25, 0.1, 0.75, 0.9]` for more continuous writing. The first stroke takes 0.52 seconds; the second starts at 0.455 seconds and takes 1.82 seconds. Their opacity transitions take 0.26 and 0.455 seconds respectively. The name finishes in about 2.3 seconds and remains visible. Two animated pen guides reveal the genuine Pacifico contours through an SVG mask, adapting the reference's fixed hello geometry to the requested font and name. Undrawn guides are hidden, preventing premature starting dots. Reduced-motion settings show the finished word immediately.
 
 Source: https://github.com/ncdai/chanhdai.com/blob/main/src/registry/components/apple-hello-effect/apple-hello-effect-english.tsx
 
@@ -83,7 +83,7 @@ The existing product interaction owners remain in place. This table records beha
 
 - Keep the exact orange and white palette.
 - Keep the first screen empty apart from the greeting.
-- Preserve the serif letter shapes and custom joins, and provide an accessible text equivalent.
+- Preserve the Pacifico letter shapes and natural connections, and provide an accessible text equivalent.
 - Honour reduced motion and keep the layout stable during animation.
 - Do not carry forward the previous AURA marketing design.
 - Expand the brand only when a subsequent brief calls for it.
