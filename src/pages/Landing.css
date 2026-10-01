@@ -16,15 +16,45 @@
 }
 
 .harmony-landing {
-  display: grid;
-  place-items: center;
   width: 100%;
-  min-height: 100vh;
-  min-height: 100svh;
-  padding: var(--harmony-page-gutter);
-  background: var(--harmony-orange);
+  background: var(--harmony-white);
   color: var(--harmony-white);
   font-family: var(--harmony-display-font);
+}
+
+.harmony-portal {
+  position: relative;
+  height: 340vh;
+  height: 340svh;
+}
+
+.harmony-portal-stage {
+  position: sticky;
+  top: 0;
+  display: grid;
+  place-items: center;
+  height: 100vh;
+  height: 100svh;
+  padding: var(--harmony-page-gutter);
+  overflow: hidden;
+  background: var(--harmony-orange);
+}
+
+.harmony-portal-word {
+  width: min(100%, var(--harmony-hello-width));
+  aspect-ratio: 824 / 294;
+}
+
+.harmony-white-page {
+  min-height: 100vh;
+  min-height: 100svh;
+  background: var(--harmony-white);
+}
+
+/* Once drawing finishes, render the identical contours without a cached mask.
+   This keeps large zooms and resizing crisp without replaying the greeting. */
+.harmony-portal-word[data-written="true"] .harmony-hello > path {
+  mask: none;
 }
 
 body:has(.harmony-landing) {
@@ -41,6 +71,20 @@ body:has(.harmony-landing) {
 
 /* Show the completed greeting immediately, including before hydration. */
 @media (prefers-reduced-motion: reduce) {
+  .harmony-portal {
+    height: 100vh;
+    height: 100svh;
+  }
+
+  .harmony-portal-stage {
+    position: relative;
+  }
+
+  .harmony-portal-word {
+    will-change: auto;
+    transform: none !important;
+  }
+
   .harmony-hello path {
     opacity: 1 !important;
     stroke-dasharray: none !important;

@@ -31,7 +31,7 @@ This is a brand hero on `/`. The existing authentication and dashboard routes re
 
 ## Colors
 
-Burnt orange `#DB5926` fills the entire viewport. White `#FFFFFF` is the only foreground colour. No gradients, textures, shadows or additional accents.
+Burnt orange `#DB5926` fills the opening viewport. White `#FFFFFF` is the only foreground colour and becomes the full page background after scrolling through the word. No gradients, textures, shadows or additional accents.
 
 Runtime tokens live in `src/pages/Landing.css`: `--harmony-orange`, `--harmony-white`, `--harmony-page-gutter`, `--harmony-hello-width` and `--harmony-display-font`. This document mirrors those values. The body background uses the same orange to cover overscroll outside the page.
 
@@ -43,7 +43,7 @@ Pacifico Regular is the brand display font. The wordmark uses contours exported 
 
 ## Layout
 
-Fill the viewport and centre the name vertically and horizontally. The SVG scales down with the viewport, retains its 824:294 aspect ratio and has a maximum width of 638px. Keep 24px of edge clearance on small screens. Use the small viewport height so mobile browser controls do not obscure the name.
+Fill the viewport and centre the name vertically and horizontally. The SVG scales down with the viewport, retains its 824:294 aspect ratio and has a maximum width of 638px. Keep 24px of edge clearance on small screens. Use the small viewport height so mobile browser controls do not obscure the name. A 340svh portal region pins the 100svh opening stage during 240svh of native scroll travel. A blank 100svh white section follows.
 
 ## Elevation & Depth
 
@@ -63,9 +63,17 @@ Source: https://github.com/ncdai/chanhdai.com/blob/main/src/registry/components/
 
 The original MIT licence is retained in `src/components/ui/LICENSE.ncdai.txt`.
 
+### Scroll portal
+
+`src/components/ui/glyph-portal.jsx` owns the scroll-only wrapper, inspired by the visible Glyph Portal reference at https://21st.dev/@Legacy/components/glyph-portal. The reference source requires sign-in and has not been copied or installed. No picker, annotations, buttons, hints or demo copy are included.
+
+Native scroll drives exponential scale directly, without capturing wheel or touch input. The camera moves into a solid point of the existing Pacifico stroke (403, 133 in its 824 by 294 artwork coordinates). Responsive geometry sizes the final zoom so white ink covers all viewport corners. No colour fade or overlay creates the white finish. Scrolling back reverses the zoom without replaying the greeting.
+
+After the writing callback finishes, the wrapper removes its now redundant SVG mask through CSS, leaving identical font contours. This prevents mask caching artefacts during large zooms or viewport resizing, without modifying the lettering component or its animation timing. Reduced motion uses two ordinary viewport sections, orange then white, without zooming.
+
 ### Landing page
 
-`src/pages/Landing.jsx` owns the page composition. No navigation, buttons, footer, photography or additional visible copy.
+`src/pages/Landing.jsx` owns the page composition. It composes the unchanged Harmony greeting inside the scroll portal, followed by plain white. No navigation, buttons, footer, photography or additional visible copy.
 
 ## Do's and Don'ts
 
