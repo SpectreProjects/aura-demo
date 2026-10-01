@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import DashboardLayout from './pages/dashboard/DashboardLayout'
 import Leaderboard from './pages/dashboard/Leaderboard'
 import Overview from './pages/dashboard/Overview'
@@ -28,7 +28,12 @@ function AuthLoadingScreen() {
 
 function ProtectedRoute({ children }) {
   const { isAuthLoading, session } = useAuth()
-  const isLocalPreview = import.meta.env.DEV
+  const location = useLocation()
+  const params = new URLSearchParams(location.search)
+  const isLocalPreview = import.meta.env.DEV && (
+    params.get('preview') === 'demo' ||
+    (location.pathname === '/setup/google' && params.has('visual'))
+  )
 
   if (isAuthLoading) return <AuthLoadingScreen />
   if (isLocalPreview) return children

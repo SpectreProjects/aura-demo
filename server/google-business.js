@@ -154,6 +154,36 @@ export function createGoogleOAuthSession(state, secret, now = Date.now()) {
   }
 }
 
+export function googleBusinessAuthorizationUrl(config, state, challenge) {
+  const url = new URL('https://accounts.google.com/o/oauth2/v2/auth')
+  url.search = new URLSearchParams({
+    access_type: 'offline',
+    client_id: config.clientId,
+    code_challenge: challenge,
+    code_challenge_method: 'S256',
+    include_granted_scopes: 'true',
+    prompt: 'select_account consent',
+    redirect_uri: config.redirectUri,
+    response_type: 'code',
+    scope: 'https://www.googleapis.com/auth/business.manage',
+    state,
+  }).toString()
+  return url.toString()
+}
+
+export function googleConnectionNeedsReconnect(connection, tokenSecret) {
+  if (!connection) return false
+  try {
+    // An active row can still contain credentials saved with an older key.
+    // Report that as a reconnect, rather than treating setup as complete.
+    if (!decryptGoogleToken(connection.refresh_token_encrypted, tokenSecret)) return true
+    if (connection.access_token_encrypted) decryptGoogleToken(connection.access_token_encrypted, tokenSecret)
+    return false
+  } catch {
+    return true
+  }
+}
+
 export function clearGoogleOAuthSessionCookie() {
   return `${GOOGLE_OAUTH_SESSION_COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`
 }

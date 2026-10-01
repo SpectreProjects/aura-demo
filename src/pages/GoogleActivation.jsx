@@ -368,7 +368,7 @@ export default function GoogleActivation() {
       <a className="ga-skip" href="#google-activation-panel">Skip to Google setup</a>
       <header className="ga-header">
         <Link aria-label="AURA home" className="ga-wordmark" to="/">AURA</Link>
-        <Link className="ga-finish-later" to="/dashboard">Finish later</Link>
+        <Link className="ga-finish-later" state={{ deferGoogleSetup: true }} to="/dashboard">Finish later</Link>
       </header>
 
       <section aria-labelledby="google-activation-title" className="ga-panel" id="google-activation-panel">
@@ -392,13 +392,13 @@ export default function GoogleActivation() {
               {isReconnect ? `Google needs you to reconnect ${locationTitle}.` : connectionExpired ? 'That Google connection expired before it finished.' : 'Let’s connect the Business Profile you want AURA to look after.'}
               <span aria-hidden="true" className="ga-question-cursor" />
             </h1>
-            <p className="ga-lead">{isReconnect ? 'Your reviews and drafts are still safe.' : 'You’ve already signed in to AURA. Google will now ask for separate permission to read your reviews and publish only the replies you personally approve.'}</p>
+            <p className="ga-lead">{isReconnect ? 'Your reviews and drafts are still safe.' : 'You’ve already signed in to AURA. Choose the Google account that manages your business, then grant Business Profile access. You’ll select the exact location afterwards. AURA only publishes replies you personally approve.'}</p>
             <div className="ga-reassurance-grid" aria-label="Google setup assurances">
               <div><Building2 aria-hidden="true" size={18} /><strong>One location only</strong></div>
               <div><ShieldCheck aria-hidden="true" size={18} /><strong>Nothing posts automatically</strong></div>
             </div>
             <div className="ga-actions">
-              <Link className="ga-secondary" to="/dashboard">I’ll do this later</Link>
+              <Link className="ga-secondary" state={{ deferGoogleSetup: true }} to="/dashboard">I’ll do this later</Link>
               <button className="ga-primary" disabled={isBusy} onClick={startGoogleConnection} type="button">
                 {isBusy ? <RefreshCw aria-hidden="true" className="animate-spin" size={17} /> : null}
                 {isReconnect || connectionExpired ? 'Reconnect Google' : googleDetail === 'permission_denied' || visualMode === 'denied' ? 'Try again' : 'Continue to Google'}

@@ -521,7 +521,7 @@ export default function Overview() {
     negative: periodReviews.filter((review) => Number(review.rating) <= 2).length,
   }
   const topStaff = leaderboard.slice(0, 3)
-  const businessName = String(account?.businessProfile?.business_name || 'Hilton Glasgow').replace(
+  const businessName = String(account?.businessProfile?.business_name || 'your business').replace(
     /\s+Demo$/i,
     '',
   )

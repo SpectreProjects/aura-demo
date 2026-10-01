@@ -1,4 +1,4 @@
-import { publicGoogleConnection, requireGoogleUser } from '../server/google-business.js'
+import { googleConnectionNeedsReconnect, publicGoogleConnection, requireGoogleUser } from '../server/google-business.js'
 import { publicReplySettings } from '../server/google-review-workflow.js'
 import { handleApiError, sendJson } from '../server/places.js'
 
@@ -33,12 +33,13 @@ export default async function handler(request, response) {
     const pending = connectionsResult.data?.find((item) => item.status === 'pending_selection') || null
     const reconnect = connectionsResult.data?.find((item) => item.status === 'reconnect_required') || null
     const settings = publicReplySettings(settingsResult.data, user.email || '')
+    const needsReconnect = googleConnectionNeedsReconnect(active, config.tokenSecret)
 
     sendJson(response, 200, {
-      connected: Boolean(active),
-      connection: publicGoogleConnection(active || reconnect),
+      connected: Boolean(active) && !needsReconnect,
+      connection: publicGoogleConnection(needsReconnect ? { ...active, status: 'reconnect_required' } : active || reconnect),
       features: config.features,
-      needsSetup: !active || !settings.setupComplete,
+      needsSetup: !active || needsReconnect || !settings.setupComplete,
       pendingConnection: publicGoogleConnection(pending),
       settings,
     })

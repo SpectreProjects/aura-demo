@@ -5,6 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:ui": "vite --host 127.0.0.1 --port 3000 --strictPort --open /dashboard?preview=demo",
+    "dev:full": "npm run check:local && node scripts/start-vercel-local.mjs",
+    "check:local": "node scripts/check-local-env.mjs",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",

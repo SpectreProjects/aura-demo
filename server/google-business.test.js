@@ -6,6 +6,8 @@ import {
   createOAuthState,
   decryptGoogleToken,
   encryptGoogleToken,
+  googleBusinessAuthorizationUrl,
+  googleConnectionNeedsReconnect,
   googleReviewUrl,
   googleReviewsUrl,
   publicGoogleConnection,
@@ -15,6 +17,23 @@ import {
 } from './google-business.js'
 
 const secret = 'test-secret-that-is-long-enough-for-aura'
+
+test('business connection requires account choice and consent with offline access and browser binding', () => {
+  const state = createOAuthState({ businessProfileId: 'business-1', userId: 'user-1' }, secret)
+  const session = createGoogleOAuthSession(state, secret)
+  const url = new URL(googleBusinessAuthorizationUrl({
+    clientId: 'test-client', redirectUri: 'http://localhost:3000/api/google-oauth-callback',
+  }, state, session.challenge))
+
+  assert.equal(url.origin, 'https://accounts.google.com')
+  assert.deepEqual(new Set(url.searchParams.get('prompt').split(' ')), new Set(['select_account', 'consent']))
+  assert.equal(url.searchParams.get('scope'), 'https://www.googleapis.com/auth/business.manage')
+  assert.equal(url.searchParams.get('access_type'), 'offline')
+  assert.equal(url.searchParams.get('state'), state)
+  assert.equal(url.searchParams.get('code_challenge'), session.challenge)
+  assert.equal(url.searchParams.get('code_challenge_method'), 'S256')
+  assert.equal(url.searchParams.get('redirect_uri'), 'http://localhost:3000/api/google-oauth-callback')
+})
 
 test('OAuth state verifies ownership data and rejects tampering or expiry', () => {
   const now = Date.parse('2026-09-22T12:00:00.000Z')
@@ -55,6 +74,17 @@ test('Google OAuth tokens round-trip through authenticated encryption', () => {
   assert.match(encrypted, /^v1\./)
   assert.equal(decryptGoogleToken(encrypted, secret), 'refresh-token-value')
   assert.throws(() => decryptGoogleToken(`${encrypted}broken`, secret))
+})
+
+test('a saved connection requires reconnect after its encryption key changes', () => {
+  const connection = {
+    refresh_token_encrypted: encryptGoogleToken('refresh', secret),
+    access_token_encrypted: encryptGoogleToken('access', secret),
+  }
+  assert.equal(googleConnectionNeedsReconnect(connection, secret), false)
+  assert.equal(googleConnectionNeedsReconnect(connection, 'replacement-key'), true)
+  assert.equal(googleConnectionNeedsReconnect({ ...connection, refresh_token_encrypted: null }, secret), true)
+  assert.equal(googleConnectionNeedsReconnect(null, secret), false)
 })
 
 test('Google review URLs only accept saved resource names', () => {

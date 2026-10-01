@@ -1,5 +1,6 @@
 import {
   assertGoogleFeature,
+  googleBusinessAuthorizationUrl,
   createGoogleOAuthSession,
   createOAuthState,
   requireGoogleUser,
@@ -18,19 +19,9 @@ export default async function handler(request, response) {
     assertGoogleFeature(config, 'connection')
     const state = createOAuthState({ businessProfileId: businessProfile.id, userId: user.id }, config.stateSecret)
     const oauthSession = createGoogleOAuthSession(state, config.stateSecret)
-    const url = new URL('https://accounts.google.com/o/oauth2/v2/auth')
-    url.searchParams.set('access_type', 'offline')
-    url.searchParams.set('client_id', config.clientId)
-    url.searchParams.set('code_challenge', oauthSession.challenge)
-    url.searchParams.set('code_challenge_method', 'S256')
-    url.searchParams.set('include_granted_scopes', 'true')
-    url.searchParams.set('prompt', 'consent')
-    url.searchParams.set('redirect_uri', config.redirectUri)
-    url.searchParams.set('response_type', 'code')
-    url.searchParams.set('scope', 'https://www.googleapis.com/auth/business.manage')
-    url.searchParams.set('state', state)
+    const url = googleBusinessAuthorizationUrl(config, state, oauthSession.challenge)
     response.setHeader('Set-Cookie', oauthSession.cookie)
-    sendJson(response, 200, { url: url.toString() })
+    sendJson(response, 200, { url })
   } catch (error) {
     handleApiError(response, error)
   }

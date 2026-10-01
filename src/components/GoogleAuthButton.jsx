@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
+import { GOOGLE_SIGN_IN_NEXT_KEY } from '../lib/googleSignInNavigation'
 
 function GoogleMark() {
   return (
@@ -37,13 +38,17 @@ export default function GoogleAuthButton({ label = 'Continue with Google', onErr
 
     setIsLoading(true)
 
-    const redirectTo = new URL(redirectPath, window.location.origin).toString()
+    // Return through the already configured Auth URL, then resume onboarding
+    // within this origin. This also avoids falling back to the production site.
+    sessionStorage.setItem(GOOGLE_SIGN_IN_NEXT_KEY, redirectPath)
+    const redirectTo = new URL('/dashboard', window.location.origin).toString()
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo },
+      options: { redirectTo, queryParams: { prompt: 'select_account' } },
     })
 
     if (error) {
+      sessionStorage.removeItem(GOOGLE_SIGN_IN_NEXT_KEY)
       console.error('[Supabase Auth] Google sign in error:', error)
       onError?.('We could not start Google sign in. Please try again.')
       setIsLoading(false)
