@@ -4,6 +4,7 @@
   align-items: center;
   justify-content: center;
   min-height: 44px;
+  min-width: 132px;
   padding: 8px 20px;
   overflow: hidden;
   isolation: isolate;
@@ -26,13 +27,14 @@
   gap: 8px;
 }
 
-.interactive-hover-button-dot {
-  width: 8px;
-  height: 8px;
-  flex: 0 0 8px;
-  border-radius: 50%;
+.interactive-hover-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
   background: var(--harmony-orange);
-  transition: transform 300ms ease;
+  clip-path: circle(0% at 24px 50%);
+  transition: clip-path 300ms ease;
 }
 
 .interactive-hover-button-label {
@@ -54,8 +56,8 @@
   transition: transform 300ms ease, opacity 300ms ease;
 }
 
-.interactive-hover-button:is(:hover, :focus-visible) .interactive-hover-button-dot {
-  transform: scale(100.8);
+.interactive-hover-button:is(:hover, :focus-visible)::before {
+  clip-path: circle(150% at 24px 50%);
 }
 
 .interactive-hover-button:is(:hover, :focus-visible) .interactive-hover-button-label {
@@ -74,7 +76,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .interactive-hover-button span {
+  .interactive-hover-button span,
+  .interactive-hover-button::before {
     transition: none;
   }
 }

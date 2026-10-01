@@ -9,7 +9,6 @@ export function InteractiveHoverButton({ children, to, className = '' }) {
   return (
     <Link to={to} className={`interactive-hover-button ${className}`} aria-label={children}>
       <span className="interactive-hover-button-rest" aria-hidden="true">
-        <span className="interactive-hover-button-dot" />
         <span className="interactive-hover-button-label">{children}</span>
       </span>
       <span className="interactive-hover-button-active" aria-hidden="true">
