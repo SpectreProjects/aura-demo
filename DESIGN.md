@@ -1,10 +1,11 @@
 ---
 version: alpha
 name: Harmony
-description: A Pacifico wordmark with the Apple Hello writing reveal in burnt orange and white.
+description: A Pacifico wordmark with a scroll portal and floating Harmony navigation.
 colors:
   copper: "#DB5926"
   white: "#FFFFFF"
+  navigation-ink: "#1D1D1F"
 typography:
   sans:
     fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif"
@@ -17,6 +18,7 @@ spacing:
   hello-width: "638px"
 components:
   apple-hello: {}
+  navbar: {}
 ---
 
 # Harmony Design System
@@ -25,13 +27,13 @@ components:
 
 Harmony is the new identity for the review assistant used by local businesses in Scotland and the UK. This document replaces the previous AURA design direction.
 
-The typography direction is the supplied Pacifico Regular font, using ncdai's Apple Hello Effect from 21st.dev as the animation reference. The first branding screen has one job: introduce the new visual direction. It contains only a flat orange background and a centred white, naturally connected “Harmony”.
+The typography direction is the supplied Pacifico Regular font, using ncdai's Apple Hello Effect from 21st.dev as the animation reference. The first branding screen has one job: introduce the new visual direction. It contains a flat orange background, a centred white, naturally connected “Harmony”, and the subsequently requested floating navigation at the top.
 
 This is a brand hero on `/`. The existing authentication and dashboard routes retain their working behaviour and await a separate Harmony design brief. Their previous styling is not a reference for future Harmony work.
 
 ## Colors
 
-Burnt orange `#DB5926` fills the opening viewport. White `#FFFFFF` is the only foreground colour and becomes the full page background after scrolling through the word. No gradients, textures, shadows or additional accents.
+Burnt orange `#DB5926` fills the opening viewport. White `#FFFFFF` colours the wordmark and becomes the full page background after scrolling through the word. The white navbar uses `#1D1D1F` for readable labels and its primary action, with the supplied orange H logo. The hero has no gradients or textures.
 
 Runtime tokens live in `src/pages/Landing.css`: `--harmony-orange`, `--harmony-white`, `--harmony-page-gutter`, `--harmony-hello-width` and `--harmony-display-font`. This document mirrors those values. The body background uses the same orange to cover overscroll outside the page.
 
@@ -39,7 +41,7 @@ Runtime tokens live in `src/pages/Landing.css`: `--harmony-orange`, `--harmony-w
 
 Pacifico Regular is the brand display font. The wordmark uses contours exported from the supplied TTF with native font spacing and natural connections, without added connector lines. The contours retain the supplied letter shapes and inherit white through `currentColor`. The font is unmodified and self-hosted in `public/fonts/`, with its face declared in `src/pages/Landing.css`. Its SIL Open Font Licence is retained alongside it.
 
-`src/components/ui/harmony-pacifico-paths.js` owns the wordmark contours and invisible pen guides. System typography remains available for future utility text; no utility text is visible on this opening screen.
+`src/components/ui/harmony-pacifico-paths.js` owns the wordmark contours and invisible pen guides. The navbar uses system sans-serif typography at 14px, keeping utility labels distinct from the Pacifico brand lettering.
 
 ## Layout
 
@@ -47,11 +49,11 @@ Fill the viewport and centre the name vertically and horizontally. The SVG scale
 
 ## Elevation & Depth
 
-One flat surface. No cards, borders, overlays or glass effects.
+The hero stays flat. The floating navbar adds a restrained border and shadow to remain visible over both orange and white. Its mobile disclosure uses the same opaque white surface; no glass effects.
 
 ## Shapes
 
-Keep the supplied Pacifico curves and naturally joined letter shapes. Add no other visible shapes.
+Keep the supplied Pacifico curves and naturally joined letter shapes. The navbar and primary action use pill corners; the mobile panel uses a 24px radius.
 
 ## Components
 
@@ -71,26 +73,33 @@ Native scroll drives exponential scale directly, without capturing wheel or touc
 
 After the writing callback finishes, the wrapper removes its now redundant SVG mask through CSS, leaving identical font contours. This prevents mask caching artefacts during large zooms or viewport resizing, without modifying the lettering component or its animation timing. Reduced motion uses two ordinary viewport sections, orange then white, without zooming.
 
+### Navbar
+
+`src/components/ui/navbar-1.jsx` and `navbar-1.css` own the fixed floating white pill, adapting the visible reference at https://21st.dev/@preetsuthar17/components/navbar-1. The reference source requires sign-in and has not been copied or installed. The supplied logo is unmodified in `public/brand/harmony-logo.png`; CSS frames the transparent padding without changing its artwork.
+
+The selected labels are How it works, Features and Pricing. These remain static preview labels until genuine page destinations exist. Log in links to `/login`, Get started to `/signup`, and the H logo returns to the top of `/` without replaying the writing animation. Below 768px the labels and Log in move into an animated disclosure, with a 44px menu toggle. Escape closes it and returns focus to the toggle; outside pointer input and switching to desktop also close it. Reduced motion removes the disclosure animation. All clickable controls have a visible keyboard focus outline.
+
 ### Landing page
 
-`src/pages/Landing.jsx` owns the page composition. It composes the unchanged Harmony greeting inside the scroll portal, followed by plain white. No navigation, buttons, footer, photography or additional visible copy.
+`src/pages/Landing.jsx` owns the page composition. It composes the unchanged Harmony greeting inside the scroll portal, followed by plain white. It also mounts the fixed Navbar1 above the scroll stage. No footer, photography or additional marketing content.
 
 ## Do's and Don'ts
 
 ### Canonical UI Map
 
-The existing product interaction owners remain in place. This table records behaviour, not the retired visual direction. The brand opening has no interactive controls.
+The existing product interaction owners remain in place. This table records behaviour, not the retired visual direction. The brand opening adds the requested navigation; the greeting and zoom remain unchanged.
 
 | Capability | Canonical owner | Source of truth | Allowed variants | Verification |
 |---|---|---|---|---|
+| Navigation | Navbar1 | `src/components/ui/navbar-1.jsx` and its scoped CSS | Desktop pill and mobile disclosure | Logo and auth destinations, mobile open/close, Escape focus, and 390px overflow checks |
 | Select/Listbox | Native platform select | `premium-ui.json` and dashboard components | Native selection controls | Keyboard and narrow viewport checks when these controls change |
 | Form | Existing dashboard forms and business setup modal | Dashboard routes and `src/components/BusinessSetupModal.jsx` | Inline settings and modal steps | Validation, loading, error and success checks when forms change |
 | Scrollbar | Global application stylesheet | `src/index.css` | Workspace and internally scrolling modal | Desktop and narrow viewport overflow checks |
 
 ### Brand rules
 
-- Keep the exact orange and white palette.
-- Keep the first screen empty apart from the greeting.
+- Keep the exact orange and white brand palette, with dark utility text in the white navigation.
+- Keep the first screen limited to the greeting and the requested navigation.
 - Preserve the Pacifico letter shapes and natural connections, and provide an accessible text equivalent.
 - Honour reduced motion and keep the layout stable during animation.
 - Do not carry forward the previous AURA marketing design.
