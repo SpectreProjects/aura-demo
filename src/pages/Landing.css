@@ -11,7 +11,8 @@
   --harmony-orange: #db5926;
   --harmony-white: #ffffff;
   --harmony-page-gutter: 24px;
-  --harmony-hello-width: 638px;
+  --harmony-hello-width: 1000px;
+  --harmony-cta-gap: clamp(48px, 8svh, 72px);
   --harmony-display-font: 'Pacifico', cursive;
 }
 
@@ -41,7 +42,7 @@
 }
 
 .harmony-portal-word {
-  width: min(100%, var(--harmony-hello-width));
+  width: min(100%, var(--harmony-hello-width), calc((100svh - 240px) * 824 / 294));
   aspect-ratio: 824 / 294;
 }
 
@@ -55,7 +56,7 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: min(calc(100% - 48px), var(--harmony-hello-width));
+  width: min(calc(100% - 48px), var(--harmony-hello-width), calc((100svh - 240px) * 824 / 294));
   aspect-ratio: 824 / 294;
   transform: translate(-50%, -50%);
   pointer-events: none;
@@ -63,7 +64,7 @@
 
 .harmony-portal-action-content {
   position: absolute;
-  top: calc(100% + 24px);
+  top: calc(100% + var(--harmony-cta-gap));
   left: 50%;
   transform: translateX(-50%);
   pointer-events: auto;

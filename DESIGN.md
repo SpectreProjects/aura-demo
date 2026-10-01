@@ -15,7 +15,7 @@ rounded:
   DEFAULT: "0px"
 spacing:
   page-gutter: "24px"
-  hello-width: "638px"
+  hello-width: "1000px"
 components:
   apple-hello: {}
   navbar: {}
@@ -35,7 +35,7 @@ This is a brand hero on `/`. The existing authentication and dashboard routes re
 
 Burnt orange `#DB5926` fills the opening viewport. White `#FFFFFF` colours the wordmark and becomes the full page background after scrolling through the word. The white navbar uses `#1D1D1F` for readable labels and its primary action, with the supplied orange H logo. The hero has no gradients or textures.
 
-Runtime tokens live in `src/pages/Landing.css`: `--harmony-orange`, `--harmony-white`, `--harmony-page-gutter`, `--harmony-hello-width` and `--harmony-display-font`. This document mirrors those values. The body background uses the same orange to cover overscroll outside the page.
+Runtime tokens live in `src/pages/Landing.css`: `--harmony-orange`, `--harmony-white`, `--harmony-page-gutter`, `--harmony-hello-width`, `--harmony-cta-gap` and `--harmony-display-font`. This document mirrors those values. The body background uses the same orange to cover overscroll outside the page.
 
 ## Typography
 
@@ -45,7 +45,7 @@ Pacifico Regular is the brand display font. The wordmark uses contours exported 
 
 ## Layout
 
-Fill the viewport and centre the name vertically and horizontally. The SVG scales down with the viewport, retains its 824:294 aspect ratio and has a maximum width of 638px. Keep 24px of edge clearance on small screens. Use the small viewport height so mobile browser controls do not obscure the name. A 340svh portal region pins the 100svh opening stage during 240svh of native scroll travel. A blank 100svh white section follows.
+Fill the viewport and centre the name vertically and horizontally. The SVG scales down with the viewport, retains its 824:294 aspect ratio and has a maximum artwork width of 1000px, giving its visible lettering approximately the same 960px span as the navbar. The artwork stays centred independently of the CTA. A height-based cap leaves room for the navbar and button on short screens. Keep 24px of edge clearance on small screens. Use the small viewport height so mobile browser controls do not obscure the name. A 340svh portal region pins the 100svh opening stage during 240svh of native scroll travel. A blank 100svh white section follows.
 
 ## Elevation & Depth
 
@@ -83,7 +83,7 @@ The selected labels are How it works, Features and Pricing. These remain static 
 
 `src/components/ui/interactive-hover-button.jsx` and its scoped CSS adapt the public manual source at https://magicui.design/docs/components/interactive-hover-button, linked by the requested 21st component. The JSX uses a router link to `/signup` instead of a button, with a single accessible name. A small orange dot expands to fill the white pill over 300ms while the first label exits and a white label with arrow enters. Keyboard focus uses the same state with a visible outline. Reduced motion switches states immediately. The standard colours are white with orange lettering; hover colours are orange with white lettering and a white border.
 
-The call to action sits 24px beneath the existing artwork frame without moving or changing the word. A separate portal slot fades it out during the first 6% of scroll travel and hides it from interaction afterwards, so the zoom continues into uninterrupted white. Reduced motion keeps it visible on the ordinary orange section.
+The compact call to action has a 44px minimum height, 13px text and 20px side padding. It sits 48–72px beneath the enlarged artwork frame, with a gap that scales with viewport height. The word remains centred independently of the button. A separate portal slot fades it out during the first 6% of scroll travel and hides it from interaction afterwards, so the zoom continues into uninterrupted white. Reduced motion keeps it visible on the ordinary orange section.
 
 ### Landing page
 
