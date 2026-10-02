@@ -15,3 +15,10 @@ test('sign-in continuation cannot navigate to an arbitrary destination', () => {
     assert.equal(consumeGoogleSignInDestination(storage), null)
   }
 })
+
+test('company-first signup returns through signup before opening business setup', () => {
+  const values = new Map([[GOOGLE_SIGN_IN_NEXT_KEY, '/signup']])
+  const storage = { getItem: (key) => values.get(key), removeItem: (key) => values.delete(key) }
+  assert.equal(consumeGoogleSignInDestination(storage), '/signup')
+  assert.equal(consumeGoogleSignInDestination(storage), null)
+})

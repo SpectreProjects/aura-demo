@@ -68,3 +68,15 @@ The existing routes cover overview, reviews, staff, leaderboard, rewards and set
 Trace the current inputs, validation, save trigger, payload, backend operation, success destination, failure recovery and cancellation behaviour. Identify side effects that happen before final submission. Carry these facts into the new flow, and compare the outcome against the original operation. Reuse working logic where appropriate, with a newly designed Harmony presentation.
 
 Do not rename database tables, identifiers, API paths, environment variables or provider projects solely to remove the AURA name from the customer-facing experience. Those technical migrations are separate from the visual reset.
+
+## Harmony account entry, 2 October 2026
+
+Sources: `src/components/ui/auth-switch.jsx`, `src/components/GoogleAuthButton.jsx`, `src/lib/harmonySignup.js` and `src/lib/googleSignInNavigation.js`.
+
+- Log in accepts email/password through the existing Supabase password login, or explicitly starts Google account sign-in with `prompt=select_account`. Password recovery keeps its existing route and entered email. Failure preserves entered values and provides an inline correction/retry message.
+- Signup initially collects only company name (trimmed, required, at most 160 characters). Next validates it and stores a session-scoped draft, then shows the existing Google account signup action. Back restores company entry. No account is created merely by pressing Next.
+- Google retains the configured `/dashboard` callback on the current origin. The allowlisted continuation `/signup` returns through signup before business setup, allowing the company to be saved as `business_name` user metadata. This value is a profile label, never an authorisation claim. The dashboard’s existing profile creation reads it as its fallback name.
+- Existing non-empty account names are never replaced by signup. Successful metadata save clears the draft and opens `/setup/google`; failure retains the draft, blocks that continuation and offers Try again. An already signed-in account without a draft proceeds to existing setup.
+- Account authentication remains separate from Business Profile management permission and location confirmation. No Google management scopes, credentials, encryption keys or database schema change in this screen task.
+
+Verification: company validation, trimmed metadata save, preservation of existing names, save-failure recovery and safe one-time callback destinations have unit coverage. Browser visual, keyboard and live provider round-trip checks remain pending because browser policy verification was unavailable in this session.

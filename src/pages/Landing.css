@@ -10,6 +10,8 @@
 :root {
   --harmony-orange: #db5926;
   --harmony-white: #ffffff;
+  --harmony-ink: #1d1d1f;
+  --harmony-utility-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --harmony-page-gutter: 24px;
   --harmony-hello-width: 900px;
   --harmony-action-frame-width: 1000px;

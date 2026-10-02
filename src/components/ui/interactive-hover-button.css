@@ -75,6 +75,24 @@
   outline-offset: 5px;
 }
 
+.interactive-hover-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.interactive-hover-button:disabled::before {
+  clip-path: circle(0% at 24px 50%);
+}
+
+.interactive-hover-button:disabled .interactive-hover-button-label {
+  opacity: 1;
+  transform: none;
+}
+
+.interactive-hover-button:disabled .interactive-hover-button-active {
+  opacity: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .interactive-hover-button span,
   .interactive-hover-button::before {

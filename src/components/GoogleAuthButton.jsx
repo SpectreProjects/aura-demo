@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { GOOGLE_SIGN_IN_NEXT_KEY } from '../lib/googleSignInNavigation'
+import { InteractiveHoverButton } from './ui/interactive-hover-button'
 
 function GoogleMark() {
   return (
@@ -25,14 +26,24 @@ function GoogleMark() {
   )
 }
 
-export default function GoogleAuthButton({ label = 'Continue with Google', onError, redirectPath = '/dashboard' }) {
+export default function GoogleAuthButton({
+  label = 'Continue with Google',
+  onError,
+  redirectPath = '/dashboard',
+  className,
+  onBeforeAuth,
+  variant,
+}) {
   const [isLoading, setIsLoading] = useState(false)
 
   async function handleGoogleAuth() {
+    if (isLoading) return
     onError?.('')
 
     if (!supabase) {
-      onError?.('Google sign in is not available right now. Please try again soon.')
+      onError?.(
+        'Google sign in is not available right now. Please try again soon.',
+      )
       return
     }
 
@@ -40,24 +51,50 @@ export default function GoogleAuthButton({ label = 'Continue with Google', onErr
 
     // Return through the already configured Auth URL, then resume onboarding
     // within this origin. This also avoids falling back to the production site.
-    sessionStorage.setItem(GOOGLE_SIGN_IN_NEXT_KEY, redirectPath)
-    const redirectTo = new URL('/dashboard', window.location.origin).toString()
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo, queryParams: { prompt: 'select_account' } },
-    })
-
-    if (error) {
-      sessionStorage.removeItem(GOOGLE_SIGN_IN_NEXT_KEY)
-      console.error('[Supabase Auth] Google sign in error:', error)
+    try {
+      onBeforeAuth?.()
+      sessionStorage.setItem(GOOGLE_SIGN_IN_NEXT_KEY, redirectPath)
+      const redirectTo = new URL(
+        '/dashboard',
+        window.location.origin,
+      ).toString()
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo, queryParams: { prompt: 'select_account' } },
+      })
+      if (error) throw error
+    } catch {
+      try {
+        sessionStorage.removeItem(GOOGLE_SIGN_IN_NEXT_KEY)
+      } catch {
+        // A storage error must still restore the button and show retry feedback.
+      }
       onError?.('We could not start Google sign in. Please try again.')
       setIsLoading(false)
     }
   }
 
+  if (variant === 'harmony') {
+    return (
+      <InteractiveHoverButton
+        className={className}
+        leadingIcon={<GoogleMark />}
+        busy={isLoading}
+        disabled={isLoading}
+        onClick={handleGoogleAuth}
+      >
+        {isLoading ? 'Connecting…' : label}
+      </InteractiveHoverButton>
+    )
+  }
+
   return (
     <button
-      className="inline-flex w-full items-center justify-center gap-3 rounded-2xl border border-white/15 bg-white px-5 py-4 text-sm font-black text-slate-950 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+      aria-busy={isLoading || undefined}
+      className={
+        className ||
+        'inline-flex w-full items-center justify-center gap-3 rounded-2xl border border-white/15 bg-white px-5 py-4 text-sm font-black text-slate-950 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60'
+      }
       disabled={isLoading}
       onClick={handleGoogleAuth}
       type="button"

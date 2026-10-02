@@ -1,0 +1,441 @@
+.harmony-auth {
+  position: relative;
+  --ha-border: rgba(29, 29, 31, 0.14);
+  width: 100%;
+  min-height: 100svh;
+  padding: 0;
+  background: var(--harmony-orange);
+  color: var(--harmony-ink);
+  font-family: var(--harmony-utility-font);
+  font-weight: 400;
+  line-height: 1.5;
+  color-scheme: light;
+  --ha-entry-panel-x: -36%;
+  --ha-entry-welcome-x: -800px;
+  --ha-entry-form-x: 800px;
+  --ha-entry-form-y: 0px;
+}
+.harmony-auth[data-entry-mode='signup'] {
+  --ha-entry-panel-x: 36%;
+  --ha-entry-welcome-x: 800px;
+  --ha-entry-form-x: -800px;
+}
+
+.ha-home-back {
+  position: absolute;
+  z-index: 4;
+  top: max(24px, env(safe-area-inset-top));
+  left: max(24px, env(safe-area-inset-left));
+}
+.harmony-auth .ha-home-back:focus-visible {
+  outline-color: var(--harmony-white);
+}
+.is-signup .ha-home-back:focus-visible {
+  outline-color: var(--harmony-orange);
+}
+
+.harmony-auth ::selection {
+  background: var(--harmony-orange);
+  color: var(--harmony-white);
+}
+.harmony-auth :is(button, a, input):focus-visible {
+  outline: 2px solid var(--harmony-orange);
+  outline-offset: 4px;
+}
+.harmony-auth button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.harmony-auth button:disabled {
+  cursor: not-allowed;
+}
+.ha-card {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  min-height: 100svh;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: var(--harmony-white);
+}
+.ha-curve {
+  position: absolute;
+  z-index: -1;
+  left: -110%;
+  top: -205%;
+  width: 164%;
+  height: 370%;
+  border-radius: 50%;
+  background: var(--harmony-orange);
+  transition: transform 1.8s ease-in-out;
+  animation: ha-panel-enter 1.8s ease-in-out both;
+}
+.is-signup .ha-curve {
+  transform: translateX(95.12%);
+}
+.ha-welcome {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 43%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 44px;
+  text-align: center;
+  color: var(--harmony-white);
+  transition: transform 0.9s ease-in-out 0.6s;
+}
+.is-signup .ha-welcome {
+  transform: translateX(132.56%);
+}
+.ha-wordmark {
+  position: absolute;
+  top: clamp(48px, 18svh, 160px);
+  color: var(--harmony-white);
+  font-family: var(--harmony-display-font);
+  font-size: clamp(42px, 6.3vw, 80px);
+  font-weight: 400;
+  line-height: 1.6;
+  text-decoration: none;
+  animation: ha-welcome-enter 0.9s ease-in-out 0.6s both;
+}
+.ha-wordmark:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 8px;
+}
+.ha-welcome-copy {
+  max-width: 280px;
+  transform: translateY(clamp(32px, 7svh, 64px));
+  animation: ha-welcome-enter 0.9s ease-in-out 0.6s both;
+}
+.ha-welcome h2 {
+  margin: 0 0 16px;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.7px;
+}
+.ha-welcome p {
+  margin: 0 0 28px;
+  font-size: 16px;
+  line-height: 1.6;
+}
+.ha-form-panel {
+  width: 50%;
+  min-height: 100svh;
+  margin-left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(40px, env(safe-area-inset-top))
+    max(48px, env(safe-area-inset-right)) max(40px, env(safe-area-inset-bottom))
+    max(48px, env(safe-area-inset-left));
+  transition: transform 1s ease-in-out 0.7s;
+  animation: ha-account-enter 1s ease-in-out 0.7s both;
+}
+/* Separate entry translation from the transforms used to switch modes. */
+.ha-form-panel:focus-within,
+.ha-welcome:focus-within .ha-wordmark,
+.ha-welcome:focus-within .ha-welcome-copy {
+  animation: none;
+}
+.is-signup .ha-form-panel {
+  transform: translateX(-100%);
+}
+.ha-form-content,
+.ha-checking {
+  width: 100%;
+  max-width: 330px;
+}
+.ha-form-content {
+  animation: ha-form-enter 360ms ease both;
+}
+.harmony-auth h1 {
+  margin: 0 0 32px;
+  text-align: center;
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -1px;
+  outline: none;
+}
+.ha-field {
+  position: relative;
+  margin-bottom: 8px;
+}
+.ha-field label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.ha-field input {
+  display: block;
+  width: 100%;
+  height: 48px;
+  padding: 0 20px;
+  border: 1px solid var(--ha-border);
+  border-radius: 999px;
+  background: var(--harmony-white);
+  color: var(--harmony-ink);
+  color-scheme: light;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 400;
+  caret-color: var(--harmony-orange);
+  transition: border-color 180ms ease;
+}
+.ha-field input:hover {
+  border-color: var(--harmony-orange);
+}
+.ha-field input[aria-invalid='true'] {
+  border-color: var(--harmony-ink);
+  border-width: 2px;
+}
+.ha-field-error {
+  display: block;
+  min-height: 22px;
+  padding-top: 4px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.ha-password {
+  position: relative;
+}
+.ha-password input {
+  padding-right: 52px;
+}
+.ha-password button {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--harmony-ink);
+}
+.ha-password button:hover {
+  color: var(--harmony-orange);
+}
+.ha-text-link {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  color: var(--harmony-ink);
+}
+.ha-text-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.ha-forgot {
+  display: block;
+  width: fit-content;
+  margin-left: auto;
+}
+.ha-message {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.ha-message p {
+  margin: 0;
+  padding: 8px 0;
+}
+.harmony-auth .ha-submit {
+  width: 100%;
+  border-color: var(--harmony-orange);
+}
+.harmony-auth .ha-switch {
+  min-width: 132px;
+}
+.harmony-auth .ha-welcome :focus-visible {
+  outline-color: var(--harmony-white);
+}
+.ha-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 20px 0;
+  font-size: 12px;
+}
+.ha-divider::before,
+.ha-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--ha-border);
+}
+.harmony-auth .ha-google {
+  width: 100%;
+  border-color: var(--harmony-orange);
+}
+.ha-google .interactive-hover-button-rest > svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.ha-intro {
+  margin: -12px 0 28px;
+  text-align: center;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+.ha-intro strong {
+  font-weight: 500;
+}
+.ha-consent {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.ha-consent a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.ha-consent a:hover {
+  text-decoration-thickness: 2px;
+}
+.ha-login-consent {
+  margin-top: 24px;
+}
+.ha-back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-top: 20px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.ha-checking p {
+  font-size: 14px;
+}
+.ha-skip {
+  position: absolute;
+  top: 12px;
+  left: 24px;
+  z-index: 5;
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: var(--harmony-white);
+  color: var(--harmony-ink);
+  transform: translateY(-180%);
+}
+.ha-skip:focus {
+  transform: none;
+}
+@keyframes ha-form-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes ha-panel-enter {
+  from {
+    translate: var(--ha-entry-panel-x) 0;
+  }
+  to {
+    translate: 0 0;
+  }
+}
+@keyframes ha-welcome-enter {
+  from {
+    translate: var(--ha-entry-welcome-x) 0;
+  }
+  to {
+    translate: 0 0;
+  }
+}
+@keyframes ha-account-enter {
+  from {
+    translate: var(--ha-entry-form-x) var(--ha-entry-form-y);
+  }
+  to {
+    translate: 0 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .harmony-auth,
+  .harmony-auth[data-entry-mode='signup'] {
+    --ha-entry-welcome-x: 0px;
+    --ha-entry-form-x: 0px;
+    --ha-entry-form-y: 300px;
+  }
+  .ha-curve {
+    display: none;
+  }
+  .ha-welcome {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    min-height: 308px;
+    padding: max(28px, env(safe-area-inset-top))
+      max(24px, env(safe-area-inset-right)) 28px
+      max(24px, env(safe-area-inset-left));
+    background: var(--harmony-orange);
+  }
+  .ha-wordmark {
+    top: max(76px, calc(env(safe-area-inset-top) + 60px));
+    font-size: 32px;
+    animation: none;
+  }
+  .ha-welcome-copy {
+    margin-top: 120px;
+    max-width: 100%;
+    transform: none;
+    animation: none;
+  }
+  .ha-welcome h2 {
+    margin-bottom: 10px;
+    font-size: 23px;
+  }
+  .ha-welcome p {
+    margin-bottom: 18px;
+    font-size: 14px;
+  }
+  .ha-form-panel {
+    width: 100%;
+    min-height: calc(100svh - 308px);
+    margin-left: 0;
+    padding: 36px max(24px, env(safe-area-inset-right))
+      max(36px, env(safe-area-inset-bottom))
+      max(24px, env(safe-area-inset-left));
+    animation-delay: 0.8s;
+  }
+  .is-signup .ha-welcome,
+  .is-signup .ha-form-panel {
+    transform: none;
+  }
+  .harmony-auth h1 {
+    font-size: 30px;
+    margin-bottom: 28px;
+  }
+  .ha-form-content {
+    max-width: 360px;
+  }
+  .is-signup .ha-home-back:focus-visible {
+    outline-color: var(--harmony-white);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .harmony-auth *,
+  .harmony-auth *::before {
+    animation: none;
+    transition: none;
+  }
+}

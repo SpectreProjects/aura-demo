@@ -1,0 +1,56 @@
+.harmony-back-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 112px;
+  min-height: 44px;
+  overflow: hidden;
+  border: 1px solid var(--harmony-orange);
+  border-radius: 999px;
+  background: var(--harmony-white);
+  color: var(--harmony-orange);
+  font-family: var(--harmony-utility-font);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-decoration: none;
+  cursor: pointer;
+}
+.harmony-back-label {
+  width: 80px;
+  text-align: center;
+  transform: translateX(8px);
+  transition: opacity 500ms ease;
+}
+.harmony-back-icon {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  width: 25%;
+  place-items: center;
+  background: color-mix(in srgb, var(--harmony-orange) 15%, transparent);
+  transition: width 500ms ease;
+}
+.harmony-back-icon svg {
+  opacity: 0.6;
+}
+.harmony-back-button:is(:hover, :focus-visible) .harmony-back-label {
+  opacity: 0;
+}
+.harmony-back-button:is(:hover, :focus-visible) .harmony-back-icon {
+  width: 100%;
+}
+.harmony-back-button:focus-visible {
+  outline: 2px solid var(--harmony-orange);
+  outline-offset: 4px;
+}
+.harmony-back-button:active {
+  transform: translateY(1px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .harmony-back-button span {
+    transition: none;
+  }
+}

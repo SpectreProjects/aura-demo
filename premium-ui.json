@@ -3,7 +3,8 @@
   "sourceRoots": [
     "src/pages/dashboard",
     "src/components/BusinessSetupModal.jsx",
-    "src/components/LeaderboardExperience.jsx"
+    "src/components/LeaderboardExperience.jsx",
+    "src/components/ui/auth-switch.jsx"
   ],
   "locale": "en-GB",
   "canonicalMap": "DESIGN.md",
