@@ -120,11 +120,6 @@
   line-height: 1.6;
   text-decoration: none;
 }
-.ha-wordmark:hover {
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 8px;
-}
 .ha-welcome-copy {
   max-width: 280px;
   transform: translateY(clamp(32px, 7svh, 64px));
@@ -177,6 +172,7 @@
   animation: ha-form-enter 360ms ease both;
 }
 .harmony-auth h1 {
+  overflow-wrap: anywhere;
   margin: 0 0 32px;
   text-align: center;
   font-size: 36px;

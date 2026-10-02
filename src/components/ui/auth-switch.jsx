@@ -151,7 +151,7 @@ export default function AuthSwitch() {
   const title = isSignup
     ? signupStep === 'company'
       ? 'Get started'
-      : 'Create your account'
+      : `Hi ${company.trim()},`
     : 'Log in'
   return (
     <main
@@ -379,8 +379,7 @@ export default function AuthSwitch() {
               ) : (
                 <div>
                   <p className="ha-intro">
-                    Continue with Google to set up{' '}
-                    <strong>{company.trim()}</strong>.
+                    Let’s create your account.
                   </p>
                   <GoogleAuthButton
                     variant="harmony"

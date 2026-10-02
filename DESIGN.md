@@ -262,7 +262,7 @@ Shared mechanics:
 
 - All transitions use 300ms with CSS `ease`.
 - Fill is a pseudo-element clipped from `circle(0% at 24px 50%)` to `circle(150% at 24px 50%)`. No visible circle or dot in the resting state.
-- Resting label exits 48px to the right and becomes transparent.
+- The complete resting row, including any leading provider icon, exits 48px to the right and becomes transparent together. This keeps the Google mark from remaining behind the incoming hover label. Disabled buttons restore the complete resting row.
 - Incoming white label/arrow enters from 48px to the right and ends centred at translateX(0).
 - Lucide ArrowRight is 20px, with an 8px label gap.
 - Button dimensions stay stable through the interaction.
@@ -276,7 +276,7 @@ Both CTAs use InteractiveHoverButton. Do not maintain separate animation impleme
 
 The requested reference is [appvibed01’s Auth Switch](https://21st.dev/@appvibed01/components/auth-switch). `/login` and `/signup` share `src/components/ui/auth-switch.jsx` and its scoped stylesheet. The component source supplied by Connor as a PDF on 2 October now establishes the circular sweep and delayed panel/form motion. The registry still requires authentication, so the source is integrated directly into the maintained Harmony adaptation rather than installed by the CLI. Browser verification is pending because the browser access-policy check was unavailable during implementation.
 
-The requested extension uses flat Harmony orange and pure white, without the reference’s purple gradient, emojis or unsupported social providers. Pacifico is limited to the static Harmony identity; headings, fields, help and actions use the system utility stack. Login retains email/password, password visibility, recovery and Google sign-in. Signup starts with company name and Next, then continues to the existing Google account signup.
+The requested extension uses flat Harmony orange and pure white, without the reference’s purple gradient, emojis or unsupported social providers. Pacifico is limited to the static Harmony identity; headings, fields, help and actions use the system utility stack. The auth Harmony wordmark has no hover underline; it remains a home link with a visible keyboard focus outline. Login retains email/password, password visibility, recovery and Google sign-in. Signup starts with company name and Next, then continues to the existing Google account signup. The account step greets the entered company with “Hi [company name],” followed by “Let’s create your account.” Long company names wrap within the form width.
 
 All auth primary actions, mode-switch actions and Google actions reuse InteractiveHoverButton: white/orange at rest, orange/white with an incoming arrow on hover or keyboard focus, no dot, pill radius, 44px minimum height, 13px/600 text and the same 300ms animation. On the white form surface the border and focus outline use the existing orange token; on the orange panel the border and focus outline remain white. Google’s genuine provider mark identifies the action and is not an additional Harmony brand colour. Pending actions are disabled, with stable full-width form buttons and an accessible busy state.
 

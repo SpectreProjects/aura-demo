@@ -25,6 +25,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
+  transition: transform 300ms ease, opacity 300ms ease;
 }
 
 .interactive-hover-button::before {
@@ -39,7 +40,6 @@
 
 .interactive-hover-button-label {
   position: relative;
-  transition: transform 300ms ease, opacity 300ms ease;
 }
 
 .interactive-hover-button-active {
@@ -60,7 +60,7 @@
   clip-path: circle(150% at 24px 50%);
 }
 
-.interactive-hover-button:is(:hover, :focus-visible) .interactive-hover-button-label {
+.interactive-hover-button:is(:hover, :focus-visible) .interactive-hover-button-rest {
   opacity: 0;
   transform: translateX(48px);
 }
@@ -84,7 +84,7 @@
   clip-path: circle(0% at 24px 50%);
 }
 
-.interactive-hover-button:disabled .interactive-hover-button-label {
+.interactive-hover-button:disabled .interactive-hover-button-rest {
   opacity: 1;
   transform: none;
 }
