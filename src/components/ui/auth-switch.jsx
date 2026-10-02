@@ -21,6 +21,7 @@ export default function AuthSwitch() {
   const navigate = useNavigate()
   const isSignup = location.pathname === '/signup'
   const [entryMode] = useState(() => (isSignup ? 'signup' : 'login'))
+  const [entering, setEntering] = useState(true)
   const { isAuthLoading, session } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -47,6 +48,11 @@ export default function AuthSwitch() {
   const companyRef = useRef(null)
   const headingRef = useRef(null)
   const previousMode = useRef(isSignup)
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setEntering(false), 1800)
+    return () => window.clearTimeout(timer)
+  }, [])
 
   useEffect(() => {
     document.title = `${isSignup ? 'Get started' : 'Log in'} | Harmony`
@@ -82,6 +88,7 @@ export default function AuthSwitch() {
   }, [isAuthLoading, isSignup, userId, session, navigate, retry])
 
   function switchMode() {
+    setEntering(false)
     setErrors({})
     setMessage('')
     setPassword('')
@@ -150,6 +157,8 @@ export default function AuthSwitch() {
     <main
       className={`harmony-auth${isSignup ? ' is-signup' : ''}`}
       data-entry-mode={entryMode}
+      data-entering={entering}
+      onFocusCapture={() => setEntering(false)}
     >
       <a className="ha-skip" href="#harmony-auth-form">
         Skip to form
