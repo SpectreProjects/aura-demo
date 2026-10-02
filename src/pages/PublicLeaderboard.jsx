@@ -76,7 +76,7 @@ export default function PublicLeaderboard() {
               <Sparkles size={21} />
             </span>
             <div>
-              <p className="text-base font-black tracking-[0.12em]">AURA</p>
+              <p className="text-base font-black tracking-[0.12em]">Harmony</p>
               <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-600">Team recognition</p>
             </div>
           </div>
@@ -133,7 +133,7 @@ export default function PublicLeaderboard() {
         )}
 
         <footer className="mt-10 border-t border-white/[0.06] pt-5 text-center text-[10px] font-black uppercase tracking-[0.16em] text-slate-700">
-          Recognition powered by AURA
+          Recognition powered by Harmony
         </footer>
       </div>
     </main>

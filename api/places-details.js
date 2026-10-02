@@ -3,7 +3,7 @@ import {
   handleApiError,
   readJsonBody,
   requestGooglePlaces,
-  requireAuraUser,
+  requireHarmonyUser,
   sendJson,
 } from '../server/places.js'
 
@@ -44,7 +44,7 @@ export default async function handler(request, response) {
   }
 
   try {
-    await requireAuraUser(request)
+    await requireHarmonyUser(request)
     const placeId = String(readJsonBody(request).placeId || '').trim()
 
     if (!/^[A-Za-z0-9_-]{10,220}$/.test(placeId)) {

@@ -66,7 +66,7 @@ export default async function handler(request, response) {
       .eq('google_connection_id', connection.id)
       .maybeSingle()
     if (draftError) throw draftError
-    if (!draft) throw googleHttpError(404, 'That AURA draft was not found.', 'DRAFT_NOT_FOUND')
+    if (!draft) throw googleHttpError(404, 'That Harmony draft was not found.', 'DRAFT_NOT_FOUND')
 
     const savedText = effectiveDraftText(draft)
     if (draft.status === 'published') {
@@ -160,7 +160,7 @@ export default async function handler(request, response) {
     if (!operationOwner) {
       throw googleHttpError(
         409,
-        'AURA is refreshing this Google location. Wait a moment, then publish again.',
+        'Harmony is refreshing this Google location. Wait a moment, then publish again.',
         'GOOGLE_CONNECTION_BUSY',
       )
     }

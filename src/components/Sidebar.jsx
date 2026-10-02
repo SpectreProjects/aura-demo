@@ -27,7 +27,7 @@ export default function Sidebar({ businessName, canUseRecognition }) {
           <Sparkles size={20} />
         </span>
         <span>
-          <span className="block text-lg font-bold tracking-tight text-slate-950">AURA</span>
+          <span className="block text-lg font-bold tracking-tight text-slate-950">Harmony</span>
           <span className="block text-xs font-medium text-slate-500">{businessName}</span>
         </span>
       </NavLink>

@@ -59,11 +59,11 @@ test('OAuth consent is bound to the browser that started it with PKCE', () => {
   assert.equal(session.challenge, crypto.createHash('sha256').update(verifier).digest('base64url'))
   assert.throws(
     () => requireGoogleOAuthSession({ headers: {} }, state, secret, 1_001),
-    /Start the Google connection from this AURA browser/,
+    /Start the Google connection from this Harmony browser/,
   )
   assert.throws(
     () => requireGoogleOAuthSession(request, `${state}tampered`, secret, 1_001),
-    /Start the Google connection from this AURA browser/,
+    /Start the Google connection from this Harmony browser/,
   )
 })
 
@@ -103,7 +103,7 @@ test('public serializers never expose encrypted credentials', () => {
   const connection = publicGoogleConnection({
     access_token_encrypted: 'secret-access',
     google_account_title: 'Owner account',
-    google_location_title: 'AURA Café',
+    google_location_title: 'Harmony Café',
     id: 'connection-1',
     refresh_token_encrypted: 'secret-refresh',
     status: 'active',
@@ -115,7 +115,7 @@ test('public serializers never expose encrypted credentials', () => {
     version: 2,
   })
 
-  assert.equal(connection.locationTitle, 'AURA Café')
+  assert.equal(connection.locationTitle, 'Harmony Café')
   assert.equal('access_token_encrypted' in connection, false)
   assert.equal('refresh_token_encrypted' in connection, false)
   assert.equal(draft.generatedText, 'Thank you for the lovely review.')

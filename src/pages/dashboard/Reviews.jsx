@@ -45,21 +45,21 @@ function getReplyStatus(review) {
     }
     if (review.aura_reply) {
       return {
-        detail: 'An owner reply already exists on Google, so AURA will not prepare another draft.',
+        detail: 'An owner reply already exists on Google, so Harmony will not prepare another draft.',
         label: 'Already replied on Google',
         type: 'published',
       }
     }
     if (review.draft?.status === 'failed') {
       return {
-        detail: 'The review is safe in AURA. Draft generation can be retried without publishing anything.',
+        detail: 'The review is safe in Harmony. Draft generation can be retried without publishing anything.',
         label: 'Draft needs retry',
         type: 'failed',
       }
     }
     if (review.draft?.status === 'generating' || (review.draft_eligible && !review.draft)) {
       return {
-        detail: 'AURA is preparing a draft. The review remains visible even if generation takes longer.',
+        detail: 'Harmony is preparing a draft. The review remains visible even if generation takes longer.',
         label: 'Generating draft',
         type: 'generating',
       }
@@ -72,7 +72,7 @@ function getReplyStatus(review) {
       }
     }
     return {
-      detail: 'This review was imported as history. AURA only creates drafts for reviews received after connection.',
+      detail: 'This review was imported as history. Harmony only creates drafts for reviews received after connection.',
       label: 'Historical review',
       type: 'historical',
     }
@@ -80,7 +80,7 @@ function getReplyStatus(review) {
 
   return {
     detail: 'This sample review cannot publish to Google.',
-    label: 'AURA sample',
+    label: 'Harmony sample',
     type: 'preview',
   }
 }
@@ -238,7 +238,7 @@ function RecognitionWorkspace({ categories, onAddCategory, onAddStaff, onAssignP
         setSelectedStaffIds([])
       }
     } catch (error) {
-      setErrorMessage(error.message || 'AURA could not award those points. Please try again.')
+      setErrorMessage(error.message || 'Harmony could not award those points. Please try again.')
     } finally {
       setIsAwarding(false)
     }
@@ -258,7 +258,7 @@ function RecognitionWorkspace({ categories, onAddCategory, onAddStaff, onAssignP
       const result = await onUndoPoints({ reviewId: review.id, staffId })
       if (result.undoneCount) setSuccessMessage(`Recognition for ${result.name} has been undone.`)
     } catch (error) {
-      setErrorMessage(error.message || 'AURA could not undo that recognition. Please try again.')
+      setErrorMessage(error.message || 'Harmony could not undo that recognition. Please try again.')
     } finally {
       setUndoingStaffId('')
     }
@@ -272,7 +272,7 @@ function RecognitionWorkspace({ categories, onAddCategory, onAddStaff, onAssignP
             <Sparkles size={15} /> Review recognition
           </div>
           <p className="mt-2 text-sm font-semibold leading-6 text-[#4e625c]">
-            AURA suggests the match. You stay in control of who receives points.
+            Harmony suggests the match. You stay in control of who receives points.
           </p>
         </div>
         {assignedStaffIds.size > 0 && (
@@ -287,7 +287,7 @@ function RecognitionWorkspace({ categories, onAddCategory, onAddStaff, onAssignP
           <div className="rounded-xl border border-black/[0.07] bg-white/45 p-3" key={`${suggestion.name}-${suggestion.status}`}>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-sm font-black text-[#17201e]">AURA spotted {suggestion.name}</p>
+                <p className="text-sm font-black text-[#17201e]">Harmony spotted {suggestion.name}</p>
                 <p className="mt-1 text-xs font-semibold leading-5 text-[#667873]">
                   {suggestion.status === 'matched'
                     ? `Matched to ${suggestion.matched_staff_names.join(', ')}${suggestion.suggested_category ? ` in ${suggestion.suggested_category}` : ''}.`
@@ -580,7 +580,7 @@ function ReplyWorkspace({
           {needsCarefulReview && review.source === 'google_business' ? (
             <div className="mt-4 rounded-xl border border-amber-300/20 bg-amber-400/[0.08] p-4">
               <p className="flex items-center gap-2 text-sm font-bold text-amber-100"><AlertTriangle aria-hidden="true" size={16} /> Needs careful review</p>
-              <p className="mt-2 text-sm leading-6 text-amber-100/70">This is a {review.rating}-star review. AURA keeps the language cautious, but an owner should check every word before publishing.</p>
+              <p className="mt-2 text-sm leading-6 text-amber-100/70">This is a {review.rating}-star review. Harmony keeps the language cautious, but an owner should check every word before publishing.</p>
             </div>
           ) : null}
 
@@ -611,7 +611,7 @@ function ReplyWorkspace({
             <div className="mt-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-[#e4aa87]">
-                  <Sparkles aria-hidden="true" size={15} /> Saved AURA draft
+                  <Sparkles aria-hidden="true" size={15} /> Saved Harmony draft
                 </div>
                 {!isEditing ? (
                   <button className="inline-flex min-h-9 items-center gap-2 rounded-lg px-2 text-xs font-black text-[#e4aa87] transition hover:bg-white/[0.05] hover:text-white" onClick={() => setIsEditing(true)} type="button">
@@ -629,7 +629,7 @@ function ReplyWorkspace({
 
               {isEditing ? (
                 <div className="mt-3">
-                  <label className="sr-only" htmlFor={'google-draft-' + review.id}>Edit AURA draft</label>
+                  <label className="sr-only" htmlFor={'google-draft-' + review.id}>Edit Harmony draft</label>
                   <textarea
                     aria-describedby={errorMessage ? 'google-draft-error' : undefined}
                     aria-invalid={Boolean(errorMessage)}
@@ -696,7 +696,7 @@ function ReplyWorkspace({
         onConfirm={publishDraft}
         title={'Publish this reply for ' + businessName + '?'}
       >
-        <p>This is the only action that sends text to Google. AURA will first check that a newer owner reply has not appeared, then publish this exact saved text:</p>
+        <p>This is the only action that sends text to Google. Harmony will first check that a newer owner reply has not appeared, then publish this exact saved text:</p>
         <blockquote className="mt-4 whitespace-pre-wrap rounded-xl border border-white/10 bg-white/[0.04] p-4 text-sm leading-6 text-white">{savedText}</blockquote>
         {isEarlyPublish ? <p className="mt-4 text-sm text-amber-200">This is earlier than the recommended time. Publishing is still allowed because the timing is guidance only.</p> : null}
       </ConfirmDialog>
@@ -716,7 +716,7 @@ export default function Reviews() {
   const [refreshError, setRefreshError] = useState('')
 
   useEffect(() => {
-    document.title = 'Review drafts — AURA'
+    document.title = 'Review drafts — Harmony'
   }, [])
 
   async function refreshReviews() {

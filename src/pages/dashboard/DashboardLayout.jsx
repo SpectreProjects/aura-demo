@@ -20,7 +20,7 @@ import {
   defaultStaff,
 } from '../../data/mvpData'
 import { useAuth } from '../../lib/AuthContext'
-import { callAuraApi } from '../../lib/auraApi'
+import { callHarmonyApi } from '../../lib/harmonyApi'
 import { supabase } from '../../lib/supabaseClient'
 import { consumeGoogleSignInDestination } from '../../lib/googleSignInNavigation'
 import {
@@ -312,8 +312,8 @@ function DesktopSidebar({ collapsed, isSigningOut, nameApprovalsCount, onCollaps
       }`}
     >
       <div className={`flex min-h-10 items-center ${collapsed ? 'justify-center' : 'justify-between px-2'}`}>
-        <Link to="/" aria-label="AURA home" className="dashboard-wordmark rounded-lg">
-          {collapsed ? <span aria-hidden="true">A</span> : <span>AURA</span>}
+        <Link to="/" aria-label="Harmony home" className="dashboard-wordmark rounded-lg">
+          {collapsed ? <span aria-hidden="true">H</span> : <span>Harmony</span>}
         </Link>
         {!collapsed && (
           <button
@@ -578,20 +578,20 @@ export default function DashboardLayout() {
         let visibleReviews = []
         let googleStatus = null
         try {
-          const googleReviewPayload = await callAuraApi('/api/google-reviews', null, 'GET')
+          const googleReviewPayload = await callHarmonyApi('/api/google-reviews', null, 'GET')
           if (googleReviewPayload.reviews?.length) {
             visibleReviews = normalizeReviews(googleReviewPayload.reviews)
           }
         } catch (googleReviewError) {
           if (!['GOOGLE_NOT_CONFIGURED', 'GOOGLE_NOT_CONNECTED'].includes(googleReviewError.code)) {
-            console.info('[AURA Google] Imported reviews are not available yet:', googleReviewError.message)
+            console.info('[Harmony Google] Imported reviews are not available yet:', googleReviewError.message)
           }
         }
         try {
-          googleStatus = await callAuraApi('/api/google-status', null, 'GET')
+          googleStatus = await callHarmonyApi('/api/google-status', null, 'GET')
         } catch (googleStatusError) {
           if (!['GOOGLE_NOT_CONFIGURED'].includes(googleStatusError.code)) {
-            console.info('[AURA Google] Setup status is not available yet:', googleStatusError.message)
+            console.info('[Harmony Google] Setup status is not available yet:', googleStatusError.message)
           }
         }
         const { data: publicAccess } = await supabase.rpc('get_aura_public_leaderboard', {
@@ -620,13 +620,13 @@ export default function DashboardLayout() {
         setLeaderboardPinEnabled(publicAccess?.status === 'pin_required')
       } catch (error) {
         if (!isMounted) return
-        console.error('[AURA dashboard] Account data connection failed:', error)
+        console.error('[Harmony dashboard] Account data connection failed:', error)
         setBusinessProfile(null)
         setGoogleSetupStatus(null)
         setConnectionStatus('demo')
         setReviews([])
         setTechnicalNotice(
-          'AURA could not load your account workspace. Please refresh and try again.',
+          'Harmony could not load your account workspace. Please refresh and try again.',
         )
       }
     }
@@ -1162,7 +1162,7 @@ export default function DashboardLayout() {
   }
 
   async function saveGoogleDraft(reviewId, draftId, text, version) {
-    const payload = await callAuraApi('/api/google-draft', { draftId, text, version }, 'PATCH')
+    const payload = await callHarmonyApi('/api/google-draft', { draftId, text, version }, 'PATCH')
     setReviews((current) => current.map((review) => (
       review.id === reviewId ? { ...review, draft: payload.draft } : review
     )))
@@ -1170,13 +1170,13 @@ export default function DashboardLayout() {
   }
 
   async function generateGoogleDraft(reviewId, idempotencyKey) {
-    const payload = await callAuraApi('/api/google-draft', { idempotencyKey, reviewId })
+    const payload = await callHarmonyApi('/api/google-draft', { idempotencyKey, reviewId })
     replaceGoogleReview(payload.review)
     return payload.review
   }
 
   async function publishGoogleDraft(reviewId, draftId, confirmedText, version, idempotencyKey) {
-    const payload = await callAuraApi('/api/google-reply', {
+    const payload = await callHarmonyApi('/api/google-reply', {
       confirmedText,
       draftId,
       idempotencyKey,
@@ -1197,18 +1197,18 @@ export default function DashboardLayout() {
   }
 
   async function connectGoogleProfile() {
-    const { url } = await callAuraApi('/api/google-oauth-start', {})
+    const { url } = await callHarmonyApi('/api/google-oauth-start', {})
     window.location.assign(url)
   }
 
   async function getGoogleConnectionStatus() {
-    const payload = await callAuraApi('/api/google-status', null, 'GET')
+    const payload = await callHarmonyApi('/api/google-status', null, 'GET')
     setGoogleSetupStatus(payload)
     return payload
   }
 
   async function syncGoogleReviews() {
-    const payload = await callAuraApi('/api/google-reviews', {})
+    const payload = await callHarmonyApi('/api/google-reviews', {})
     setReviews(normalizeReviews(payload.reviews || []))
     setGoogleSetupStatus((current) => current
       ? {
@@ -1356,7 +1356,7 @@ export default function DashboardLayout() {
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#a66f50]">Workspace</p>
                   <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-                    AURA dashboard
+                    Harmony dashboard
                   </h1>
                 </div>
                 <button
@@ -1402,10 +1402,10 @@ export default function DashboardLayout() {
                     {googleSetupStatus.connection?.status === 'reconnect_required'
                       ? 'Reconnect Google to keep receiving review drafts.'
                       : googleSetupStatus.pendingConnection
-                        ? 'Confirm which Google location AURA should use.'
+                        ? 'Confirm which Google location Harmony should use.'
                         : 'Finish Google setup when you are ready.'}
                   </p>
-                  <p className="mt-1 leading-6 text-slate-400">Your existing AURA workspace stays available. Nothing will publish automatically.</p>
+                  <p className="mt-1 leading-6 text-slate-400">Your existing Harmony workspace stays available. Nothing will publish automatically.</p>
                 </div>
                 <Link className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl bg-[#a96847] px-4 font-bold text-white transition hover:bg-[#bd7652]" to="/setup/google">
                   Continue setup

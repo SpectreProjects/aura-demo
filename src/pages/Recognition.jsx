@@ -148,7 +148,7 @@ export default function Recognition({ staffRecognition, staffMentions }) {
   )
 
   function exportPdfPlaceholder() {
-    console.info('[AURA Recognition PDF placeholder]', {
+    console.info('[Harmony Recognition PDF placeholder]', {
       dateRange,
       staffFilter,
       mentionType,

@@ -26,7 +26,7 @@ function httpError(status, message, code) {
   return error
 }
 
-export async function requireAuraUser(request) {
+export async function requireHarmonyUser(request) {
   const authorization = request.headers.authorization || ''
   const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
   const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY
@@ -45,7 +45,7 @@ export async function requireAuraUser(request) {
       signal: AbortSignal.timeout(8_000),
     })
   } catch {
-    throw httpError(503, 'AURA could not confirm your session. Please try again.', 'AUTH_UNAVAILABLE')
+    throw httpError(503, 'Harmony could not confirm your session. Please try again.', 'AUTH_UNAVAILABLE')
   }
 
   if (!authResponse.ok) {
@@ -76,19 +76,19 @@ export async function consumePlacesQuota(request, operation) {
       },
     )
   } catch {
-    throw httpError(503, 'AURA could not check Google usage safely. Please try again.', 'QUOTA_UNAVAILABLE')
+    throw httpError(503, 'Harmony could not check Google usage safely. Please try again.', 'QUOTA_UNAVAILABLE')
   }
 
   if (!quotaResponse.ok) {
-    console.error('[AURA Places] Quota check failed:', quotaResponse.status)
-    throw httpError(503, 'AURA could not check Google usage safely. Please try again.', 'QUOTA_UNAVAILABLE')
+    console.error('[Harmony Places] Quota check failed:', quotaResponse.status)
+    throw httpError(503, 'Harmony could not check Google usage safely. Please try again.', 'QUOTA_UNAVAILABLE')
   }
 
   const allowed = await quotaResponse.json()
   if (!allowed) {
     throw httpError(
       429,
-      'AURA has reached today\'s Google preview limit. Please try again tomorrow.',
+      'Harmony has reached today\'s Google preview limit. Please try again tomorrow.',
       'PLACES_DAILY_LIMIT',
     )
   }
@@ -99,7 +99,7 @@ export async function requestGooglePlaces(path, { body, fieldMask, method = 'GET
   if (!apiKey) {
     throw httpError(
       503,
-      'Google Places is being connected to AURA. Please try again shortly.',
+      'Google Places is being connected to Harmony. Please try again shortly.',
       'PLACES_NOT_CONFIGURED',
     )
   }
@@ -122,7 +122,7 @@ export async function requestGooglePlaces(path, { body, fieldMask, method = 'GET
 
   if (!placesResponse.ok) {
     const details = await placesResponse.text()
-    console.error('[AURA Places] Google request failed:', placesResponse.status, details.slice(0, 800))
+    console.error('[Harmony Places] Google request failed:', placesResponse.status, details.slice(0, 800))
     throw httpError(
       502,
       'Google Places could not complete that request. Please try again.',
@@ -137,6 +137,6 @@ export function handleApiError(response, error) {
   const status = Number(error?.status) || 500
   sendJson(response, status, {
     code: error?.code || 'INTERNAL_ERROR',
-    error: status >= 500 && !error?.code ? 'AURA could not complete that request.' : error.message,
+    error: status >= 500 && !error?.code ? 'Harmony could not complete that request.' : error.message,
   })
 }

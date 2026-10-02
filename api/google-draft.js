@@ -58,7 +58,7 @@ export default async function handler(request, response) {
       if (draftError) throw draftError
       if (!review) throw googleHttpError(404, 'That Google review was not found.', 'GOOGLE_REVIEW_NOT_FOUND')
       if (!review.draft_eligible || review.reply_comment) {
-        throw googleHttpError(409, 'AURA cannot generate a new draft for this review.', 'DRAFT_NOT_ELIGIBLE')
+        throw googleHttpError(409, 'Harmony cannot generate a new draft for this review.', 'DRAFT_NOT_ELIGIBLE')
       }
       if (existingDraft?.status === 'published') {
         throw googleHttpError(409, 'This reply is already published on Google.', 'DRAFT_ALREADY_PUBLISHED')
@@ -104,7 +104,7 @@ export default async function handler(request, response) {
         ) {
           throw googleHttpError(
             429,
-            'AURA has generated several versions recently. Review the latest draft or try again later.',
+            'Harmony has generated several versions recently. Review the latest draft or try again later.',
             'DRAFT_RATE_LIMITED',
           )
         }
@@ -148,7 +148,7 @@ export default async function handler(request, response) {
       .eq('google_connection_id', connection.id)
       .maybeSingle()
     if (existingError) throw existingError
-    if (!existing) throw googleHttpError(404, 'That AURA draft was not found.', 'DRAFT_NOT_FOUND')
+    if (!existing) throw googleHttpError(404, 'That Harmony draft was not found.', 'DRAFT_NOT_FOUND')
     if (existing.status === 'published') {
       throw googleHttpError(409, 'Published replies cannot be changed from this draft.', 'DRAFT_ALREADY_PUBLISHED')
     }

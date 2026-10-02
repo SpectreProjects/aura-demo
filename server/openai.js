@@ -63,14 +63,14 @@ function formatList(items) {
 export async function generateGoogleReviewDraft({ businessName, review, settings, userId }) {
   const provider = generationProvider()
   if (!provider) {
-    throw googleHttpError(503, 'AURA draft generation is not configured.', 'OPENAI_NOT_CONFIGURED')
+    throw googleHttpError(503, 'Harmony draft generation is not configured.', 'OPENAI_NOT_CONFIGURED')
   }
 
   const rating = Number(review.rating || 0)
   const hasComment = Boolean(String(review.comment || '').trim())
   const safetyIdentifier = crypto.createHash('sha256').update(String(userId)).digest('hex')
   const developerInstruction = [
-    'You write owner-review drafts for AURA in natural UK English.',
+    'You write owner-review drafts for Harmony in natural UK English.',
     `The voice must be ${toneDescriptions[settings.tone_choice] || toneDescriptions.warm_friendly}.`,
     'Never invent an event, visit detail, promise, discount, compensation, contact detail, admission, investigation, outcome or fact not present in the review or approved guidance.',
     'Do not add phone numbers, email addresses or requests to contact the business unless the approved escalation wording explicitly supplies them.',
@@ -134,27 +134,27 @@ export async function generateGoogleReviewDraft({ businessName, review, settings
       signal: AbortSignal.timeout(30_000),
     })
   } catch {
-    throw googleHttpError(503, 'AURA could not generate this draft. Please retry.', 'OPENAI_UNAVAILABLE')
+    throw googleHttpError(503, 'Harmony could not generate this draft. Please retry.', 'OPENAI_UNAVAILABLE')
   }
 
   const payload = await response.json().catch(() => ({}))
   if (!response.ok) {
-    console.error(`[AURA ${provider.label}]`, response.status, payload?.error?.type || '', payload?.error?.code || '')
-    throw googleHttpError(502, 'AURA could not generate this draft. Please retry.', 'OPENAI_REQUEST_FAILED')
+    console.error(`[Harmony ${provider.label}]`, response.status, payload?.error?.type || '', payload?.error?.code || '')
+    throw googleHttpError(502, 'Harmony could not generate this draft. Please retry.', 'OPENAI_REQUEST_FAILED')
   }
   if (payload.status === 'incomplete') {
-    throw googleHttpError(502, 'AURA could not finish this draft. Please retry.', 'OPENAI_INCOMPLETE')
+    throw googleHttpError(502, 'Harmony could not finish this draft. Please retry.', 'OPENAI_INCOMPLETE')
   }
 
   let parsed
   try {
     parsed = JSON.parse(outputText(payload))
   } catch {
-    throw googleHttpError(502, 'AURA received an invalid draft. Please retry.', 'OPENAI_INVALID_OUTPUT')
+    throw googleHttpError(502, 'Harmony received an invalid draft. Please retry.', 'OPENAI_INVALID_OUTPUT')
   }
   const reply = String(parsed?.reply || '').trim()
   if (!reply || reply.length > 1200) {
-    throw googleHttpError(502, 'AURA received an invalid draft. Please retry.', 'OPENAI_INVALID_OUTPUT')
+    throw googleHttpError(502, 'Harmony received an invalid draft. Please retry.', 'OPENAI_INVALID_OUTPUT')
   }
 
   return {

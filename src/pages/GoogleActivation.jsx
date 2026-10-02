@@ -13,7 +13,7 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import GoogleSetupConversationForm from '../components/GoogleSetupConversationForm'
-import { callAuraApi } from '../lib/auraApi'
+import { callHarmonyApi } from '../lib/harmonyApi'
 import './GoogleActivation.css'
 
 const demoLocations = [
@@ -64,8 +64,8 @@ function callbackMessage(detail) {
     connection_failed: 'That Google connection expired before it finished.',
     google_error: 'Google returned an error before the connection completed.',
     missing_code: 'That Google connection expired before it finished.',
-    permission_denied: 'No problem—AURA wasn’t given access. Nothing changed.',
-    temporarily_paused: 'Google connections are temporarily paused. Your saved AURA data is unchanged.',
+    permission_denied: 'No problem—Harmony wasn’t given access. Nothing changed.',
+    temporarily_paused: 'Google connections are temporarily paused. Your saved Harmony data is unchanged.',
   }
   return messages[detail] || ''
 }
@@ -150,7 +150,7 @@ export default function GoogleActivation() {
   const [conversationProgress, setConversationProgress] = useState({ sectionIndex: 1, sectionLabel: 'Your voice', position: 1, total: 6 })
 
   useEffect(() => {
-    document.title = 'Connect Google — AURA'
+    document.title = 'Connect Google — Harmony'
   }, [])
 
   async function loadLocations(signal) {
@@ -159,7 +159,7 @@ export default function GoogleActivation() {
     try {
       const payload = isVisualDemo
         ? { locations: visualMode === 'no-locations' ? [] : visualMode === 'one-location' ? demoLocations.slice(0, 1) : demoLocations }
-        : await callAuraApi('/api/google-locations', null, 'GET', signal)
+        : await callHarmonyApi('/api/google-locations', null, 'GET', signal)
       setLocations(payload.locations || [])
       setSelectedKey(payload.locations?.length === 1
         ? `${payload.locations[0].accountName}|${payload.locations[0].locationName}`
@@ -200,7 +200,7 @@ export default function GoogleActivation() {
       }
 
       try {
-        const nextStatus = await callAuraApi('/api/google-status', null, 'GET', controller.signal)
+        const nextStatus = await callHarmonyApi('/api/google-status', null, 'GET', controller.signal)
         setStatus(nextStatus)
         const nextStep = deriveStep(nextStatus)
         setStep(nextStep)
@@ -228,7 +228,7 @@ export default function GoogleActivation() {
         setStep('locations')
         return
       }
-      const { url } = await callAuraApi('/api/google-oauth-start', {})
+      const { url } = await callHarmonyApi('/api/google-oauth-start', {})
       window.location.assign(url)
     } catch (error) {
       setErrorMessage(error.message)
@@ -247,8 +247,8 @@ export default function GoogleActivation() {
         setStep('connect')
         return
       }
-      await callAuraApi('/api/google-disconnect', { mode: 'cancel_pending' })
-      const { url } = await callAuraApi('/api/google-oauth-start', {})
+      await callHarmonyApi('/api/google-disconnect', { mode: 'cancel_pending' })
+      const { url } = await callHarmonyApi('/api/google-oauth-start', {})
       window.location.assign(url)
     } catch (error) {
       setErrorMessage(error.message)
@@ -260,7 +260,7 @@ export default function GoogleActivation() {
   async function confirmLocation() {
     const selected = locations.find((location) => `${location.accountName}|${location.locationName}` === selectedKey)
     if (!selected) {
-      setErrorMessage('Choose the one location AURA should use.')
+      setErrorMessage('Choose the one location Harmony should use.')
       return
     }
     setIsBusy(true)
@@ -279,7 +279,7 @@ export default function GoogleActivation() {
         setStep('tone')
         return
       }
-      const payload = await callAuraApi('/api/google-location-select', {
+      const payload = await callHarmonyApi('/api/google-location-select', {
         accountName: selected.accountName,
         connectionId: status.pendingConnection.id,
         locationName: selected.locationName,
@@ -305,12 +305,12 @@ export default function GoogleActivation() {
       return
     }
 
-    const payload = await callAuraApi('/api/google-settings', values, 'PATCH')
+    const payload = await callHarmonyApi('/api/google-settings', values, 'PATCH')
     setStatus((current) => ({ ...current, settings: payload.settings }))
     setStep('import')
     setIsBusy(true)
     try {
-      const result = await callAuraApi('/api/google-reviews', {})
+      const result = await callHarmonyApi('/api/google-reviews', {})
       setImportCount(result.count || 0)
       setStatus((current) => ({ ...current, connection: { ...current.connection, lastSyncedAt: result.syncedAt } }))
       setStep('complete')
@@ -331,7 +331,7 @@ export default function GoogleActivation() {
         setStep('complete')
         return
       }
-      const result = await callAuraApi('/api/google-reviews', {})
+      const result = await callHarmonyApi('/api/google-reviews', {})
       setImportCount(result.count || 0)
       setStatus((current) => ({ ...current, connection: { ...current.connection, lastSyncedAt: result.syncedAt } }))
       setStep('complete')
@@ -367,7 +367,7 @@ export default function GoogleActivation() {
     <main className="ga-shell">
       <a className="ga-skip" href="#google-activation-panel">Skip to Google setup</a>
       <header className="ga-header">
-        <Link aria-label="AURA home" className="ga-wordmark" to="/">AURA</Link>
+        <Link aria-label="Harmony home" className="ga-wordmark" to="/">Harmony</Link>
         <Link className="ga-finish-later" state={{ deferGoogleSetup: true }} to="/dashboard">Finish later</Link>
       </header>
 
@@ -383,16 +383,16 @@ export default function GoogleActivation() {
           {errorMessage ? <div className="ga-alert" role="alert"><span>{errorMessage}</span><button aria-label="Dismiss message" onClick={() => setErrorMessage('')} type="button"><X aria-hidden="true" size={16} /></button></div> : null}
         </div>
 
-        {step === 'loading' ? <div aria-busy="true" className="ga-loading"><RefreshCw aria-hidden="true" className="animate-spin" size={22} /> Checking your AURA setup…</div> : null}
+        {step === 'loading' ? <div aria-busy="true" className="ga-loading"><RefreshCw aria-hidden="true" className="animate-spin" size={22} /> Checking your Harmony setup…</div> : null}
 
         {step === 'connect' ? (
           <div className="ga-step ga-connect-step">
             <p className="ga-kicker">A separate Google permission</p>
             <h1 id="google-activation-title" ref={headingRef} tabIndex={-1}>
-              {isReconnect ? `Google needs you to reconnect ${locationTitle}.` : connectionExpired ? 'That Google connection expired before it finished.' : 'Let’s connect the Business Profile you want AURA to look after.'}
+              {isReconnect ? `Google needs you to reconnect ${locationTitle}.` : connectionExpired ? 'That Google connection expired before it finished.' : 'Let’s connect the Business Profile you want Harmony to look after.'}
               <span aria-hidden="true" className="ga-question-cursor" />
             </h1>
-            <p className="ga-lead">{isReconnect ? 'Your reviews and drafts are still safe.' : 'You’ve already signed in to AURA. Choose the Google account that manages your business, then grant Business Profile access. You’ll select the exact location afterwards. AURA only publishes replies you personally approve.'}</p>
+            <p className="ga-lead">{isReconnect ? 'Your reviews and drafts are still safe.' : 'You’ve already signed in to Harmony. Choose the Google account that manages your business, then grant Business Profile access. You’ll select the exact location afterwards. Harmony only publishes replies you personally approve.'}</p>
             <div className="ga-reassurance-grid" aria-label="Google setup assurances">
               <div><Building2 aria-hidden="true" size={18} /><strong>One location only</strong></div>
               <div><ShieldCheck aria-hidden="true" size={18} /><strong>Nothing posts automatically</strong></div>
@@ -411,8 +411,8 @@ export default function GoogleActivation() {
         {step === 'locations' ? (
           <div className="ga-step">
             <p className="ga-kicker">Choose one location</p>
-            <h1 id="google-activation-title" ref={headingRef} tabIndex={-1}>Which business should AURA look after?<span aria-hidden="true" className="ga-question-cursor" /></h1>
-            <p className="ga-lead">Google may show every profile this account manages. AURA will use only the location you choose.</p>
+            <h1 id="google-activation-title" ref={headingRef} tabIndex={-1}>Which business should Harmony look after?<span aria-hidden="true" className="ga-question-cursor" /></h1>
+            <p className="ga-lead">Google may show every profile this account manages. Harmony will use only the location you choose.</p>
             {locations.length ? (
               <>
                 {locations.length > 1 ? (
@@ -466,9 +466,9 @@ export default function GoogleActivation() {
           <div className="ga-step ga-centred-step">
             <span className="ga-large-icon ga-complete-icon"><CheckCircle2 aria-hidden="true" size={30} /></span>
             <p className="ga-kicker">Setup complete</p>
-            <h1 id="google-activation-title" ref={headingRef} tabIndex={-1}>AURA is ready for {locationTitle}.</h1>
+            <h1 id="google-activation-title" ref={headingRef} tabIndex={-1}>Harmony is ready for {locationTitle}.</h1>
             <p className="ga-lead">{importCount} past reviews are now visible. {notificationsEnabled ? 'New reviews can create drafts and alerts. ' : 'New reviews can create drafts and will wait in your dashboard. '}You choose if and when anything is published.</p>
-            <div className="ga-assurance"><ShieldCheck aria-hidden="true" size={20} /><p>AURA will never publish a reply without you.</p></div>
+            <div className="ga-assurance"><ShieldCheck aria-hidden="true" size={20} /><p>Harmony will never publish a reply without you.</p></div>
             <div className="ga-actions ga-actions-centred"><Link className="ga-secondary" to="/dashboard/settings">Review settings</Link><Link className="ga-primary" to="/dashboard/reviews">Open my reviews <ArrowRight aria-hidden="true" size={16} /></Link></div>
           </div>
         ) : null}

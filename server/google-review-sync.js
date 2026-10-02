@@ -24,7 +24,7 @@ import { generateGoogleReviewDraft } from './openai.js'
 function cleanError(error) {
   return {
     code: String(error?.code || 'DRAFT_WORKER_ERROR').slice(0, 120),
-    message: String(error?.message || 'AURA could not complete this background task.').slice(0, 1000),
+    message: String(error?.message || 'Harmony could not complete this background task.').slice(0, 1000),
   }
 }
 
@@ -423,7 +423,7 @@ async function runDraftJob(admin, config, job) {
     const { data: draft, error: draftError } = draftResult
     if (draftError) throw draftError
     if (!draft) {
-      throw Object.assign(new Error('The draft changed while AURA was generating a response.'), {
+      throw Object.assign(new Error('The draft changed while Harmony was generating a response.'), {
         code: 'DRAFT_STATE_CHANGED',
         status: 409,
       })

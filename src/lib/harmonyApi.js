@@ -1,7 +1,7 @@
 import { supabase } from './supabaseClient'
 
-export async function callAuraApi(path, body, method = 'POST', signal) {
-  if (!supabase) throw new Error('This AURA feature is available on the connected app.')
+export async function callHarmonyApi(path, body, method = 'POST', signal) {
+  if (!supabase) throw new Error('This Harmony feature is available on the connected app.')
   const { data } = await supabase.auth.getSession()
   const accessToken = data.session?.access_token
   if (!accessToken) {
@@ -21,7 +21,7 @@ export async function callAuraApi(path, body, method = 'POST', signal) {
   })
   const payload = await response.json().catch(() => ({}))
   if (!response.ok) {
-    const error = new Error(payload.error || 'AURA could not complete that request.')
+    const error = new Error(payload.error || 'Harmony could not complete that request.')
     error.code = payload.code
     error.fields = payload.fields || null
     error.status = response.status

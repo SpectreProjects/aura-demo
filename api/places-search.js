@@ -3,7 +3,7 @@ import {
   handleApiError,
   readJsonBody,
   requestGooglePlaces,
-  requireAuraUser,
+  requireHarmonyUser,
   sendJson,
 } from '../server/places.js'
 
@@ -25,7 +25,7 @@ export default async function handler(request, response) {
   }
 
   try {
-    await requireAuraUser(request)
+    await requireHarmonyUser(request)
     const query = String(readJsonBody(request).query || '').trim()
 
     if (query.length < 3 || query.length > 120) {

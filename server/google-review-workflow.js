@@ -42,9 +42,9 @@ export function validateReplySettings(input, fallbackEmail = '') {
   )
 
   const errors = {}
-  if (!TONE_CHOICES.has(toneChoice)) errors.toneChoice = 'Choose how AURA should sound.'
-  if (!preferredPhrases.length) errors.preferredPhrases = 'Add at least one phrase AURA may use.'
-  if (!avoidedPhrases.length) errors.avoidedPhrases = 'Add at least one phrase AURA should avoid.'
+  if (!TONE_CHOICES.has(toneChoice)) errors.toneChoice = 'Choose how Harmony should sound.'
+  if (!preferredPhrases.length) errors.preferredPhrases = 'Add at least one phrase Harmony may use.'
+  if (!avoidedPhrases.length) errors.avoidedPhrases = 'Add at least one phrase Harmony should avoid.'
   if (!positiveExample || positiveExample.length > 2000) {
     errors.positiveExample = 'Add one approved positive-review example (up to 2,000 characters).'
   }

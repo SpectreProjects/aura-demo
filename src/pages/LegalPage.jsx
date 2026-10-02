@@ -6,9 +6,9 @@ const privacySections = [
     title: 'Who we are',
     body: (
       <p>
-        AURA is operated by Spectre Projects. For privacy questions or requests, email{' '}
-        <a className="font-bold text-white underline underline-offset-4" href="mailto:info@spectreprojects.co.uk">
-          info@spectreprojects.co.uk
+        Harmony is operated by Spectre Projects. For privacy questions or requests, email{' '}
+        <a className="font-bold text-white underline underline-offset-4" href="mailto:info@useharmony.software">
+          info@useharmony.software
         </a>
         .
       </p>
@@ -19,7 +19,7 @@ const privacySections = [
     body: (
       <p>
         We collect account details such as your name, email address and business name; information you choose to add
-        about your team; and review, reply and performance information needed to provide AURA. If you sign in with
+        about your team; and review, reply and performance information needed to provide Harmony. If you sign in with
         Google, Google provides your basic profile and email address. We do not receive your Google password.
       </p>
     ),
@@ -31,7 +31,7 @@ const privacySections = [
         We use this information to create and secure your account, show reviews, track staff mentions and performance,
         prepare or send replies you have authorised, provide support and improve the service. We process this data to
         perform our contract with you, meet legal obligations and pursue our legitimate interests in operating and
-        protecting AURA. Where a feature relies on consent, you can withdraw that consent at any time.
+        protecting Harmony. Where a feature relies on consent, you can withdraw that consent at any time.
       </p>
     ),
   },
@@ -39,7 +39,7 @@ const privacySections = [
     title: 'Sharing and international transfers',
     body: (
       <p>
-        We share information only with service providers needed to run AURA, including Google, Supabase and Vercel,
+        We share information only with service providers needed to run Harmony, including Google, Supabase and Vercel,
         or where the law requires it. Some providers may process data outside the UK. Where this happens, we rely on
         appropriate contractual or legal safeguards.
       </p>
@@ -50,7 +50,7 @@ const privacySections = [
     body: (
       <p>
         We keep account information while your account is active and for only as long afterwards as needed for legal,
-        security and operational purposes. We use reasonable technical and organisational measures to protect it. AURA
+        security and operational purposes. We use reasonable technical and organisational measures to protect it. Harmony
         uses essential storage and cookies for sign-in and session security.
       </p>
     ),
@@ -69,10 +69,10 @@ const privacySections = [
 
 const termsSections = [
   {
-    title: 'Using AURA',
+    title: 'Using Harmony',
     body: (
       <p>
-        AURA is a review-management service for businesses. You must provide accurate account information, keep your
+        Harmony is a review-management service for businesses. You must provide accurate account information, keep your
         login secure and use the service lawfully. You are responsible for the business, staff and review information
         you add or connect.
       </p>
@@ -82,8 +82,8 @@ const termsSections = [
     title: 'Google connections and replies',
     body: (
       <p>
-        When you connect a Google account, you authorise AURA to use only the permissions you approve. You can revoke
-        access through your Google account or AURA settings. You remain responsible for reviewing your settings and for
+        When you connect a Google account, you authorise Harmony to use only the permissions you approve. You can revoke
+        access through your Google account or Harmony settings. You remain responsible for reviewing your settings and for
         any reply published on behalf of your business.
       </p>
     ),
@@ -92,7 +92,7 @@ const termsSections = [
     title: 'Acceptable use',
     body: (
       <p>
-        Do not misuse AURA, attempt unauthorised access, submit unlawful or harmful content, interfere with the service
+        Do not misuse Harmony, attempt unauthorised access, submit unlawful or harmful content, interfere with the service
         or use it to impersonate another person or business. We may restrict access where needed to protect users or the
         service.
       </p>
@@ -102,7 +102,7 @@ const termsSections = [
     title: 'Availability and changes',
     body: (
       <p>
-        We aim to keep AURA reliable, but cannot promise uninterrupted availability. Features may change as the product
+        We aim to keep Harmony reliable, but cannot promise uninterrupted availability. Features may change as the product
         develops. Third-party services such as Google may also change or interrupt their own services.
       </p>
     ),
@@ -112,8 +112,8 @@ const termsSections = [
     body: (
       <p>
         Nothing in these terms excludes liability that cannot legally be excluded. To the fullest extent permitted by
-        law, AURA is not responsible for indirect losses or losses caused by third-party services. You may stop using
-        AURA at any time, and we may suspend or end access for a serious breach of these terms.
+        law, Harmony is not responsible for indirect losses or losses caused by third-party services. You may stop using
+        Harmony at any time, and we may suspend or end access for a serious breach of these terms.
       </p>
     ),
   },
@@ -123,8 +123,8 @@ const termsSections = [
       <p>
         These terms are governed by Scots law and disputes are subject to the courts of Scotland. Questions can be sent
         to{' '}
-        <a className="font-bold text-white underline underline-offset-4" href="mailto:info@spectreprojects.co.uk">
-          info@spectreprojects.co.uk
+        <a className="font-bold text-white underline underline-offset-4" href="mailto:info@useharmony.software">
+          info@useharmony.software
         </a>
         .
       </p>
@@ -146,16 +146,16 @@ export default function LegalPage({ type }) {
             <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-violet-500/20">
               <Sparkles size={18} />
             </span>
-            <span className="text-lg font-black">AURA</span>
+            <span className="text-lg font-black">Harmony</span>
           </Link>
           <Link className="inline-flex items-center gap-2 text-sm font-bold text-slate-300 transition hover:text-white" to="/">
             <ArrowLeft size={16} />
-            Back to AURA
+            Back to Harmony
           </Link>
         </div>
 
         <article className="mt-10 rounded-[2rem] border border-white/10 bg-white/[0.055] p-6 shadow-[0_30px_120px_rgba(0,0,0,0.3)] backdrop-blur-xl sm:p-10">
-          <p className="text-xs font-black uppercase tracking-[0.24em] text-cyan-300">AURA</p>
+          <p className="text-xs font-black uppercase tracking-[0.24em] text-cyan-300">Harmony</p>
           <h1 className="mt-3 text-4xl font-black tracking-tight sm:text-5xl">{title}</h1>
           <p className="mt-3 text-sm font-semibold text-slate-400">Last updated 2 September 2026</p>
 

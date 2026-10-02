@@ -33,7 +33,7 @@ test('draft email has a stable idempotency key and links to one review', async (
   })
 
   await sendGoogleDraftReadyEmail({
-    businessName: 'AURA & Co',
+    businessName: 'Harmony & Co',
     draftId: 'draft-123',
     email: 'owner@example.com',
     rating: 2,
@@ -43,7 +43,9 @@ test('draft email has a stable idempotency key and links to one review', async (
 
   assert.equal(request.url, 'https://api.resend.com/emails')
   assert.equal(request.headers['Idempotency-Key'], 'aura-google-draft-draft-123')
-  assert.match(request.body.subject, /careful review/i)
+  assert.match(request.body.subject, /Harmony draft needs careful review/ )
+  assert.equal(request.body.from, 'Harmony <drafts@example.com>')
+  assert.doesNotMatch(request.body.text, /\bAURA\b/)
   assert.match(request.body.text, /staging\.aurareviewplatform\.com\/dashboard\/reviews\?review=review-456/)
   assert.match(request.body.html, /&lt;Jamie&gt;/)
   assert.doesNotMatch(request.body.html, /<Jamie>/)

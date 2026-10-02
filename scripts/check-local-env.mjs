@@ -67,7 +67,7 @@ if (env.VITE_GOOGLE_PLACES_ONBOARDING === 'true' && !has('GOOGLE_PLACES_API_KEY'
   errors.push('GOOGLE_PLACES_API_KEY is required when VITE_GOOGLE_PLACES_ONBOARDING=true.')
 }
 
-console.log('AURA local configuration check (values are never displayed).')
+console.log('Harmony local configuration check (values are never displayed).')
 for (const message of errors) console.error(`ERROR: ${message}`)
 for (const message of warnings) console.warn(`WARNING: ${message}`)
 if (errors.length) {

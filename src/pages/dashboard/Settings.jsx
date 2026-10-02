@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import GoogleReplySettingsForm from '../../components/GoogleReplySettingsForm'
-import { callAuraApi } from '../../lib/auraApi'
+import { callHarmonyApi } from '../../lib/harmonyApi'
 import { useDashboard } from './useDashboard'
 
 export default function Settings() {
@@ -16,9 +16,9 @@ export default function Settings() {
   const [isDisconnectOpen, setIsDisconnectOpen] = useState(false)
 
   useEffect(() => {
-    document.title = 'Google settings — AURA'
+    document.title = 'Google settings — Harmony'
     const controller = new AbortController()
-    callAuraApi('/api/google-status', null, 'GET', controller.signal)
+    callHarmonyApi('/api/google-status', null, 'GET', controller.signal)
       .then(setStatus)
       .catch((error) => {
         if (error.name !== 'AbortError') setErrorMessage(error.message)
@@ -57,7 +57,7 @@ export default function Settings() {
   }
 
   async function saveSettings(values) {
-    const payload = await callAuraApi('/api/google-settings', values, 'PATCH')
+    const payload = await callHarmonyApi('/api/google-settings', values, 'PATCH')
     setStatus((current) => ({ ...current, needsSetup: false, settings: payload.settings }))
     setMessage('Tone, timing and notification settings saved.')
   }
@@ -66,7 +66,7 @@ export default function Settings() {
     setIsBusy(true)
     setErrorMessage('')
     try {
-      await callAuraApi('/api/google-disconnect', {})
+      await callHarmonyApi('/api/google-disconnect', {})
       setStatus((current) => ({ ...current, connected: false, connection: null, needsSetup: true }))
       setMessage('Google disconnected. Your imported history remains archived and separate.')
       setIsDisconnectOpen(false)
@@ -89,7 +89,7 @@ export default function Settings() {
           Keep the connection clear and every reply deliberate.
         </h2>
         <p className="mt-4 max-w-2xl text-base leading-7 text-slate-400">
-          AURA can import reviews and prepare drafts. Only an owner can publish one, after reviewing the exact saved text.
+          Harmony can import reviews and prepare drafts. Only an owner can publish one, after reviewing the exact saved text.
         </p>
       </section>
 
@@ -118,11 +118,11 @@ export default function Settings() {
                   <p className="flex items-center gap-2 font-semibold text-slate-200"><MapPin aria-hidden="true" className="text-[#d18a62]" size={15} /> {connection.locationTitle}</p>
                   {connection.locationAddress ? <p>{connection.locationAddress}</p> : null}
                   <p>Google account: {connection.accountTitle}{connection.locationStoreCode ? ` · ${connection.locationStoreCode}` : ''}</p>
-                  <p className="flex items-center gap-2 text-xs"><ShieldCheck aria-hidden="true" className="text-emerald-300" size={14} /> AURA actively uses this one location.</p>
+                  <p className="flex items-center gap-2 text-xs"><ShieldCheck aria-hidden="true" className="text-emerald-300" size={14} /> Harmony actively uses this one location.</p>
                 </div>
               ) : (
                 <p className="mt-2 max-w-xl text-sm leading-6 text-slate-400">
-                  Connect Google, approve Business Profile access and confirm the one location AURA should use.
+                  Connect Google, approve Business Profile access and confirm the one location Harmony should use.
                 </p>
               )}
             </div>
@@ -157,7 +157,7 @@ export default function Settings() {
       {status?.pendingConnection ? (
         <section className="max-w-4xl rounded-2xl border border-[#d18a62]/25 bg-[#a96847]/10 p-5">
           <h3 className="font-semibold text-white">A location still needs confirming</h3>
-          <p className="mt-1 text-sm leading-6 text-slate-300">Google permission was granted, but AURA will not use a business until you select it.</p>
+          <p className="mt-1 text-sm leading-6 text-slate-300">Google permission was granted, but Harmony will not use a business until you select it.</p>
           <Link className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-[#e4aa87]" to="/setup/google">Continue location setup</Link>
         </section>
       ) : null}
@@ -195,7 +195,7 @@ export default function Settings() {
         title={`Disconnect ${connection?.locationTitle || 'Google Business Profile'}?`}
         tone="danger"
       >
-        <p>AURA will stop checking this location. The connection and imported review history remain archived and separate, and you can reconnect later.</p>
+        <p>Harmony will stop checking this location. The connection and imported review history remain archived and separate, and you can reconnect later.</p>
       </ConfirmDialog>
     </div>
   )

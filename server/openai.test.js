@@ -37,7 +37,7 @@ test('draft generation uses Gateway structured output without storing the respon
   })
 
   const result = await generateGoogleReviewDraft({
-    businessName: 'AURA Café',
+    businessName: 'Harmony Café',
     review: { comment: '', rating: 5, reviewer_name: 'Jamie' },
     settings: {
       avoided_phrases: ['valued customer'],

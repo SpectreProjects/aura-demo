@@ -6,7 +6,7 @@ import PublicPageShell from '../components/PublicPageShell'
 const plans = [
   {
     id: 'aura',
-    name: 'AURA',
+    name: 'Harmony',
     tagline: 'Your AI front of house assistant',
     monthly: '£29',
     yearly: '£290',
@@ -21,14 +21,14 @@ const plans = [
   },
   {
     id: 'aura_spotlight',
-    name: 'AURA Spotlight',
+    name: 'Harmony Spotlight',
     tagline: 'Put your team in the spotlight',
     monthly: '£59',
     yearly: '£590',
     description: 'For teams that want staff recognition and performance momentum.',
     trialText: '30-day free trial. Upgrade anytime.',
     features: [
-      'Everything in AURA',
+      'Everything in Harmony',
       'Detects staff mentions in reviews',
       'Recognition leaderboard',
       'Performance insights',

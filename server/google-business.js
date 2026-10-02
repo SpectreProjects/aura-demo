@@ -3,7 +3,7 @@
 import crypto from 'node:crypto'
 import { createClient } from '@supabase/supabase-js'
 import { isFeatureEnabled } from './google-review-workflow.js'
-import { requireAuraUser } from './places.js'
+import { requireHarmonyUser } from './places.js'
 
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 const GOOGLE_ACCOUNTS_URL = 'https://mybusinessaccountmanagement.googleapis.com/v1/accounts'
@@ -70,7 +70,7 @@ export function getGoogleAdminClient(config = getGoogleConfig()) {
 }
 
 export async function requireGoogleUser(request) {
-  const user = await requireAuraUser(request)
+  const user = await requireHarmonyUser(request)
   const config = getGoogleConfig()
   const admin = getGoogleAdminClient(config)
   const { data: existingProfile, error } = await admin
@@ -81,7 +81,7 @@ export async function requireGoogleUser(request) {
     .limit(1)
     .maybeSingle()
 
-  if (error) throw googleHttpError(500, 'AURA could not load your business.', 'BUSINESS_LOOKUP_FAILED')
+  if (error) throw googleHttpError(500, 'Harmony could not load your business.', 'BUSINESS_LOOKUP_FAILED')
   let businessProfile = existingProfile
   if (!businessProfile) {
     const fallbackName = String(
@@ -93,7 +93,7 @@ export async function requireGoogleUser(request) {
       .select('id,user_id,business_name,created_at')
       .single()
     if (createError) {
-      throw googleHttpError(500, 'AURA could not create your business workspace.', 'BUSINESS_CREATE_FAILED')
+      throw googleHttpError(500, 'Harmony could not create your business workspace.', 'BUSINESS_CREATE_FAILED')
     }
     businessProfile = created
   }
@@ -201,14 +201,14 @@ function readRequestCookie(request, name) {
 export function requireGoogleOAuthSession(request, state, secret, now = Date.now()) {
   const value = readRequestCookie(request, GOOGLE_OAUTH_SESSION_COOKIE)
   if (!value) {
-    throw googleHttpError(400, 'Start the Google connection from this AURA browser.', 'INVALID_OAUTH_BROWSER_SESSION')
+    throw googleHttpError(400, 'Start the Google connection from this Harmony browser.', 'INVALID_OAUTH_BROWSER_SESSION')
   }
 
   let session
   try {
     session = JSON.parse(decryptGoogleToken(value, secret))
   } catch {
-    throw googleHttpError(400, 'Start the Google connection from this AURA browser.', 'INVALID_OAUTH_BROWSER_SESSION')
+    throw googleHttpError(400, 'Start the Google connection from this Harmony browser.', 'INVALID_OAUTH_BROWSER_SESSION')
   }
   const expectedDigest = googleOAuthStateDigest(state)
   const receivedDigest = String(session.stateDigest || '')
@@ -219,7 +219,7 @@ export function requireGoogleOAuthSession(request, state, secret, now = Date.now
     !session.verifier || received.length !== expected.length ||
     !crypto.timingSafeEqual(received, expected)
   ) {
-    throw googleHttpError(400, 'Start the Google connection from this AURA browser.', 'INVALID_OAUTH_BROWSER_SESSION')
+    throw googleHttpError(400, 'Start the Google connection from this Harmony browser.', 'INVALID_OAUTH_BROWSER_SESSION')
   }
   return session.verifier
 }
@@ -379,7 +379,7 @@ export async function getGoogleConnection(admin, userId, options = {}) {
   if (options.businessProfileId) query = query.eq('business_profile_id', options.businessProfileId)
   const { data, error } = await query.maybeSingle()
 
-  if (error) throw googleHttpError(500, 'AURA could not read the Google connection.', 'GOOGLE_CONNECTION_LOOKUP_FAILED')
+  if (error) throw googleHttpError(500, 'Harmony could not read the Google connection.', 'GOOGLE_CONNECTION_LOOKUP_FAILED')
   if (!data && options.required !== false) {
     throw googleHttpError(409, 'Connect Google Business Profile first.', 'GOOGLE_NOT_CONNECTED')
   }
@@ -419,7 +419,7 @@ export async function releaseGoogleConnectionOperation(admin, connectionId, owne
     p_connection_id: connectionId,
     p_owner_id: ownerId,
   })
-  if (error) console.error('[AURA Google lease release]', error.code || error.message)
+  if (error) console.error('[Harmony Google lease release]', error.code || error.message)
 }
 
 export async function getFreshGoogleAccessToken(admin, connection, config) {
@@ -460,7 +460,7 @@ export async function getFreshGoogleAccessToken(admin, connection, config) {
       .eq('status', connection.status)
       .select('id')
       .maybeSingle()
-    if (error) throw googleHttpError(500, 'AURA could not securely save renewed Google access.', 'TOKEN_SAVE_FAILED')
+    if (error) throw googleHttpError(500, 'Harmony could not securely save renewed Google access.', 'TOKEN_SAVE_FAILED')
     if (!updatedConnection) {
       throw googleHttpError(409, 'The Google connection changed while access was being renewed.', 'GOOGLE_CONNECTION_CHANGED')
     }

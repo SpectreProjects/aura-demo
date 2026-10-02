@@ -9,13 +9,13 @@ export default function About() {
       <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
         <div className="max-w-3xl">
           <p className="mb-5 inline-flex rounded-full border border-white/10 bg-white/8 px-4 py-2 text-sm font-semibold text-cyan-100">
-            About AURA
+            About Harmony
           </p>
           <h1 className="text-5xl font-bold tracking-tight sm:text-6xl">
             Review management built for local businesses.
           </h1>
           <p className="mt-6 text-lg leading-8 text-slate-300">
-            AURA helps local businesses turn customer reviews into replies, recognition and
+            Harmony helps local businesses turn customer reviews into replies, recognition and
             rewards. It is built for teams who want a calm, practical way to respond faster and
             notice the people customers already praise.
           </p>

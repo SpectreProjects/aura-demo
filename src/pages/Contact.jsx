@@ -9,13 +9,13 @@ export default function Contact() {
           <p className="mb-5 inline-flex rounded-full border border-white/10 bg-white/8 px-4 py-2 text-sm font-semibold text-cyan-100">
             Contact
           </p>
-          <h1 className="text-5xl font-bold tracking-tight sm:text-6xl">Talk to AURA.</h1>
+          <h1 className="text-5xl font-bold tracking-tight sm:text-6xl">Talk to Harmony.</h1>
           <p className="mt-6 text-lg leading-8 text-slate-300">
             Have questions about review replies, staff recognition, rewards, or setup for a local
             business? Send a note and we will get back to you.
           </p>
           <div className="mt-8 space-y-3 text-sm font-semibold text-slate-300">
-            <p className="flex items-center gap-3"><Mail size={18} className="text-cyan-200" /> hello@aura-demo.local</p>
+            <p className="flex items-center gap-3"><Mail size={18} className="text-cyan-200" /> info@useharmony.software</p>
             <p className="flex items-center gap-3"><Phone size={18} className="text-cyan-200" /> Demo contact only</p>
           </div>
         </div>
@@ -24,7 +24,7 @@ export default function Contact() {
           className="rounded-2xl border border-white/10 bg-white/[0.055] p-6 backdrop-blur"
           onSubmit={(event) => {
             event.preventDefault()
-            console.info('[AURA contact placeholder] Contact form submitted.')
+            console.info('[Harmony contact placeholder] Contact form submitted.')
           }}
         >
           <MessageCircle className="mb-6 text-cyan-200" size={24} />

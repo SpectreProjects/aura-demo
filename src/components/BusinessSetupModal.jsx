@@ -41,7 +41,7 @@ export default function BusinessSetupModal({ isOpen, onClose, onConnect }) {
       setResults(places)
       if (!places.length) setError('No matching businesses found. Try adding the town or postcode.')
     } catch (searchError) {
-      setError(searchError.message || 'AURA could not search Google just now.')
+      setError(searchError.message || 'Harmony could not search Google just now.')
     } finally {
       setIsSearching(false)
     }
@@ -56,7 +56,7 @@ export default function BusinessSetupModal({ isOpen, onClose, onConnect }) {
       await onConnect.select(selected)
       setStep('success')
     } catch (connectError) {
-      setError(connectError.message || 'AURA could not connect that business just now.')
+      setError(connectError.message || 'Harmony could not connect that business just now.')
     } finally {
       setIsConnecting(false)
     }
@@ -107,7 +107,7 @@ export default function BusinessSetupModal({ isOpen, onClose, onConnect }) {
                   key="search"
                 >
                   <h2 className="max-w-2xl text-4xl font-medium leading-[1.06] tracking-[-0.045em] sm:text-5xl" id="business-setup-title">
-                    Which business should AURA listen to?
+                    Which business should Harmony listen to?
                   </h2>
                   <p className="mt-4 max-w-xl text-base leading-7 text-[#5d6f6a]">
                     Search the business name with its town or postcode, then choose the exact Google listing.
@@ -210,7 +210,7 @@ export default function BusinessSetupModal({ isOpen, onClose, onConnect }) {
                       {!isConnecting && <ArrowRight size={17} />}
                     </button>
                   </div>
-                  <p className="mt-5 text-xs leading-5 text-slate-500">AURA saves the Google Place ID, then loads Google&apos;s current relevance-ranked review sample when you open the dashboard.</p>
+                  <p className="mt-5 text-xs leading-5 text-slate-500">Harmony saves the Google Place ID, then loads Google&apos;s current relevance-ranked review sample when you open the dashboard.</p>
                 </motion.div>
               )}
 
@@ -219,7 +219,7 @@ export default function BusinessSetupModal({ isOpen, onClose, onConnect }) {
                   <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#3867F4] text-white shadow-[0_0_40px_rgba(56,103,244,0.3)]">
                     <Check size={29} />
                   </span>
-                  <h2 className="mt-7 text-4xl font-medium tracking-[-0.045em] sm:text-5xl" id="business-setup-title">AURA is listening.</h2>
+                  <h2 className="mt-7 text-4xl font-medium tracking-[-0.045em] sm:text-5xl" id="business-setup-title">Harmony is listening.</h2>
                   <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-slate-400">{selected.name} is connected. Its available Google review sample is now ready in Reviews and the team dashboard.</p>
                   <button className="mt-8 inline-flex h-14 min-w-56 items-center justify-center rounded-xl bg-[#3867F4] px-6 text-sm font-black text-white transition hover:bg-[#2f5be0]" onClick={closeModal} type="button">Go to dashboard</button>
                 </motion.div>

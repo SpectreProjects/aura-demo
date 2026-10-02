@@ -221,8 +221,8 @@ export default function GoogleSetupConversationForm({
 
   function validateCurrent(candidate = form) {
     let message = ''
-    if (step === 1 && !candidate.preferredPhrases.some((value) => value.trim())) message = 'Add at least one phrase AURA may use.'
-    if (step === 2 && !candidate.avoidedPhrases.some((value) => value.trim())) message = 'Add at least one phrase AURA should avoid.'
+    if (step === 1 && !candidate.preferredPhrases.some((value) => value.trim())) message = 'Add at least one phrase Harmony may use.'
+    if (step === 2 && !candidate.avoidedPhrases.some((value) => value.trim())) message = 'Add at least one phrase Harmony should avoid.'
     if (step === 3 && !candidate.positiveExample.trim()) message = 'Add one positive-review reply you would happily publish.'
     if (step === 4 && !candidate.criticalExample.trim()) message = 'Add one critical-review reply you would happily publish.'
     if (step === 6 && (!Number.isInteger(recommendedDelayMinutes) || recommendedDelayMinutes < 0 || recommendedDelayMinutes > 10080)) {
@@ -314,10 +314,10 @@ export default function GoogleSetupConversationForm({
           {step === 0 ? (
             <>
               <p className="ga-kicker">Choose a starting voice</p>
-              <h1 id="google-activation-title" ref={headingRef} tabIndex={-1}>How should AURA sound when it replies for you?<span aria-hidden="true" className="ga-question-cursor" /></h1>
+              <h1 id="google-activation-title" ref={headingRef} tabIndex={-1}>How should Harmony sound when it replies for you?<span aria-hidden="true" className="ga-question-cursor" /></h1>
               <p className="ga-lead">Choose the closest starting point. We’ll fine-tune it with your examples.</p>
               <fieldset className="ga-choice-grid ga-tone-grid">
-                <legend className="sr-only">Choose AURA’s starting tone</legend>
+                <legend className="sr-only">Choose Harmony’s starting tone</legend>
                 {toneOptions.map((option) => (
                   <label className={`ga-choice-card ${form.toneChoice === option.value ? 'is-selected' : ''}`} key={option.value}>
                     <input checked={form.toneChoice === option.value} name="toneChoice" onChange={() => update('toneChoice', option.value)} type="radio" value={option.value} />
@@ -334,7 +334,7 @@ export default function GoogleSetupConversationForm({
             <>
               <p className="ga-kicker">The words that feel like you</p>
               <h1 id="google-activation-title" ref={headingRef} tabIndex={-1}>What sounds naturally like your business?<span aria-hidden="true" className="ga-question-cursor" /></h1>
-              <p className="ga-lead">Add one or more phrases you’re happy for AURA to use.</p>
+              <p className="ga-lead">Add one or more phrases you’re happy for Harmony to use.</p>
               <PhraseEditor draft={form.preferredPhraseDraft} error={error} field="preferred-phrases" inputRef={activeInputRef} label="Preferred phrases" onChange={(value) => update('preferredPhrases', value)} onDraftChange={(value) => update('preferredPhraseDraft', value)} placeholder="Thanks so much" values={form.preferredPhrases} />
             </>
           ) : null}
@@ -342,7 +342,7 @@ export default function GoogleSetupConversationForm({
           {step === 2 ? (
             <>
               <p className="ga-kicker">Keep it sounding human</p>
-              <h1 id="google-activation-title" ref={headingRef} tabIndex={-1}>What should AURA never say?<span aria-hidden="true" className="ga-question-cursor" /></h1>
+              <h1 id="google-activation-title" ref={headingRef} tabIndex={-1}>What should Harmony never say?<span aria-hidden="true" className="ga-question-cursor" /></h1>
               <p className="ga-lead">Add anything that feels stiff, overused or unlike you.</p>
               <PhraseEditor draft={form.avoidedPhraseDraft} error={error} field="avoided-phrases" inputRef={activeInputRef} label="Avoided phrases" onChange={(value) => update('avoidedPhrases', value)} onDraftChange={(value) => update('avoidedPhraseDraft', value)} placeholder="Valued customer" values={form.avoidedPhrases} />
             </>
@@ -356,7 +356,7 @@ export default function GoogleSetupConversationForm({
               <label className="ga-field" htmlFor="positive-example">
                 <span className="sr-only">Positive review reply example</span>
                 <textarea aria-describedby="positive-example-note positive-example-error" aria-invalid={Boolean(error)} id="positive-example" onChange={(event) => update('positiveExample', event.target.value)} ref={activeInputRef} rows="6" value={form.positiveExample} />
-                <small id="positive-example-note">Your examples teach AURA more than the tone choice.</small>
+                <small id="positive-example-note">Your examples teach Harmony more than the tone choice.</small>
                 <span className="ga-inline-error" id="positive-example-error">{error}</span>
               </label>
             </>
@@ -366,7 +366,7 @@ export default function GoogleSetupConversationForm({
             <>
               <p className="ga-kicker">When something went wrong</p>
               <h1 id="google-activation-title" ref={headingRef} tabIndex={-1}>How would you reply when something went wrong?<span aria-hidden="true" className="ga-question-cursor" /></h1>
-              <p className="ga-lead">Show AURA how you stay calm, helpful and human without making promises.</p>
+              <p className="ga-lead">Show Harmony how you stay calm, helpful and human without making promises.</p>
               <label className="ga-field" htmlFor="critical-example">
                 <span className="sr-only">Critical review reply example</span>
                 <textarea aria-describedby="critical-example-error" aria-invalid={Boolean(error)} id="critical-example" onChange={(event) => update('criticalExample', event.target.value)} ref={activeInputRef} rows="6" value={form.criticalExample} />
@@ -378,7 +378,7 @@ export default function GoogleSetupConversationForm({
           {step === 5 ? (
             <>
               <p className="ga-kicker">Optional escalation wording</p>
-              <h1 id="google-activation-title" ref={headingRef} tabIndex={-1}>If a review needs taking offline, what should AURA say?<span aria-hidden="true" className="ga-question-cursor" /></h1>
+              <h1 id="google-activation-title" ref={headingRef} tabIndex={-1}>If a review needs taking offline, what should Harmony say?<span aria-hidden="true" className="ga-question-cursor" /></h1>
               <p className="ga-lead">Only add contact wording you’re comfortable publishing publicly.</p>
               <label className="ga-field" htmlFor="escalation-wording">
                 <span className="sr-only">Optional public contact wording</span>
@@ -390,7 +390,7 @@ export default function GoogleSetupConversationForm({
           {step === 6 ? (
             <>
               <p className="ga-kicker">A sensible rhythm</p>
-              <h1 id="google-activation-title" ref={headingRef} tabIndex={-1}>How long should AURA usually wait before suggesting it’s time to publish?<span aria-hidden="true" className="ga-question-cursor" /></h1>
+              <h1 id="google-activation-title" ref={headingRef} tabIndex={-1}>How long should Harmony usually wait before suggesting it’s time to publish?<span aria-hidden="true" className="ga-question-cursor" /></h1>
               <p className="ga-lead">The draft appears straight away. This is guidance only—you can publish earlier.</p>
               <fieldset className="ga-choice-grid ga-delay-grid">
                 <legend className="sr-only">Choose a recommended waiting period</legend>
@@ -462,7 +462,7 @@ export default function GoogleSetupConversationForm({
                   <button onClick={() => goTo(6)} type="button"><Pencil aria-hidden="true" size={14} /> Edit</button>
                 </article>
               </div>
-              <p className="ga-never-publish"><Check aria-hidden="true" size={17} /> AURA will never publish a reply without you.</p>
+              <p className="ga-never-publish"><Check aria-hidden="true" size={17} /> Harmony will never publish a reply without you.</p>
               {formError ? <p className="ga-form-error" role="alert">{formError}</p> : null}
             </>
           ) : null}

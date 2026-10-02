@@ -47,7 +47,7 @@ export default async function handler(request, response) {
       .eq('id', state.businessProfileId)
       .eq('user_id', state.userId)
       .maybeSingle()
-    if (ownershipError || !ownedBusiness) throw new Error('AURA could not verify the Google connection owner.')
+    if (ownershipError || !ownedBusiness) throw new Error('Harmony could not verify the Google connection owner.')
 
     const { data: openConnections, error: connectionError } = await admin
       .from('google_connections')
@@ -87,7 +87,7 @@ export default async function handler(request, response) {
 
     redirect(response, 'select_location')
   } catch (error) {
-    console.error('[AURA Google OAuth]', error?.code || error?.message)
+    console.error('[Harmony Google OAuth]', error?.code || error?.message)
     const detail = error?.code === 'GOOGLE_API_APPROVAL_REQUIRED'
       ? 'approval_required'
       : error?.code === 'GOOGLE_CONNECTION_DISABLED'

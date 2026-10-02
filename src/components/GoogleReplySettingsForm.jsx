@@ -73,8 +73,8 @@ export default function GoogleReplySettingsForm({ initialSettings, onSubmit, sub
 
   function validate() {
     const next = {}
-    if (!form.preferredPhrases.trim()) next.preferredPhrases = 'Add at least one phrase AURA may use.'
-    if (!form.avoidedPhrases.trim()) next.avoidedPhrases = 'Add at least one phrase AURA should avoid.'
+    if (!form.preferredPhrases.trim()) next.preferredPhrases = 'Add at least one phrase Harmony may use.'
+    if (!form.avoidedPhrases.trim()) next.avoidedPhrases = 'Add at least one phrase Harmony should avoid.'
     if (!form.positiveExample.trim()) next.positiveExample = 'Add one positive-review reply you would approve.'
     if (!form.criticalExample.trim()) next.criticalExample = 'Add one critical-review reply you would approve.'
     if (!Number.isInteger(recommendedDelayMinutes) || recommendedDelayMinutes < 0 || recommendedDelayMinutes > 10080) {
@@ -127,7 +127,7 @@ export default function GoogleReplySettingsForm({ initialSettings, onSubmit, sub
       <fieldset className="space-y-3">
         <legend className="flex items-center gap-2 text-lg font-semibold text-white">
           <MessageSquareText aria-hidden="true" className="text-[#d18a62]" size={19} />
-          How should AURA sound?
+          How should Harmony sound?
         </legend>
         <p className="text-sm leading-6 text-slate-400">Choose a starting voice. Your approved examples carry the most weight.</p>
         <div className="grid gap-2 sm:grid-cols-2">
@@ -229,7 +229,7 @@ export default function GoogleReplySettingsForm({ initialSettings, onSubmit, sub
         <legend className="flex items-center gap-2 px-1 text-lg font-semibold text-white">
           <Clock3 aria-hidden="true" className="text-[#d18a62]" size={19} /> Recommended publish time
         </legend>
-        <p className="text-sm leading-6 text-slate-400">AURA makes the draft immediately. This is guidance only — you can publish earlier whenever you are happy.</p>
+        <p className="text-sm leading-6 text-slate-400">Harmony makes the draft immediately. This is guidance only — you can publish earlier whenever you are happy.</p>
         <div className="flex flex-wrap gap-2">
           {delayOptions.map((option) => (
             <label className={`cursor-pointer rounded-xl border px-4 py-2 text-sm font-semibold transition ${form.delayChoice === String(option.value) ? 'border-[#d18a62]/70 bg-[#d18a62]/10 text-white' : 'border-white/10 text-slate-300 hover:border-white/20'}`} key={option.value}>

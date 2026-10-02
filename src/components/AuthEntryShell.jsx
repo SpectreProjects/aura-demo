@@ -8,7 +8,7 @@ export default function AuthEntryShell({ children, footer = null, formId, skipLa
       </a>
 
       <div className="ali-shell">
-        <section className="ali-scene" aria-label="AURA welcome">
+        <section className="ali-scene" aria-label="Harmony welcome">
           <picture aria-hidden="true" className="ali-scene-media">
             <source media="(max-width: 880px)" srcSet="/login/aura-restaurant-900.jpg" />
             <img
@@ -21,8 +21,8 @@ export default function AuthEntryShell({ children, footer = null, formId, skipLa
             />
           </picture>
           <div className="ali-scene-shade" />
-          <Link aria-label="AURA home" className="ali-wordmark ali-wordmark-light" to="/">
-            AURA
+          <Link aria-label="Harmony home" className="ali-wordmark ali-wordmark-light" to="/">
+            Harmony
           </Link>
           <div className="ali-scene-copy" aria-hidden="true">
             <p>THOUGHTFUL REPLIES. A MORE PERSONAL PRESENCE.</p>
@@ -37,7 +37,7 @@ export default function AuthEntryShell({ children, footer = null, formId, skipLa
 
         <section
           className={`ali-auth-panel${footer ? '' : ' ali-auth-panel--single'}`}
-          aria-label="AURA account access"
+          aria-label="Harmony account access"
         >
           {children}
           {footer}

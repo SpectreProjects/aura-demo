@@ -552,7 +552,7 @@ export default function Overview() {
 
   function exportDashboard() {
     const rows = [
-      ['AURA dashboard export', formatDateRange(selectedRange)],
+      ['Harmony dashboard export', formatDateRange(selectedRange)],
       ['Business', businessName],
       ['Reviews', periodOverview.reviews],
       ['Team mentions', periodOverview.totalMentions],
@@ -749,7 +749,7 @@ export default function Overview() {
           accent="violet"
           comparison="Generated automatically"
           icon={Sparkles}
-          label={`AURA replies ${periodLabel(activePeriod)}`}
+          label={`Harmony replies ${periodLabel(activePeriod)}`}
           sparkline={sparklineSets.replies}
           value={periodOverview.reviews}
         />

@@ -15,7 +15,7 @@ export default function PublicNav() {
         <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/10 text-violet-200 shadow-[0_0_40px_rgba(124,58,237,0.22)]">
           <Sparkles size={20} />
         </span>
-        <span className="text-xl font-bold tracking-tight text-white">AURA</span>
+        <span className="text-xl font-bold tracking-tight text-white">Harmony</span>
       </Link>
 
       <div className="hidden items-center gap-7 md:flex">

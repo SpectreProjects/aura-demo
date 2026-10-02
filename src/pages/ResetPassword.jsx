@@ -41,7 +41,7 @@ export default function ResetPassword() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   useEffect(() => {
-    document.title = 'Choose a new password — AURA'
+    document.title = 'Choose a new password — Harmony'
     window.scrollTo({ top: 0, behavior: 'auto' })
   }, [])
 

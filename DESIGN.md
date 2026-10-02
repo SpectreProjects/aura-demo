@@ -396,3 +396,7 @@ Forms, loading, errors, empty states and keyboard interaction still need usable 
 | Existing dashboard behaviour could be mistaken for approved styling | Separated current interaction owners from the Harmony visual baseline |
 
 This review updates documentation and retains visual examples. It does not redesign product pages or change runtime behaviour. Future accepted changes should update the date/baseline and affected sections. DESIGN.md stays the canonical reference, with AGENTS.md directing future project work to consult it.
+
+## Harmony identity rollout, 2 October 2026
+
+The company and application name is Harmony. The purchased domain is `useharmony.software`; public contact and support email is `info@useharmony.software`. Customer-facing app copy, titles, legal/contact identity and notification wording use Harmony. The local checkout is named `harmony`. Supabase display name is Harmony; the existing project reference, data and credentials are retained. Legacy database names and old environment names remain compatibility contracts until a separately verified migration. Email sending from the new domain requires Resend verification independently of the Google Workspace mailbox. Domain connection and Google branding approval are separate infrastructure steps.

@@ -22,7 +22,7 @@ export default function ForgotPassword() {
   const [cooldown, setCooldown] = useState(0)
 
   useEffect(() => {
-    document.title = 'Reset your password — AURA'
+    document.title = 'Reset your password — Harmony'
     window.scrollTo({ top: 0, behavior: 'auto' })
   }, [])
 
@@ -64,7 +64,7 @@ export default function ForgotPassword() {
     if (cooldown > 0 || !validateEmail()) return
 
     if (!supabase) {
-      setErrorMessage('AURA password recovery is not available right now. Please try again soon.')
+      setErrorMessage('Harmony password recovery is not available right now. Please try again soon.')
       return
     }
 
@@ -141,7 +141,7 @@ export default function ForgotPassword() {
           {errorMessage ? <p role="alert">{errorMessage}</p> : null}
           {!errorMessage && hasRequested ? (
             <p className="ali-status-success" role="status">
-              If an AURA account exists for that email, we’ve sent a password reset link. Check
+              If an Harmony account exists for that email, we’ve sent a password reset link. Check
               your inbox and spam folder.
             </p>
           ) : null}

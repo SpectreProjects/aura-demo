@@ -45,7 +45,7 @@ export default function ConfirmDialog({
       <div className="acd-heading">
         <span className={`acd-icon acd-icon-${tone}`}><AlertTriangle aria-hidden="true" size={20} /></span>
         <div>
-          <p>AURA confirmation</p>
+          <p>Harmony confirmation</p>
           <h2 id="aura-confirm-dialog-title">{title}</h2>
         </div>
         <button aria-label="Close confirmation" disabled={isBusy} onClick={close} type="button"><X aria-hidden="true" size={18} /></button>
