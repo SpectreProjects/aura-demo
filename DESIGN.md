@@ -140,7 +140,7 @@ The logo and font stay unmodified. CSS frames transparent logo padding, without 
 
 ## Layout
 
-Fill the viewport and centre the name vertically and horizontally. The SVG scales down with the viewport, retains its 824:294 aspect ratio and has a maximum artwork width of 900px, reduced by 10% from the previous navbar-spanning size for a lighter composition. The artwork stays centred independently of the CTA. A height-based cap leaves room for the navbar and button on short screens. Keep 24px of edge clearance on small screens. Use the small viewport height so mobile browser controls do not obscure the name. A 340svh portal region pins the 100svh opening stage during 240svh of native scroll travel. Below 768px, a 310svh portal reduces that travel to 210svh, requiring 12.5% less scrolling for a slightly faster mobile zoom. A blank 100svh white section follows. Reduced motion overrides both portal heights with an ordinary 100svh orange section.
+Fill the viewport and centre the name vertically and horizontally. The SVG scales down with the viewport, retains its 824:294 aspect ratio and has a maximum artwork width of 900px, reduced by 10% from the previous navbar-spanning size for a lighter composition. The artwork stays centred independently of the CTA. A height-based cap leaves room for the navbar and button on short screens. Keep 24px of edge clearance on small screens. Use the small viewport height so mobile browser controls do not obscure the name. A 340svh portal region pins the 100svh opening stage during 240svh of native scroll travel. Below 768px, a 244svh portal reduces that travel to 144svh, requiring 40% less scrolling than the original 240svh mobile zoom. A blank 100svh white section follows. Reduced motion overrides both portal heights with an ordinary 100svh orange section.
 
 ### Composition rules
 
@@ -325,7 +325,7 @@ The existing product interaction owners remain in place. This table records beha
 | Remove the button dot | No visible dot on either CTA |
 | Same animation on navbar CTA | Shared animation, dark resting state, orange/white interaction |
 | Mobile scrolling felt jittery, especially the glyph zoom | Smooth native-scroll steps and bound zoom rendering to the viewport; retain the approved contours, writing sequence and white finish |
-| Mobile zoom should be slightly faster | Below 768px, use 210svh of scroll travel instead of 240svh; retain desktop timing and the shared smoothing |
+| Mobile zoom should require 40% less scrolling | Below 768px, use 144svh of scroll travel instead of the original 240svh; retain desktop timing and the shared smoothing. This replaces the earlier 12.5% reduction. |
 
 ### Applying the philosophy to future screens
 

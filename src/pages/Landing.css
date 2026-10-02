@@ -109,11 +109,11 @@ body:has(.harmony-landing) {
   overflow: visible;
 }
 
-/* Slightly shorter native scroll travel on mobile: 210 instead of 240svh. */
+/* 40% less native scroll travel on mobile: 144 instead of 240svh. */
 @media (max-width: 767px) {
   .harmony-portal {
-    height: 310vh;
-    height: 310svh;
+    height: 244vh;
+    height: 244svh;
   }
 }
 
