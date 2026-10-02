@@ -19,10 +19,30 @@ export function GlyphPortal({ children, written, cta }) {
   const fillScale = useMotionValue(1)
   const centreX = useMotionValue(0)
   const centreY = useMotionValue(0)
-  const { scrollYProgress } = useScroll({
+  const travelFraction = useMotionValue(1)
+  const { scrollYProgress: portalProgress } = useScroll({
     target: portalRef,
-    offset: ['start start', 'end end'],
+    offset: ['start start', 'end start'],
   })
+  // Use the actual sticky travel, not Safari's changing visible viewport.
+  // The large-height stage covers the space revealed by collapsing toolbars.
+  const scrollYProgress = useTransform(() => Math.min(1, Math.max(0,
+    portalProgress.get() / travelFraction.get(),
+  )))
+  useEffect(() => {
+    const portal = portalRef.current
+    const stage = stageRef.current
+    const measureTravel = () => {
+      const height = portal.clientHeight
+      travelFraction.set(height > stage.clientHeight
+        ? (height - stage.clientHeight) / height : 1)
+    }
+    const observer = new ResizeObserver(measureTravel)
+    observer.observe(portal)
+    observer.observe(stage)
+    measureTravel()
+    return () => observer.disconnect()
+  }, [travelFraction])
   // Touch scroll events arrive in steps. Interpolate the camera between them,
   // without intercepting scrolling or adding React renders on every frame.
   const smoothProgress = useSpring(scrollYProgress, {
@@ -92,6 +112,7 @@ export function GlyphPortal({ children, written, cta }) {
       const endScale = Math.max(1, Math.hypot(width, height) / (2 * inkAnchor.radius * unit) * 1.15)
       const cx = (artwork.width / 2 - inkAnchor.x) * unit
       const cy = (artwork.height / 2 - inkAnchor.y) * unit
+        + height / 2 - (word.offsetTop + word.clientHeight / 2)
       const ratio = Math.min(window.devicePixelRatio || 1, 2)
       geometry = { width, height, unit, ratio, cx, cy, endScale }
       if (context) {

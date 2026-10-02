@@ -27,7 +27,8 @@
 .harmony-portal {
   position: relative;
   height: 340vh;
-  height: 340svh;
+  height: calc(100lvh + 240svh);
+  background: var(--harmony-orange);
 }
 
 .harmony-portal-stage {
@@ -35,8 +36,10 @@
   top: 0;
   display: grid;
   place-items: center;
+  grid-template-rows: calc(100svh - 2 * var(--harmony-page-gutter));
+  align-content: start;
   height: 100vh;
-  height: 100svh;
+  height: 100lvh;
   padding: var(--harmony-page-gutter);
   overflow: hidden;
   contain: paint;
@@ -69,13 +72,13 @@
 
 .harmony-white-page {
   min-height: 100vh;
-  min-height: 100svh;
+  min-height: 100lvh;
   background: var(--harmony-white);
 }
 
 .harmony-portal-action {
   position: absolute;
-  top: 50%;
+  top: 50svh;
   left: 50%;
   width: min(calc(100% - 48px), var(--harmony-action-frame-width), calc((100svh - 240px) * 824 / 294));
   aspect-ratio: 824 / 294;
@@ -113,7 +116,7 @@ body:has(.harmony-landing) {
 @media (max-width: 767px) {
   .harmony-portal {
     height: 244vh;
-    height: 244svh;
+    height: calc(100lvh + 144svh);
   }
 }
 
@@ -121,7 +124,7 @@ body:has(.harmony-landing) {
 @media (prefers-reduced-motion: reduce) {
   .harmony-portal {
     height: 100vh;
-    height: 100svh;
+    height: 100lvh;
   }
 
   .harmony-portal-stage {
