@@ -157,26 +157,39 @@ export default function AuthSwitch() {
       <BackButton className="ha-home-back" />
       <section className="ha-card" aria-label="Harmony account">
         <div className="ha-curve" aria-hidden="true" />
-        <aside className="ha-welcome">
-          <Link to="/" className="ha-wordmark" aria-label="Harmony home">
-            Harmony
-          </Link>
-          <div className="ha-welcome-copy">
-            <h2>{isSignup ? 'Welcome back.' : 'New to Harmony?'}</h2>
-            <p>
-              {isSignup
-                ? 'Your business. Your people. All in Harmony.'
-                : 'A little more Harmony for your business.'}
-            </p>
-            <InteractiveHoverButton
-              className="ha-switch"
-              onClick={switchMode}
-              disabled={submitting || checking}
+        {['login', 'signup'].map((mode) => {
+          const signupPanel = mode === 'signup'
+          const active = signupPanel === isSignup
+          return (
+            <aside
+              key={mode}
+              className={`ha-welcome ha-welcome-${mode}`}
+              aria-hidden={!active}
+              inert={!active}
             >
-              {isSignup ? 'Log in' : 'Sign up'}
-            </InteractiveHoverButton>
-          </div>
-        </aside>
+              <div className="ha-welcome-motion">
+                <Link to="/" className="ha-wordmark" aria-label="Harmony home">
+                  Harmony
+                </Link>
+                <div className="ha-welcome-copy">
+                  <h2>{signupPanel ? 'Welcome back.' : 'New to Harmony?'}</h2>
+                  <p>
+                    {signupPanel
+                      ? 'Your business. Your people. All in Harmony.'
+                      : 'A little more Harmony for your business.'}
+                  </p>
+                  <InteractiveHoverButton
+                    className="ha-switch"
+                    onClick={switchMode}
+                    disabled={submitting || checking}
+                  >
+                    {signupPanel ? 'Log in' : 'Sign up'}
+                  </InteractiveHoverButton>
+                </div>
+              </div>
+            </aside>
+          )
+        })}
         <div className="ha-form-panel" id="harmony-auth-form">
           {checking ? (
             <div className="ha-checking" aria-busy={!completionError}>

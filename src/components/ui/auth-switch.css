@@ -60,7 +60,7 @@
 }
 .ha-curve {
   position: absolute;
-  z-index: -1;
+  z-index: 2;
   left: -110%;
   top: -205%;
   width: 164%;
@@ -69,24 +69,47 @@
   background: var(--harmony-orange);
   transition: transform 1.8s ease-in-out;
   animation: ha-panel-enter 1.8s ease-in-out both;
+  pointer-events: none;
 }
 .is-signup .ha-curve {
   transform: translateX(95.12%);
 }
 .ha-welcome {
   position: absolute;
+  z-index: 3;
   inset: 0 auto 0 0;
   width: 43%;
+  overflow: hidden;
+  text-align: center;
+  color: var(--harmony-white);
+}
+.ha-welcome-signup {
+  left: 57%;
+  pointer-events: none;
+}
+.is-signup .ha-welcome-login {
+  pointer-events: none;
+}
+.is-signup .ha-welcome-signup {
+  pointer-events: auto;
+}
+.ha-welcome-motion {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 44px;
-  text-align: center;
-  color: var(--harmony-white);
   transition: transform 0.9s ease-in-out 0.6s;
 }
-.is-signup .ha-welcome {
-  transform: translateX(132.56%);
+.ha-welcome-signup .ha-welcome-motion {
+  transform: translateX(100%);
+}
+.is-signup .ha-welcome-login .ha-welcome-motion {
+  transform: translateX(-100%);
+}
+.is-signup .ha-welcome-signup .ha-welcome-motion {
+  transform: none;
 }
 .ha-wordmark {
   position: absolute;
@@ -122,6 +145,8 @@
   line-height: 1.6;
 }
 .ha-form-panel {
+  position: relative;
+  z-index: 1;
   width: 50%;
   min-height: 100svh;
   margin-left: 50%;
@@ -387,6 +412,21 @@
       max(24px, env(safe-area-inset-right)) 28px
       max(24px, env(safe-area-inset-left));
     background: var(--harmony-orange);
+  }
+  .harmony-auth .ha-welcome-motion {
+    position: static;
+    display: flex;
+    width: 100%;
+    padding: 0;
+    transform: none;
+    transition: none;
+  }
+  .ha-welcome-signup,
+  .is-signup .ha-welcome-login {
+    display: none;
+  }
+  .is-signup .ha-welcome-signup {
+    display: flex;
   }
   .ha-wordmark {
     top: max(76px, calc(env(safe-area-inset-top) + 60px));
