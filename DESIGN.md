@@ -57,6 +57,14 @@ The signature moment is the white name writing itself onto an orange field, foll
 
 ### Approved scope
 
+### Application reset approved on 2 October 2026
+
+All AURA-era application design is retired. Authentication, onboarding and the dashboard should be designed afresh for Harmony, including navigation, page composition, form presentation, step grouping, customer-facing copy and the overall customer journey. The existing app is a source of functional evidence, not a visual or interaction template to recolour.
+
+Retain what the product needs to collect, validate and save, its permissions and consent requirements, and the meaning and consequences of its actions. [APP_BEHAVIOUR.md](./APP_BEHAVIOUR.md) records the current form and workflow evidence for that purpose. Existing step order and UI mechanisms are not automatically binding; redesign them deliberately while preserving the necessary dependencies and outcomes. Current implementation bugs are not part of the intended contract.
+
+The approved Harmony landing and branding remain the design reference. The new app's detailed flow, layouts and component system are not yet specified. This reset does not authorise deleting working functionality, changing provider credentials, or replacing backend contracts as an incidental design change.
+
 The approved visual baseline is the public landing page at `/`. Future marketing, onboarding and product work should inherit this identity. The old authentication and dashboard styling is not the Harmony visual reference. Preserve useful existing behaviour when giving those screens the new visual treatment.
 
 A marketing hero can be spacious and expressive; a dashboard still needs readable information, clear states and efficient tasks. Use the same palette, utility typography, restraint and maintained control behaviour. Do not repeat the writing animation throughout ordinary product screens. Detailed dashboard grids, form layouts, chart palettes, error colours and additional component variants are not yet approved. Treat new proposals as extensions of the baseline, not existing brand rules.
@@ -287,7 +295,7 @@ This document is the maintained design contract; the following files implement i
 
 ### Canonical UI Map
 
-The existing product interaction owners remain in place. This table records behaviour, not the retired visual direction. The brand opening adds the requested navigation; the greeting and zoom remain unchanged.
+The product owners below identify the current implementation for functional inspection. They are not mandatory presentation primitives for the fresh Harmony app. The marketing CTA and navigation remain approved Harmony components; product form and selector presentation can be rebuilt while preserving the required data behaviour.
 
 | Capability | Canonical owner | Source of truth | Allowed variants | Verification |
 |---|---|---|---|---|
